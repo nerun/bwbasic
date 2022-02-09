@@ -1,0 +1,14 @@
+bwBASIC: LIST                                                                   
+    1 REM                                                                       
+                                                                                
+bwBASIC: NEW                                                                    
+bwBASIC: LIST                                                                   
+                                                                                
+bwBASIC: LOAD "LOAD_1.DAT"                                                      
+bwBASIC: LIST                                                                   
+   10 REM 'LOAD' TEST PROGRAM                                                   
+   20 PRINT "THIS PROGRAM TESTS THE LOAD FEATURE"                               
+   99 END                                                                       
+                                                                                
+bwBASIC: RUN                                                                    
+THIS PROGRAM TESTS THE LOAD FEATURE                                             

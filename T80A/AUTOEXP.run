@@ -1,0 +1,157 @@
+    AUTO EXPENSE ANALYSIS                                                       
+                                                                                
+THIS SIMPLE PROGRAM WILL PERMIT THE INDIVIDUAL TO KEEP A                        
+RECORD OF ALL EXPENSES PERTAINING TO THE USE OF AN AUTOMOBILE.                  
+FOR EACH EXPENSE THIS PROGRAM STORES THE FOLLOWING:                             
+AN EXPENSE TYPE CHOSEN FROM GAS,OIL,MAIN,TOLL,INS,PAYM OR MISC                  
+MAIN MEANS MAINTENANCE,INS IS INSURANCE,PAYM IS CAR PAYMENT.                    
+IN ADDITION TO TYPE EXPENSE THERE IS DESCRIPTION,DATE,PLACE OF                  
+SERVICE,QUANTITY PURCHASED,BILL AMOUNT AND ODOMETER READING.                    
+THIS DATA IS STORED IN A FILE IN MEMORY. THIS FILE MAY BE                       
+SAVED ON DISKETTE OR CASSETTE AND RECALLED,IT MAY BE EDITED                     
+LISTED ON CRT OR PRINTER,ETC. A MILES PER GALLON CALCULATION                    
+MAY ALSO BE PERFORMED.                                                          
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+       MAIN MENU                                                                
+                                                                                
+ 0.QUIT                                                                         
+ 1.ADD TO FILE OR BEGIN NEW FILE                                                
+ 2.READ FILE IN FROM TAPE                                                       
+ 3.WRITE FILE OUT ONTO TAPE                                                     
+ 4.READ FILE IN FROM DISK                                                       
+ 5.WRITE FILE OUT ONTO DISK                                                     
+ 6.EDIT FILE                                                                    
+ 7.LIST CONTENTS, COMPLETE OR BY TYPE                                           
+ 8.ROUTINE ACTUALLY DELETING RECORD FROM FILE                                   
+ENTER YOUR CHOICE? 1                                                            
+NEW FILE                                                                        
+PRESS ENTER TO CONTINUE?                                                        
+INITIAL INPUT ENTRY                                                             
+MAKE THIS ENTRY WITH A FULL GAS TANK                                            
+                                                                                
+ENTER DATE(MM/DD/YY)? 01/02/03                                                  
+ENTER ODOMETER READING? 123000                                                  
+INITIAL ENTRY DONE                                                              
+PRESS ENTER TO CONTINUE?                                                        
+EXPENSE TYPES: GAS  OIL   MAIN  TOLL  INS   PAYM   MISC                         
+                                                                                
+                          TYPE EXPENSE     ? GAS                                
+                          EXP. DESCRIPTION ? fillup                             
+                          DATE OF EXPENSE  ? 01/03/03                           
+                          PLACE OF SERVICE ? 66                                 
+         0.00                QUANT. PURCH   ? 12.3                              
+         0.00                BILL AMOUNT    ? 39.87                             
+         0.00                ODOMETER READ. ? 123456                            
+TYPE  DESCRIPT   DATE      PLACE   QUANT.  $ AMT.   ODOMETER                    
+GAS   fillup    01/03/03  66         12.3    39.87  123456.0                    
+ENTER Y IF OK,N IF ERROR,A TO ABORT? Y                                          
+DO YOU DESIRE MORE ENTRIES(Y/N)? N                                              
+       MAIN MENU                                                                
+                                                                                
+ 0.QUIT                                                                         
+ 1.ADD TO FILE OR BEGIN NEW FILE                                                
+ 2.READ FILE IN FROM TAPE                                                       
+ 3.WRITE FILE OUT ONTO TAPE                                                     
+ 4.READ FILE IN FROM DISK                                                       
+ 5.WRITE FILE OUT ONTO DISK                                                     
+ 6.EDIT FILE                                                                    
+ 7.LIST CONTENTS, COMPLETE OR BY TYPE                                           
+ 8.ROUTINE ACTUALLY DELETING RECORD FROM FILE                                   
+ENTER YOUR CHOICE? 5                                                            
+                                                                                
+PUT DATA DISK IN DISK DRIVE                                                     
+PRESS ENTER TO CONTINUE?                                                        
+                                                                                
+PRESENT DISK FILE IS  NEW FILE ? AUTOEXP.DAT                                    
+       MAIN MENU                                                                
+                                                                                
+ 0.QUIT                                                                         
+ 1.ADD TO FILE OR BEGIN NEW FILE                                                
+ 2.READ FILE IN FROM TAPE                                                       
+ 3.WRITE FILE OUT ONTO TAPE                                                     
+ 4.READ FILE IN FROM DISK                                                       
+ 5.WRITE FILE OUT ONTO DISK                                                     
+ 6.EDIT FILE                                                                    
+ 7.LIST CONTENTS, COMPLETE OR BY TYPE                                           
+ 8.ROUTINE ACTUALLY DELETING RECORD FROM FILE                                   
+ENTER YOUR CHOICE? 4                                                            
+PUT DATA DISK IN DISK DRIVE                                                     
+PRESS ENTER TO CONTINUE?                                                        
+                                                                                
+ENTER NAME OF FILE TO READ IN? AUTOEXP.DAT                                      
+       MAIN MENU                                                                
+                                                                                
+ 0.QUIT                                                                         
+ 1.ADD TO FILE OR BEGIN NEW FILE                                                
+ 2.READ FILE IN FROM TAPE                                                       
+ 3.WRITE FILE OUT ONTO TAPE                                                     
+ 4.READ FILE IN FROM DISK                                                       
+ 5.WRITE FILE OUT ONTO DISK                                                     
+ 6.EDIT FILE                                                                    
+ 7.LIST CONTENTS, COMPLETE OR BY TYPE                                           
+ 8.ROUTINE ACTUALLY DELETING RECORD FROM FILE                                   
+ENTER YOUR CHOICE? 7                                                            
+IS A LINE PRINTER TO BE USED(Y/N)? Y                                            
+           LIST  MENU                                                           
+                                                                                
+1. COMPLETE LIST AS ON FILE                                                     
+2. LIST BY TYPE                                                                 
+3. END LIST PROGRAM                                                             
+                                                                                
+ENTER APPROPRIATE CHOICE? 1                                                     
+PUT PAPER INTO PRINTER                                                          
+PRESS ENTER TO CONTINUE?                                                        
+TYPE  DESCRIPT   DATE      PLACE   QUANT.  $ AMT.   ODOMETER                    
+GAS   INITIAL   01/02/03              0.0     0.00  123000.0                    
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+TYPE  DESCRIPT   DATE      PLACE   QUANT.  $ AMT.   ODOMETER                    
+GAS   fillup    01/03/03  66         12.3    39.87  123456.0                    
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+TOTAL GASOLINE USED     :       12.30                                           
+TOTAL MILEAGE GONE      :      456.00                                           
+TOTAL COST OF USE       :      $39.87                                           
+MILES/GALLON            :       37.07                                           
+TOTAL COST/MILE         :       $0.09                                           
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+           LIST  MENU                                                           
+                                                                                
+1. COMPLETE LIST AS ON FILE                                                     
+2. LIST BY TYPE                                                                 
+3. END LIST PROGRAM                                                             
+                                                                                
+ENTER APPROPRIATE CHOICE? 2                                                     
+ENTER TYPE DESIRED? GAS                                                         
+                                                                                
+******* COMPUTING *******                                                       
+TYPE  DESCRIPT   DATE      PLACE   QUANT.  $ AMT.   ODOMETER                    
+GAS   INITIAL   01/02/03              0.0     0.00  123000.0                    
+GAS   fillup    01/03/03  66         12.3    39.87  123456.0                    
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+                                                                                
+TOTAL COST FOR THIS EXPENSE TYPE :     $39.87                                   
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+           LIST  MENU                                                           
+                                                                                
+1. COMPLETE LIST AS ON FILE                                                     
+2. LIST BY TYPE                                                                 
+3. END LIST PROGRAM                                                             
+                                                                                
+ENTER APPROPRIATE CHOICE? 3                                                     
+       MAIN MENU                                                                
+                                                                                
+ 0.QUIT                                                                         
+ 1.ADD TO FILE OR BEGIN NEW FILE                                                
+ 2.READ FILE IN FROM TAPE                                                       
+ 3.WRITE FILE OUT ONTO TAPE                                                     
+ 4.READ FILE IN FROM DISK                                                       
+ 5.WRITE FILE OUT ONTO DISK                                                     
+ 6.EDIT FILE                                                                    
+ 7.LIST CONTENTS, COMPLETE OR BY TYPE                                           
+ 8.ROUTINE ACTUALLY DELETING RECORD FROM FILE                                   
+ENTER YOUR CHOICE? 0                                                            

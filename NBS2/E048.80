@@ -1,6 +1,0 @@
-LINE 02000 SHOULD CAUSE A FATAL ERROR                                           
-                                                                                
-ERROR in line 2000: Line number 3000 not found                                  
-                                                                                
-STACK TRACE:                                                                    
-2000:DELETE 3000                                                                

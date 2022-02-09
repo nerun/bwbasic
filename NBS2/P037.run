@@ -22,5 +22,8 @@ FOR DETAILED CRITERIA.
                                                                                 
                BEGIN TEST                                                       
                                                                                 
+VALUE ASSIGNED FOR 5**2 =  25                                                   
                                                                                 
-ERROR in line 250: Syntax error                                                 
+                END TEST                                                        
+                                                                                
+END PROGRAM 37                                                                  

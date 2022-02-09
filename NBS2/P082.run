@@ -22,4 +22,8 @@ FOR DETAILED CRITERIA.
 ABOUT TO EXECUTE 'LET A(0) = 105'                                               
 'OPTION BASE 1' FOLLOWS THIS STATEMENT.                                         
                                                                                 
-ERROR in line 250: at line 250: OPTION BASE must be called before DIM.          
+A(0) =  105                                                                     
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 82                                                                  

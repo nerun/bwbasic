@@ -28,4 +28,4 @@ SETTING X$ = 'ABC'
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF ATN(X$).                                         
                                                                                 
-ERROR in line 340: *** Illegal Function Call (ATN) ***                          
+ERROR in line 340: Illegal Function Call (ATN)                                  

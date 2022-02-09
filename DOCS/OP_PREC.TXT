@@ -1,0 +1,17 @@
+Operator Precedence
+
+01. Exponentiation (^)
+02. Unary identity and negation (+, -)
+03. Multiplication and division (*, /)
+04. Integer division (\)
+05. Modulus arithmetic (MOD)
+06. Addition and subtraction (+, -), string concatenation (+)
+07. String concatenation (&)
+08. Arithmetic bit shift (<<, >>)
+09. All comparison operators (=, <>, <, <=, >, >=, Like)
+10. NOT
+11. AND
+12. OR
+13. XOR
+14. EQV
+15. IMP

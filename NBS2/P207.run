@@ -23,4 +23,4 @@ SETTING A$='123' AND X=111
                                                                                 
 ABOUT TO EXECUTE: LET X = A$                                                    
                                                                                 
-ERROR in line 270: Type Mismatch                                                
+ERROR in line 270: Type mismatch                                                

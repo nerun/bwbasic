@@ -33,6 +33,8 @@
 /*                                                               */
 /* Version 3.00 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.10 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
 
 
@@ -40,10 +42,19 @@
 #include "bwbasic.h"
 
 
-#ifndef RAND_MAX     /* added in v1.11 */
+#ifndef RAND_MAX
 #define RAND_MAX  32767
-#endif
+#endif            /* RAND_MAX */
 
+#ifndef PI
+#define PI       3.14159265358979323846
+#endif           /* PI */
+
+#define FromDegreesToRadians(  X ) ( X * PI / 180.0 )
+#define FromRadiansToDegrees(  X ) ( X * 180.0 / PI )
+
+#define FromGradiansToRadians( X ) ( X * PI / 200.0 )
+#define FromRadiansToGradians( X ) ( X * 200.0 / PI )
 
 
 static time_t   t;
@@ -101,13 +112,13 @@ Acronym         AcronymTable[NUM_ACRONYMS] =
 
 /* ... ORD() */
 
-struct bwb_variable *
-fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
+VariableType *
+fnc_intrinsic(int argc, VariableType * argv, int unique_id)
 {
-   /* // this is the generic handler for all intrinsic BASIC functions */
+   /* this is the generic handler for all intrinsic BASIC functions */
    /* BasicStringLengthMax must be <= INT_MAX */
-   struct bwb_function *f;
-   struct bwb_variable *argn;
+   FunctionType *f;
+   VariableType *argn;
    unsigned char   IsError;/* for ERROR messages */
    /* Follow the BASIC naming conventions, so the code is easier to
     * maintain */
@@ -118,7 +129,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
    BasicStringLengthType a;/* LEN( A$ ) */
    char           *B;   /* B$ - 2nd STRING parameter */
    BasicStringLengthType b;/* LEN( B$ ) */
-#if FALSE
+#if FALSE /* keep third parameter */
    char           *C;   /* C$ - 3rd STRING parameter */
    BasicStringLengthType c;/* LEN( C$ ) */
 #endif
@@ -126,7 +137,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
    BasicIntegerType x;  /* INT( X ) */
    BasicNumberType Y;   /* Y  - 2nd NUMBER parameter */
    BasicIntegerType y;  /* INT( Y ) */
-#if FALSE
+#if FALSE /* keep third parameter */
    BasicNumberType Z;   /* Z  - 3rd NUMBER parameter */
    BasicIntegerType z;  /* INT( Z ) */
 #endif
@@ -149,56 +160,49 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       f = fnc_find_by_id(unique_id);
       if (f == NULL)
       {
-         /* bwb_prefuncs[] in bwb_tbl.c is wrong -- this is
-          * really bad */
-         sprintf(bwb_ebuf, "INTERNAL ERROR in fnc_intrinsic() - did not find unique_id %d", unique_id);
-         bwb_error(bwb_ebuf);
+         /* bwb_prefuncs[] in bwb_tbl.c is wrong -- this is really bad */
+         WARN_INTERNAL_ERROR;
          return NULL;
       }
    }
-   /* the RETURN variable is the first variable in the 'argv' vaariable
-    * chain */
+   /* the RETURN variable is the first variable in the 'argv' vaariable chain */
    if (argv == NULL)
    {
-      bwb_error("INTERNAL ERROR");
-      return argv;
+      WARN_INTERNAL_ERROR;
+      return NULL;
    }
-   if (argv->type == STRING)
+   if ( VAR_IS_STRING( argv ) )
    {
       if (argv->memstr == NULL)
       {
-         bwb_error("INTERNAL ERROR");
-         return argv;
+         WARN_INTERNAL_ERROR;
+         return NULL;
       }
       RESULT_LENGTH = 0;
-      RESULT_BUFFER[RESULT_LENGTH] = '\0';
+      RESULT_BUFFER[RESULT_LENGTH] = BasicNulChar;
    }
    else
    {
       if (argv->memnum == NULL)
       {
-         bwb_error("INTERNAL ERROR");
-         return argv;
+         WARN_INTERNAL_ERROR;
+         return NULL;
       }
       RESULT_NUMBER = 0;
    }
    argn = argv;
    /* don't make a bad situation worse */
-   if (ERROR_PENDING)
+   if( bwb_Warning_Pending() /* Keep This */ )
    {
-      /* An unrecognized NON-FATAL ERROR is pending.  Just return a
-       * sane value. */
+      /* An unrecognized NON-FATAL ERROR is pending.  Just return a sane value. */
       /* LET N = LOG(SQR(X)) ' X = -1 */
       return argv;
    }
-   /* Follow the BASIC naming conventions, so the code is easier to read
-    * and maintain */
+   /* Follow the BASIC naming conventions, so the code is easier to read and maintain */
    {
       int             i;
-      int             StrCount = 0; /* count of STRING parameters
-                   * - NEVER > 3 */
-      int             NumCount = 0; /* count of NUMBER parameters
-                   * - NEVER > 3 */
+      int             StrCount = 0; /* count of STRING parameters - NEVER > 3 */
+      int             NumCount = 0; /* count of NUMBER parameters - NEVER > 3 */
       unsigned long   ParameterTests;
       ParameterTests = f->ParameterTests;
       /* assign reasonable default values */
@@ -209,7 +213,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       a = 0;      /* LEN( A$ ) */
       B = NULL;   /* B$ - 2nd STRING parameter */
       b = 0;      /* LEN( B$ ) */
-#if FALSE
+#if FALSE /* keep third parameter */
       C = NULL;   /* C$ - 3rd STRING parameter */
       c = 0;      /* LEN( C$ ) */
 #endif
@@ -217,12 +221,12 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       x = 0;      /* INT( X ) */
       Y = 0;      /* Y  - 2nd NUMBER parameter */
       y = 0;      /* INT( Y ) */
-#if FALSE
+#if FALSE /* keep third parameter */
       Z = 0;      /* Z  - 3rd NUMBER parameter */
       z = 0;      /* INT( Z ) */
 #endif
       /* assign actual values */
-      if (f->ReturnType == STRING)
+      if (f->ReturnType == BasicStringSuffix)
       {
          S = RESULT_BUFFER;
          s = RESULT_LENGTH;
@@ -236,15 +240,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          argn = argn->next;
          if (argn == NULL)
          {
-            bwb_error("INTERNAL ERROR");
-            return argv;
+            WARN_INTERNAL_ERROR;
+            return NULL;
          }
-         if (argn->type == STRING)
+         if ( VAR_IS_STRING( argn ) )
          {
             if (argn->memstr == NULL)
             {
-               bwb_error("INTERNAL ERROR");
-               return argv;
+               WARN_INTERNAL_ERROR;
+               return NULL;
             }
             StrCount++;
             switch (StrCount)
@@ -275,7 +279,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                   B[b] = 0;
                }
                break;
-#if FALSE
+#if FALSE /* keep third parameter */
             case 3:
                /* 3rd STRING parameter = C$ */
                /* not currently used */
@@ -301,8 +305,8 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             if (argn->memnum == NULL)
             {
-               bwb_error("INTERNAL ERROR");
-               return argv;
+               WARN_INTERNAL_ERROR;
+               return NULL;
             }
             NumCount++;
             switch (NumCount)
@@ -317,7 +321,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                else
                {
                   BasicNumberType R;
-                  R = rint(X);
+                  R = bwb_rint(X);
                   if (R < INT_MIN || R > INT_MAX)
                   {
                      /* certainly not a
@@ -345,7 +349,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                else
                {
                   BasicNumberType R;
-                  R = rint(Y);
+                  R = bwb_rint(Y);
                   if (R < INT_MIN || R > INT_MAX)
                   {
                      /* certainly not a
@@ -363,7 +367,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                   }
                }
                break;
-#if FALSE
+#if FALSE /* keep third parameter */
             case 3:
                /* 3rd NUMBER parameter = Z */
                /* not currently used */
@@ -375,7 +379,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                else
                {
                   BasicNumberType R;
-                  R = rint(Z);
+                  R = bwb_rint(Z);
                   if (R < INT_MIN || R > INT_MAX)
                   {
                      /* certainly not a
@@ -405,15 +409,10 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
    }
 
 
-#ifndef PI
-#define PI       3.14159265358979323846
-#endif            /* PI */
-#define MIN( X, Y ) X < Y ? X : Y;
-#define MAX( X, Y ) X > Y ? X : Y;
-
    /* execute the intrinsic function */
-   if (IsError == 0  /* WARNING -- do NOT execute a BASIC
-           intrinsic function with bogus parameters */ )
+   /* WARNING -- do NOT execute a BASIC intrinsic function with bogus parameters */
+   if (IsError == 0   )
+   {
       switch (unique_id)
       {
          /* ALL paramters have  been checked for TYPE MISMATCH
@@ -434,35 +433,28 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       case F_ARGC_N:
          /* N = ARGC */
          {
-            /* determine number of parameters to the
-             * current USER DEFINED FUNCTION */
+            /* determine number of parameters to the current USER DEFINED FUNCTION */
             int             n;
             n = 0;
-            if (CURTASK exsc >= 0)
+            if ( My->stack_head != NULL )
             {
                int             Loop;
-               int             i;
+               StackType * stack_item;
                Loop = TRUE;
-               for (i = CURTASK exsc; i >= 0 && Loop == TRUE; i--)
+               for (stack_item = My->stack_head; stack_item != NULL && Loop == TRUE; stack_item = stack_item->next)
                {
-                  if (CURTASK excs[i].LoopTopLine != NULL)
+                  if (stack_item->LoopTopLine != NULL)
                   {
-                     switch (CURTASK excs[i].LoopTopLine->cmdnum)
+                     switch (stack_item->LoopTopLine->cmdnum)
                      {
                      case C_FUNCTION:
                      case C_SUB:
-                        /* we have
-                         * checked
-                         * all the
-                         * way to a
-                         * FUNCTION
-                         * or SUB
-                         * boundary */
+                        /* we have checked all the way to a FUNCTION or SUB boundary */
                         /* FOUND */
                         {
-                           struct bwb_variable *v;
+                           VariableType *v;
 
-                           for (v = CURTASK excs[i].local_variable; v != NULL && Loop == TRUE; v = v->next)
+                           for (v = stack_item->local_variable; v != NULL && Loop == TRUE; v = v->next)
                            {
                               n++;
                            }
@@ -477,11 +469,10 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N = n;
          }
          break;
-      case F_ARGT_X_S:
+      case F_ARGT4_X_S:
          /* S$ = ARGT$( X ) */
          {
-            /* determine parameter type to the current
-             * USER DEFINED FUNCTION */
+            /* determine parameter type to the current USER DEFINED FUNCTION */
             int             Found;
             int             n;
             Found = FALSE;
@@ -492,40 +483,30 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* bad param number  */
             }
             else
-            if (CURTASK exsc >= 0)
+            if ( My->stack_head != NULL )
             {
                int             Loop;
-               int             i;
+               StackType * stack_item;
                Loop = TRUE;
-               for (i = CURTASK exsc; i >= 0 && Loop == TRUE; i--)
+               for (stack_item = My->stack_head; stack_item != NULL && Loop == TRUE; stack_item = stack_item->next)
                {
-                  if (CURTASK excs[i].LoopTopLine != NULL)
+                  if (stack_item->LoopTopLine != NULL)
                   {
-                     switch (CURTASK excs[i].LoopTopLine->cmdnum)
+                     switch (stack_item->LoopTopLine->cmdnum)
                      {
                      case C_FUNCTION:
                      case C_SUB:
-                        /* we hav e
-                         * che cke d
-                         * all 
-                         *
-                         * the 
-                         *
-                         * way to a FUN
-                         * CTI ON or
-                         * SUB 
-                         *
-                         * boun dar y */
-                        /* FOU ND */
+                        /* we have checked all the way to a FUNCTION or SUB boundary */
+                        /* FOUND */
                         {
-                           struct bwb_variable *v;
+                           VariableType *v;
 
 
-                           for (v = CURTASK excs[i].local_variable; v != NULL && Loop == TRUE; v = v->next)
+                           for (v = stack_item->local_variable; v != NULL && Loop == TRUE; v = v->next)
                            {
                               if (n == x)
                               {
-                                 if (v->type == STRING)
+                                 if ( VAR_IS_STRING( v ) )
                                  {
                                     S[0] = BasicStringSuffix;
                                     s = 1;
@@ -555,7 +536,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
 
-      case F_ARGV_X_S:
+      case F_ARGV4_X_S:
          /* S$ = ARGV$( X ) */
          {
             /* determine parameter value to the current
@@ -569,32 +550,33 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* bad param number  */
             }
             else
-            if (CURTASK exsc >= 0)
+            if ( My->stack_head != NULL )
             {
                int             Loop;
-               int             i;
+               StackType * stack_item;
                Loop = TRUE;
-               for (i = CURTASK exsc; i >= 0 && Loop == TRUE; i--)
+               for (stack_item = My->stack_head; stack_item != NULL && Loop == TRUE; stack_item = stack_item->next)
                {
-                  if (CURTASK excs[i].LoopTopLine != NULL)
+                  if (stack_item->LoopTopLine != NULL)
                   {
-                     switch (CURTASK excs[i].LoopTopLine->cmdnum)
+                     switch (stack_item->LoopTopLine->cmdnum)
                      {
                      case C_FUNCTION:
                      case C_SUB:
-                        /* FOU ND */
+                        /* we have checked all the way to a FUNCTION or SUB boundary */
+                        /* FOUND */
                         {
-                           struct bwb_variable *v;
+                           VariableType *v;
 
 
-                           for (v = CURTASK excs[i].local_variable; v != NULL && Loop == TRUE; v = v->next)
+                           for (v = stack_item->local_variable; v != NULL && Loop == TRUE; v = v->next)
                            {
                               if (n == x)
                               {
-                                 if (v->type == STRING)
+                                 if ( VAR_IS_STRING( v ) )
                                  {
                                     s = v->memstr->length;
-                                    memcpy(S, v->memstr->sbuffer, s);
+                                    bwb_memcpy(S, v->memstr->sbuffer, s);
                                     Found = TRUE;
                                  }
                                  else
@@ -621,8 +603,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       case F_ARGV_X_N:
          /* S$ = ARGV( X ) */
          {
-            /* determine parameter value to the current
-             * USER DEFINED FUNCTION */
+            /* determine parameter value to the current USER DEFINED FUNCTION */
             int             Found;
             int             n;
             Found = FALSE;
@@ -632,29 +613,30 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* bad param number  */
             }
             else
-            if (CURTASK exsc >= 0)
+            if ( My->stack_head != NULL )
             {
                int             Loop;
-               int             i;
+               StackType * stack_item;
                Loop = TRUE;
-               for (i = CURTASK exsc; i >= 0 && Loop == TRUE; i--)
+               for (stack_item = My->stack_head; stack_item != NULL && Loop == TRUE; stack_item = stack_item->next)
                {
-                  if (CURTASK excs[i].LoopTopLine != NULL)
+                  if (stack_item->LoopTopLine != NULL)
                   {
-                     switch (CURTASK excs[i].LoopTopLine->cmdnum)
+                     switch (stack_item->LoopTopLine->cmdnum)
                      {
                      case C_FUNCTION:
                      case C_SUB:
-                        /* FOU ND */
+                        /* we have checked all the way to a FUNCTION or SUB boundary */
+                        /* FOUND */
                         {
-                           struct bwb_variable *v;
+                           VariableType *v;
 
 
-                           for (v = CURTASK excs[i].local_variable; v != NULL && Loop == TRUE; v = v->next)
+                           for (v = stack_item->local_variable; v != NULL && Loop == TRUE; v = v->next)
                            {
                               if (n == x)
                               {
-                                 if (v->type == STRING)
+                                 if ( VAR_IS_STRING( v ) )
                                  {
                                  }
                                  else
@@ -679,14 +661,37 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
          }
          break;
-
-
-
+      case F_BASE_N:
+         /* N = BASE */
+         {
+            /* PNONE */
+            N = My->CurrentVersion->OptionBaseValue;
+         }
+         break;
       case F_ASC_A_N:
+      case F_ASCII_A_N:
+      case F_CODE_A_N:
          /* N = ASC( A$ ) */
+         /* N = ASCII( A$ ) */
+         /* N = CODE( A$ ) */
          {
             /* P1BYT */
             N = A[0];
+         }
+         break;
+      case F_ASC_A_X_N:
+         /* N = ASC( A$, X ) */
+         {
+            /* P1BYT|P2POS */
+            x--; /* BASIC -> C */
+            if( x < a )
+            {
+                N = A[x];
+            }
+            else
+            {
+                IsError = 'X';
+            }
          }
          break;
       case F_CDBL_X_N:
@@ -694,6 +699,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1DBL */
             N = X;
+            /* argv->VariableType = BasicDoubleSuffix; */
          }
          break;
       case F_CSNG_X_N:
@@ -701,77 +707,81 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1FLT */
             N = X;
-         }
-         break;
-      case F_CINT_X_N:
-         /* N = CINT( X ) */
-         {
-            /* P1INT */
-            N = rint(X);
-         }
-         break;
-      case F_CLNG_X_N:
-         /* N = CLNG( X ) */
-         {
-            /* P1LNG */
-            N = rint(X);
+            /* argv->VariableType = BasicSingleSuffix; */
          }
          break;
       case F_CCUR_X_N:
          /* N = CCUR( X ) */
          {
             /* P1CUR */
-            N = rint(X);
+            N = bwb_rint(X);
+            /* argv->VariableType = BasicCurrencySuffix; */
          }
          break;
-      case F_MKD_X_S:
+      case F_CLNG_X_N:
+         /* N = CLNG( X ) */
+         {
+            /* P1LNG */
+            N = bwb_rint(X);
+            /* argv->VariableType = BasicLongSuffix; */
+         }
+         break;
+      case F_CINT_X_N:
+         /* N = CINT( X ) */
+         {
+            /* P1INT */
+            N = bwb_rint(X);
+            /* argv->VariableType = BasicIntegerSuffix; */
+         }
+         break;
+      case F_MKD4_X_S:
          /* S$ = MKD$( X ) */
          {
             /* P1DBL */
             BasicDoubleType x;
             x = (BasicDoubleType) X;
             s = sizeof(BasicDoubleType);
-            memcpy(S, &x, s);
+            bwb_memcpy(S, &x, s);
          }
          break;
-      case F_MKS_X_S:
+      case F_MKS4_X_S:
          /* S$ = MKS$( X ) */
          {
             /* P1FLT */
             BasicSingleType x;
             x = (BasicSingleType) X;
             s = sizeof(BasicSingleType);
-            memcpy(S, &x, s);
+            bwb_memcpy(S, &x, s);
          }
          break;
-      case F_MKI_X_S:
+      case F_MKI4_X_S:
          /* S$ = MKI$( X ) */
          {
             /* P1INT */
             BasicIntegerType x;
-            x = (BasicIntegerType) rint(X);
+            x = (BasicIntegerType) bwb_rint(X);
             s = sizeof(BasicIntegerType);
-            memcpy(S, &x, s);
+            bwb_memcpy(S, &x, s);
          }
          break;
-      case F_MKL_X_S:
+      case F_MKL4_X_S:
          /* S$ = MKL$( X ) */
          {
             /* P1LNG */
             BasicLongType   x;
-            x = (BasicLongType) rint(X);
+            x = (BasicLongType) bwb_rint(X);
             s = sizeof(BasicLongType);
-            memcpy(S, &x, s);
+            bwb_memcpy(S, &x, s);
          }
          break;
-      case F_MKC_X_S:
+      case F_MKC4_X_S:
          /* S$ = MKC$( X ) */
          {
             /* P1CUR */
             BasicCurrencyType x;
-            x = (BasicCurrencyType) rint(X);
+            x = (BasicCurrencyType) bwb_rint(X);
             s = sizeof(BasicCurrencyType);
-            memcpy(S, &x, s);
+            bwb_memcpy(S, &x, s);
          }
          break;
       case F_CVD_A_N:
@@ -780,7 +790,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1DBL */
             BasicDoubleType n;
             a = sizeof(BasicDoubleType);
-            memcpy(&n, A, a);
+            bwb_memcpy(&n, A, a);
             N = n;
          }
          break;
@@ -790,7 +800,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1FLT */
             BasicSingleType n;
             a = sizeof(BasicSingleType);
-            memcpy(&n, A, a);
+            bwb_memcpy(&n, A, a);
             N = n;
          }
          break;
@@ -800,7 +810,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1INT */
             BasicIntegerType n;
             a = sizeof(BasicIntegerType);
-            memcpy(&n, A, a);
+            bwb_memcpy(&n, A, a);
             N = n;
          }
          break;
@@ -810,7 +820,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1LNG */
             BasicLongType   n;
             a = sizeof(BasicLongType);
-            memcpy(&n, A, a);
+            bwb_memcpy(&n, A, a);
             N = n;
          }
          break;
@@ -820,11 +830,11 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1CUR */
             BasicCurrencyType n;
             a = sizeof(BasicCurrencyType);
-            memcpy(&n, A, a);
+            bwb_memcpy(&n, A, a);
             N = n;
          }
          break;
-      case F_ENVIRON_A_S:
+      case F_ENVIRON4_A_S:
          /* S$ = ENVIRON$( A$ ) */
          {
             /* P1BYT */
@@ -837,7 +847,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
             else
             {
-               s = strlen(CharPointer);
+               s = bwb_strlen(CharPointer);
                s = MIN(s, BasicStringLengthMax);
                if (s == 0)
                {
@@ -845,7 +855,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                }
                else
                {
-                  memcpy(S, CharPointer, s);
+                  bwb_memcpy(S, CharPointer, s);
                }
             }
          }
@@ -857,7 +867,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
 
             char           *CharPointer;
 
-            CharPointer = strchr(A, '=');
+            CharPointer = bwb_strchr(A, '=');
             if (CharPointer == NULL)
             {
                /* missing required '=' */
@@ -884,141 +894,11 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1STR|P2NUM|P3STR|P4NUM */
             /* P1BYT|P2DEV|P3BYT|P4INT */
 
-            int             mode;
-
             while (*A == ' ')
             {
                A++;  /* LTRIM$ */
             }
-            mode = ToUpper(*A);
-            switch (mode)
-            {
-            case 'I':
-            case 'O':
-            case 'A':
-            case 'B':
-            case 'R':
-               break;
-            default:
-               mode = DEVMODE_CLOSED;
-               break;
-            }
-
-            if (x == CONSOLE_FILE_NUMBER)
-            {
-               IsError = 'X';
-            }
-            else
-            if (mode == DEVMODE_CLOSED)
-            {
-               IsError = 'A';
-            }
-            else
-            if (dev_table[x].mode != DEVMODE_CLOSED)
-            {
-               IsError = 'X';
-            }
-            else
-            if (y < 0)
-            {
-               IsError = 'Y';
-            }
-            else
-            if (y == 0 && mode == 'R')
-            {
-               IsError = 'Y';
-            }
-            else
-            {
-               FILE           *fp = NULL;
-               char           *buffer = NULL;
-               switch (mode)
-               {
-               case 'I':
-                  mode = DEVMODE_INPUT;
-                  fp = fopen(B, "r");
-                  y = 0;
-                  break;
-               case 'O':
-                  mode = DEVMODE_OUTPUT;
-                  fp = fopen(B, "w");
-                  y = 0;
-                  break;
-               case 'A':
-                  mode = DEVMODE_APPEND;
-                  fp = fopen(B, "a");
-                  y = 0;
-                  break;
-               case 'B':
-                  mode = DEVMODE_BINARY;
-                  fp = fopen(B, "r+");
-                  if (fp == NULL)
-                  {
-                     fp = fopen(B, "w");
-                     fclose(fp);
-                     fp = fopen(B, "r+");
-                  }
-                  y = 0;
-                  break;
-               case 'R':
-                  mode = DEVMODE_RANDOM;
-                  fp = fopen(B, "r+");
-                  if (fp == NULL)
-                  {
-                     fp = fopen(B, "w");
-                     fclose(fp);
-                     fp = fopen(B, "r+");
-                  }
-                  if (fp != NULL)
-                  {
-                     buffer = CALLOC(y, 1, "F_OPEN_A_X_B_Y_V");
-                  }
-                  break;
-               }
-               if (fp == NULL)
-               {
-                  /* i n v a l i d 
-                   *
-                   * fi l e 
-                   *
-                   * na m e */
-                  IsError = 'B';
-               }
-               else
-               if (mode == DEVMODE_RANDOM && buffer == NULL)
-               {
-                  /* i n v a l i d 
-                   *
-                   * re c o r d 
-                   *
-                   * le n g t h */
-                  IsError = 'Y';
-               }
-               else
-               {
-                  dev_table[x].mode = mode;
-                  dev_table[x].cfp = fp;
-                  dev_table[x].width = y;
-                  /* N O T E : 
-                   *
-                   * WI D T H 
-                   *
-                   * == 
-                   * RE C L E N */
-                  dev_table[x].col = 1;
-                  dev_table[x].buffer = buffer;
-                  strcpy(dev_table[x].filename, B);
-                  if (mode == DEVMODE_APPEND)
-                  {
-                     fseek(fp, 0, SEEK_END);
-                  }
-                  else
-                  if (mode == DEVMODE_RANDOM)
-                  {
-                     memset(buffer, ' ', y); /* flush */
-                  }
-               }
-            }
+            IsError = bwb_file_open( *A, x, B, y );
          }
          break;
       case F_OPEN_A_X_B_N:
@@ -1027,186 +907,87 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1STR|P2NUM|P3STR|P4NUM */
             /* P1BYT|P2DEV|P3BYT|P4INT */
-            int             mode;
             int             y = 0;
 
             while (*A == ' ')
             {
                A++;  /* LTRIM$ */
             }
-            mode = ToUpper(*A);
-            switch (mode)
+            if( bwb_toupper(*A) == 'R' )
             {
-            case 'I':
-            case 'O':
-            case 'A':
-            case 'B':
-               break;
-            case 'R':
-               y = bwx_RANDOM_RECORD_SIZE();
-               break;
-            default:
-               mode = DEVMODE_CLOSED;
-               break;
+               /* default RANDOM record size */
+               y = 128;
             }
-
-            if (x == CONSOLE_FILE_NUMBER)
-            {
-               IsError = 'X';
-            }
-            else
-            if (mode == DEVMODE_CLOSED)
-            {
-               IsError = 'A';
-            }
-            else
-            if (dev_table[x].mode != DEVMODE_CLOSED)
-            {
-               IsError = 'X';
-            }
-            else
-            if (y < 0)
-            {
-               IsError = 'Y';
-            }
-            else
-            if (y == 0 && mode == 'R')
-            {
-               IsError = 'Y';
-            }
-            else
-            if (y > 0 && mode == 'B')
-            {
-               IsError = 'Y';
-            }
-            else
-            {
-               FILE           *fp = NULL;
-               char           *buffer = NULL;
-               switch (mode)
-               {
-               case 'I':
-                  mode = DEVMODE_INPUT;
-                  fp = fopen(B, "r");
-                  y = 0;
-                  break;
-               case 'O':
-                  mode = DEVMODE_OUTPUT;
-                  fp = fopen(B, "w");
-                  y = 0;
-                  break;
-               case 'A':
-                  mode = DEVMODE_APPEND;
-                  fp = fopen(B, "a");
-                  y = 0;
-                  break;
-               case 'B':
-                  mode = DEVMODE_BINARY;
-                  fp = fopen(B, "r+");
-                  if (fp == NULL)
-                  {
-                     fp = fopen(B, "w");
-                     fclose(fp);
-                     fp = fopen(B, "r+");
-                  }
-                  y = 0;
-                  break;
-               case 'R':
-                  mode = DEVMODE_RANDOM;
-                  fp = fopen(B, "r+");
-                  if (fp == NULL)
-                  {
-                     fp = fopen(B, "w");
-                     fclose(fp);
-                     fp = fopen(B, "r+");
-                  }
-                  if (fp != NULL)
-                  {
-                     buffer = CALLOC(y, 1, "F_OPEN_A_X_B_Y_V");
-                  }
-                  break;
-               }
-               if (fp == NULL)
-               {
-                  /* i n v a l i d 
-                   *
-                   * fi l e 
-                   *
-                   * na m e */
-                  IsError = 'B';
-               }
-               else
-               if (mode == DEVMODE_RANDOM && buffer == NULL)
-               {
-                  /* i n v a l i d 
-                   *
-                   * re c o r d 
-                   *
-                   * le n g t h */
-                  IsError = 'Y';
-               }
-               else
-               {
-                  dev_table[x].mode = mode;
-                  dev_table[x].cfp = fp;
-                  dev_table[x].width = y;
-                  /* N O T E : 
-                   *
-                   * WI D T H 
-                   *
-                   * == 
-                   * RE C L E N */
-                  dev_table[x].col = 1;
-                  dev_table[x].buffer = buffer;
-                  strcpy(dev_table[x].filename, B);
-                  if (mode == DEVMODE_APPEND)
-                  {
-                     fseek(fp, 0, SEEK_END);
-                  }
-                  else
-                  if (mode == DEVMODE_RANDOM)
-                  {
-                     memset(buffer, ' ', y); /* flush */
-                  }
-               }
-            }
+            IsError = bwb_file_open( *A, x, B, y );
          }
          break;
       case F_LOC_X_N:
          /* N = LOC( X ) */
          {
             /* P1DEV */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
                N = 0;
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            {
-               FILE           *fp;
-               fp = dev_table[x].cfp;
-               N = ftell(fp);
-               if (dev_table[x].mode == DEVMODE_RANDOM)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  /* record number */
-                  N /= dev_table[x].width;
+                  IsError = 'X';
                }
                else
-               if (dev_table[x].mode == DEVMODE_BINARY)
+               if( F == My->SYSIN )
                {
-                  /* byte position */
+                  N = 0;
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  N = 0;
                }
                else
                {
-                  /* byte positiion / 128 */
-                  N /= 128;
+                  FILE           *fp;
+                  fp = F->cfp;
+                  N = ftell(fp);
+                  if( My->CurrentVersion->OptionVersionBitmask & (G65 | G67)  )
+                  {
+                     /* byte position, regardless of 'mode' */
+                  }
+                  else
+                  if (F->mode == DEVMODE_RANDOM)
+                  {
+                     /* record number */
+                     if( F->width == 0 )
+                     {
+                        /* byte position */
+                     }
+                     else
+                     {
+                        N /= F->width;
+                     }
+                  }
+                  else
+                  if (F->mode == DEVMODE_BINARY)
+                  {
+                     /* byte position */
+                  }
+                  else
+                  {
+                     /* byte positiion / 128 */
+                     N /= 128;
+                  }
+                  N = floor(N);
+                  N++;  /* C to BASIC */
                }
-               N = floor(N);
-               N++;  /* C to BASIC */
             }
          }
          break;
@@ -1214,31 +995,54 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* N = SEEK( X ) */
          {
             /* P1DEV */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
                N = 0;
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            {
-               FILE           *fp;
-               fp = dev_table[x].cfp;
-               N = ftell(fp);
-               if (dev_table[x].mode == DEVMODE_RANDOM)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  /* record number */
-                  N /= dev_table[x].width;
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  N = 0;
                }
                else
                {
-                  /* byte positiion */
+                  FILE           *fp;
+                  fp = F->cfp;
+                  N = ftell(fp);
+                  if (F->mode == DEVMODE_RANDOM)
+                  {
+                     /* record number */
+                     if( F->width > 0 )
+                     {
+                        N /= F->width;
+                     }
+                  }
+                  else
+                  {
+                     /* byte positiion */
+                  }
+                  N = floor(N);
+                  N++;  /* C to BASIC */
                }
-               N = floor(N);
-               N++;  /* C to BASIC */
             }
          }
          break;
@@ -1246,37 +1050,60 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* SEEK X, Y */
          {
             /* P1DEV|P2INT */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
                IsError = 'X';
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            if (y < 1)
-            {
-               IsError = 'Y';
-            }
-            else
-            {
-               long            offset;
-               offset = y;
-               offset--;   /* BASIC to C */
-               if (dev_table[x].mode == DEVMODE_RANDOM)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  offset *= dev_table[x].width;
+                  IsError = 'X';
                }
-               if (fseek(dev_table[x].cfp, offset, SEEK_SET) != 0)
+               else
+               if( F == My->SYSIN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if (y < 1)
                {
                   IsError = 'Y';
                }
                else
                {
-                  /* OK */
-                  N = 0;
+                  long            offset;
+                  offset = y;
+                  offset--;   /* BASIC to C */
+                  if (F->mode == DEVMODE_RANDOM)
+                  {
+                     if( F->width > 0 )
+                     {
+                        offset *= F->width;
+                     }
+                  }
+                  if (fseek(F->cfp, offset, SEEK_SET) != 0)
+                  {
+                     IsError = 'Y';
+                  }
+                  else
+                  {
+                     /* OK */
+                     N = 0;
+                  }
                }
             }
          }
@@ -1285,34 +1112,54 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* N = LOF( X ) */
          {
             /* P1DEV */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
                N = 0;
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            {
-               /* file size in bytes */
-               FILE           *fp;
-               int             current;
-               int             total;
-               fp = dev_table[x].cfp;
-               current = ftell(fp);
-               fseek(fp, 0, SEEK_END);
-               total = ftell(fp);
-               if (total == current)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  /* EOF */
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  N = 0;
                }
                else
                {
-                  fseek(fp, current, SEEK_SET);
+                  /* file size in bytes */
+                  FILE           *fp;
+                  long            current;
+                  long            total;
+                  fp = F->cfp;
+                  current = ftell(fp);
+                  fseek(fp, 0, SEEK_END);
+                  total = ftell(fp);
+                  if (total == current)
+                  {
+                     /* EOF */
+                  }
+                  else
+                  {
+                     fseek(fp, current, SEEK_SET);
+                  }
+                  N = total;
                }
-               N = total;
             }
          }
          break;
@@ -1320,35 +1167,39 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* N = EOF( X ) */
          {
             /* P1DEV */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
                N = 0;
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            {
-               /* are we at the end? */
-               FILE           *fp;
-               int             current;
-               int             total;
-               fp = dev_table[x].cfp;
-               current = ftell(fp);
-               fseek(fp, 0, SEEK_END);
-               total = ftell(fp);
-               if (total == current)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  /* EOF */
-                  N = -1;
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  N = 0;
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  N = 0;
                }
                else
                {
-                  fseek(fp, current, SEEK_SET);
-                  N = 0;
-               }
+                  /* are we at the end? */
+                  N = bwb_is_eof( F->cfp );
+               }     
             }
          }
          break;
@@ -1356,59 +1207,96 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* N = FILEATTR( X, Y ) */
          {
             /* P1DEV|P2INT */
-            if (x == CONSOLE_FILE_NUMBER)
+
+            if( x <= 0 )
             {
+               /* Printer and Console */
                IsError = 'X';
             }
             else
+            if( y == 1 )
             {
-               if (y == 1)
+               FileType * F;
+
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  N = dev_table[x].mode;
-               }
-               else
-               if (y == 2)
-               {
+                  /* normal CLOSED file */
                   N = 0;
                }
                else
                {
-                  IsError = 'Y';
+                  /* normal OPEN file */
+                  N = F->mode;
                }
+            }
+            else
+            if( y == 2 )
+            {
+               N = 0;
+            }
+            else
+            {
+               IsError = 'Y';
             }
          }
          break;
       case F_CLOSE_X_N:
          /* CLOSE X */
          {
-            /* P1DEV */
-            if (x == CONSOLE_FILE_NUMBER)
+            /* P1DEV */            
+            if( x <= 0 )
             {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
-            {
+               /* Printer and Console */
                IsError = 'X';
             }
             else
             {
-               if (dev_table[x].cfp != NULL)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  fclose(dev_table[x].cfp);
+                  IsError = 'X';
                }
-               if (dev_table[x].buffer != NULL)
+               else
+               if( F == My->SYSIN )
                {
-                  FREE(dev_table[x].buffer, "F_CLOSE_X_N");
+                  IsError = 'X';
                }
-               dev_table[x].mode = DEVMODE_CLOSED;
-               dev_table[x].width = 0;
-               dev_table[x].col = 0;
-               dev_table[x].filename[0] = '\0';
-               dev_table[x].cfp = NULL;
-               dev_table[x].buffer = NULL;
-               N = 0;
+               else
+               if( F == My->SYSOUT )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  IsError = 'X';
+               }
+               else
+               {
+                  field_close_file( F );
+                  file_clear( F );
+                  N = 0;
+               }
             }
+         }
+         break;
+      case F_RESET_N:
+      case F_CLOSE_N:
+         /* RESET */
+         /* CLOSE */
+         {
+            /* PNONE */
+            FileType * F;
+
+            for (F = My->file_head; F != NULL; F = F->next)
+            {
+               field_close_file( F );
+               file_clear( F );
+            }
+            N = 0;
          }
          break;
       case F_FREEFILE_N:
@@ -1416,95 +1304,97 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* PNONE */
             int             x;
-            for (x = 0; x <= BasicFileNumberMax; x++)
+            FileType * F;
+
+            x = 0;
+            for (F = My->file_head; F != NULL; F = F->next)
             {
-               if (x == CONSOLE_FILE_NUMBER)
+               if (F->mode != DEVMODE_CLOSED)
                {
-                  /* ignore */
-               }
-               else
-               if (dev_table[x].mode == DEVMODE_CLOSED)
-               {
-                  N = x;
-                  break;
+                  if( F->FileNumber > x )
+                  {
+                     x = F->FileNumber;
+                  }
                }
             }
-         }
-         break;
-      case F_RESET_N:
-         /* RESET */
-         {
-            /* PNONE */
-            int             x;
-            for (x = 0; x <= BasicFileNumberMax; x++)
+            /* 'x' is the highest FileNumber that is currently open */
+            x++;
+            if( x > BasicFileNumberMax )
             {
-               if (x == CONSOLE_FILE_NUMBER)
-               {
-                  /* ignore */
-               }
-               else
-               if (dev_table[x].mode != DEVMODE_CLOSED)
-               {
-                  if (dev_table[x].cfp != NULL)
-                  {
-                     fclose(dev_table[x].cfp);
-                  }
-                  if (dev_table[x].buffer != NULL)
-                  {
-                     FREE(dev_table[x].buffer, "F_RESET_V");
-                  }
-                  dev_table[x].mode = DEVMODE_CLOSED;
-                  dev_table[x].width = 0;
-                  dev_table[x].col = 0;
-                  dev_table[x].filename[0] = '\0';
-                  dev_table[x].cfp = NULL;
-                  dev_table[x].buffer = NULL;
-               }
+               x = 0;
             }
-            N = 0;
+            N = x;
          }
          break;
       case F_GET_X_Y_N:
          /* GET X, Y */
          {
             /* P1DEV|P2INT */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
+               /* Printer and Console */
                IsError = 'X';
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode != DEVMODE_RANDOM)
-            {
-               IsError = 'X';
-            }
-            else
-            if (y < 1)
-            {
-               IsError = 'Y';
-            }
-            else
-            {
-               long            offset;
-               offset = y;
-               offset--;   /* BASIC to C */
-               offset *= dev_table[x].width;
-               if (fseek(dev_table[x].cfp, offset, SEEK_SET) != 0)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if (F->mode != DEVMODE_RANDOM)
+               {
+                  IsError = 'X';
+               }
+               else
+               if (y < 1)
                {
                   IsError = 'Y';
                }
                else
                {
-                  int             i;
-                  for (i = 0; i < dev_table[x].width; i++)
+                  long offset;
+                  offset = y;
+                  offset--;   /* BASIC to C */
+                  if (F->mode == DEVMODE_RANDOM)
                   {
-                     dev_table[x].buffer[i] = fgetc(dev_table[x].cfp);
+                     if( F->width > 0 )
+                     {
+                        offset *= F->width;
+                     }
                   }
-                  N = 0;
+                  if (fseek(F->cfp, offset, SEEK_SET) != 0)
+                  {
+                     IsError = 'Y';
+                  }
+                  else
+                  {
+                     int i;
+                     for (i = 0; i < F->width; i++)
+                     {
+                        F->buffer[i] = fgetc(F->cfp);
+                     }
+                     field_get( F );
+                     N = 0;
+                  }
                }
             }
          }
@@ -1513,29 +1403,51 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* GET X */
          {
             /* PDEV1 */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
-            {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode != DEVMODE_RANDOM)
-            {
+               /* Printer and Console */
                IsError = 'X';
             }
             else
             {
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  int             i;
-                  for (i = 0; i < dev_table[x].width; i++)
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if (F->mode != DEVMODE_RANDOM)
+               {
+                  IsError = 'X';
+               }
+               else
+               {
                   {
-                     dev_table[x].buffer[i] = fgetc(dev_table[x].cfp);
+                     int i;
+                     for (i = 0; i < F->width; i++)
+                     {
+                        F->buffer[i] = fgetc(F->cfp);
+                     }
+                     field_get( F );
+                     N = 0;
                   }
-                  N = 0;
                }
             }
          }
@@ -1544,44 +1456,72 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* PUT X, Y */
          {
             /* P1DEV|P2INT */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
+               /* Printer and Console */
                IsError = 'X';
             }
             else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
             {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode != DEVMODE_RANDOM)
-            {
-               IsError = 'X';
-            }
-            else
-            if (y < 1)
-            {
-               IsError = 'Y';
-            }
-            else
-            {
-               long            offset;
-               offset = y;
-               offset--;   /* BASIC to C */
-               offset *= dev_table[x].width;
-               if (fseek(dev_table[x].cfp, offset, SEEK_SET) != 0)
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if (F->mode != DEVMODE_RANDOM)
+               {
+                  IsError = 'X';
+               }
+               else
+               if (y < 1)
                {
                   IsError = 'Y';
                }
                else
                {
-                  int             i;
-                  for (i = 0; i < dev_table[x].width; i++)
+                  long offset;
+                  offset = y;
+                  offset--;   /* BASIC to C */
+                  if (F->mode == DEVMODE_RANDOM)
                   {
-                     fputc(dev_table[x].buffer[i], dev_table[x].cfp);
-                     dev_table[x].buffer[i] = ' '; /* flush  */
+                     if( F->width > 0 )
+                     {
+                        offset *= F->width;
+                     }
                   }
-                  N = 0;
+                  if (fseek(F->cfp, offset, SEEK_SET) != 0)
+                  {
+                     IsError = 'Y';
+                  }
+                  else
+                  {
+                     int i;
+                     field_put( F );
+                     for (i = 0; i < F->width; i++)
+                     {
+                        fputc(F->buffer[i], F->cfp);
+                        F->buffer[i] = ' '; /* flush  */
+                     }
+                     N = 0;
+                  }
                }
             }
          }
@@ -1590,30 +1530,52 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* PUT X */
          {
             /* P1DEV */
-            if (x == CONSOLE_FILE_NUMBER)
+            if( x <= 0 )
             {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode == DEVMODE_CLOSED)
-            {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode != DEVMODE_RANDOM)
-            {
+               /* Printer and Console */
                IsError = 'X';
             }
             else
             {
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
                {
-                  int             i;
-                  for (i = 0; i < dev_table[x].width; i++)
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSIN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSOUT )
+               {
+                  IsError = 'X';
+               }
+               else
+               if( F == My->SYSPRN )
+               {
+                  IsError = 'X';
+               }
+               else
+               if (F->mode != DEVMODE_RANDOM)
+               {
+                  IsError = 'X';
+               }
+               else
+               {
                   {
-                     fputc(dev_table[x].buffer[i], dev_table[x].cfp);
-                     dev_table[x].buffer[i] = ' '; /* flush  */
+                     int i;
+                     field_put( F );
+                     for (i = 0; i < F->width; i++)
+                     {
+                        fputc(F->buffer[i], F->cfp);
+                        F->buffer[i] = ' '; /* flush  */
+                     }
+                     N = 0;
                   }
-                  N = 0;
                }
             }
          }
@@ -1623,35 +1585,60 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1BYT */
             /* console is #0 */
-            dev_table[CONSOLE_FILE_NUMBER].width = x;
-            dev_table[CONSOLE_FILE_NUMBER].col = 1;
+            My->SYSIN->width = x;
+            My->SYSIN->col = 1;
+            My->SYSOUT->width = x;
+            My->SYSOUT->col = 1;
             N = 0;
          }
          break;
       case F_WIDTH_X_Y_N:
          /* WIDTH X, Y */
          {
-            /* P1DEV|PB2YT */
-            if (dev_table[x].mode == DEVMODE_CLOSED)
+            /*  WIDTH #file, cols */
+            /* P1BYT|PB2YT */
+            if( x == 0 )
             {
-               IsError = 'X';
-            }
-            else
-            if (dev_table[x].mode == DEVMODE_RANDOM)
-            {
-               IsError = 'X';
-            }
-            else
-            {
-               dev_table[x].width = y;
-               dev_table[x].col = 1;
+               My->SYSIN->width = y;
+               My->SYSOUT->width = y;
                N = 0;
+            }
+            else
+            if( x < 0 )
+            {
+               My->SYSPRN->width = y;
+               N = 0;
+            }
+            else
+            {
+               FileType * F;
+   
+               F = find_file_by_number( x );
+               if( F == NULL )
+               {
+                  /* WIDTH rows, cols */
+                  My->SCREEN_ROWS = x;
+                  My->SYSIN->width = y;
+                  My->SYSIN->col = 1;
+                  My->SYSOUT->width = y;
+                  My->SYSOUT->col = 1;
+                  N = 0;
+               }
+               else
+               if (F->mode == DEVMODE_RANDOM)
+               {
+                  IsError = 'X';
+               }
+               else
+               {
+                  /* WIDTH # file, cols */
+                  F->width = y;
+                  F->col = 1;
+                  N = 0;
+               }
             }
          }
          break;
-
-
-
       case F_INSTR_X_A_B_N:
          /* N = INSTR( X, A$, B$ ) */
          {
@@ -1675,8 +1662,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* search */
                int             i;
                int             n;
-               n = a - b;  /* last valid search
-                      * position */
+               n = a - b;  /* last valid search position */
                n++;
 
                x--;  /* BASIC to C */
@@ -1684,7 +1670,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                    * position */
                for (i = x; i < n; i++)
                {
-                  if (memcmp(A, B, b) == 0)
+                  if (bwb_memcmp(A, B, b) == 0)
                   {
                      /* FOU ND */
                      i++;  /* C to BASIC */
@@ -1697,7 +1683,9 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_INSTR_A_B_N:
+      case F_INDEX_A_B_N:
          /* N = INSTR( A$, B$ ) */
+         /* N = INDEX( A$, B$ ) */
          {
             if (a == 0)
             {
@@ -1724,7 +1712,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* search */
                for (i = 0; i < n; i++)
                {
-                  if (memcmp(A, B, b) == 0)
+                  if (bwb_memcmp(A, B, b) == 0)
                   {
                      /* FOU ND */
                      i++;  /* C to BASIC */
@@ -1736,8 +1724,12 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
          }
          break;
+      case F_SPACE4_X_S:
       case F_SPACE_X_S:
+      case F_SPA_X_S:
          /* S$ = SPACE$( X ) */
+         /* S$ = SPACE( X ) */
+         /* S$ = SPA( X ) */
          {
             /* P1LEN */
             if (x == 0)
@@ -1746,13 +1738,17 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
             else
             {
-               memset(S, ' ', x);
+               bwb_memset(S, (char) ' ', x);
                s = x;
             }
          }
          break;
+      case F_STRING4_X_Y_S:
       case F_STRING_X_Y_S:
+      case F_STR_X_Y_S:
          /* S$ = STRING$( X, Y ) */
+         /* S$ = STRING( X, Y ) */
+         /* S$ = STR( X, Y ) */
          {
             /* P1LEN|P2BYT */
             if (x == 0)
@@ -1761,12 +1757,12 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
             else
             {
-               memset(S, (char) y, x);
+               bwb_memset(S, (char) y, x);
                s = x;
             }
          }
          break;
-      case F_STRING_X_A_S:
+      case F_STRING4_X_A_S:
          /* S$ = STRING$( X, A$ ) */
          {
             /* P1LEN|P2BYT */
@@ -1776,13 +1772,30 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
             else
             {
-               memset(S, (char) A[0], x);
+               bwb_memset(S, (char) A[0], x);
                s = x;
             }
          }
          break;
+      case F_LIN_X_S:
+         /* S$ = LIN( X ) */
+         {
+            /* P1LEN */
+            if (x == 0)
+            {
+               /* no copies */
+            }
+            else
+            {
+               bwb_memset(S, (char) '\n', x);
+               s = x;
+            }
+         }
+         break;
+      case F_MID4_A_X_S:
       case F_MID_A_X_S:
          /* S$ = MID$( A$, X ) */
+         /* S$ = MID( A$, X ) */
          {
             /* P1ANY|P2POS */
             if (a == 0)
@@ -1801,13 +1814,19 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                    * copy */
                A += x;  /* pointer to first character
                    * to copy */
-               memcpy(S, A, a);
+               bwb_memcpy(S, A, a);
                s = a;
             }
          }
          break;
+      case F_MID4_A_X_Y_S:
       case F_MID_A_X_Y_S:
+      case F_SEG4_A_X_Y_S:
+      case F_SEG_A_X_Y_S:
          /* S$ = MID$( A$, X, Y ) */
+         /* S$ = MID( A$, X, Y ) */
+         /* S$ = SEG$( A$, X, Y ) */
+         /* S$ = SEG( A$, X, Y ) */
          {
             /* P1ANY|P2POS|P3LEN */
             if (a == 0)
@@ -1833,13 +1852,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                a = MIN(a, y);
                A += x;
                /* pointer to first character to copy */
-               memcpy(S, A, a);
+               bwb_memcpy(S, A, a);
                s = a;
             }
          }
          break;
+      case F_LEFT4_A_X_S:
       case F_LEFT_A_X_S:
          /* S$ = LEFT$( A$, X ) */
+         /* S$ = LEFT( A$, X ) */
          {
             /* P1ANY|P2LEN */
             if (a == 0)
@@ -1854,13 +1875,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             else
             {
                a = MIN(a, x);
-               memcpy(S, A, a);
+               bwb_memcpy(S, A, a);
                s = a;
             }
          }
          break;
+      case F_RIGHT4_A_X_S:
       case F_RIGHT_A_X_S:
          /* S$ = RIGHT$( A$, X ) */
+         /* S$ = RIGHT( A$, X ) */
          {
             /* P1ANY|P2LEN */
             if (a == 0)
@@ -1877,30 +1900,65 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                x = MIN(a, x);
                A += a;
                A -= x;
-               memcpy(S, A, x);
+               bwb_memcpy(S, A, x);
                s = x;
             }
          }
          break;
-      case F_HEX_X_S:
+      case F_HEX4_X_S:
          /* S$ = HEX$( X ) */
          {
             sprintf(S, "%X", x);
-            s = strlen(S);
+            s = bwb_strlen(S);
          }
          break;
-      case F_OCT_X_S:
+      case F_OCT4_X_S:
          /* S$ = OCT$( X ) */
          {
             sprintf(S, "%o", x);
-            s = strlen(S);
+            s = bwb_strlen(S);
          }
          break;
       case F_CHR_X_S:
+      case F_CHR4_X_S:
+      case F_CHAR4_X_S:
+         /* S$ = CHR( X ) */
          /* S$ = CHR$( X ) */
+         /* S$ = CHAR$( X ) */
+
+         /* P1ANY */
+         if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
          {
-            S[0] = (char) x;
-            s = 1;
+            /* IBM System/360 & System/370 BASIC dialects: the opposite of N = NUM( A$ ) */
+            BasicNumerc(X, S);
+            s = bwb_strlen(S);
+         }
+         else
+         {
+            if( x < 0 || x > 255 )
+            {
+               IsError = 'X';
+            }
+            else
+            {
+               S[0] = (char) x;
+               s = 1;
+            }
+         }
+         break;
+      case F_CHAR_X_Y_S:
+         /* S$ = CHAR( X, Y ) ' same as STRING$(Y,X) */
+         {
+            /* P1BYT|P2LEN */
+            if (y == 0)
+            {
+               /* no copies */
+            }
+            else
+            {
+               bwb_memset(S, (char) x, y);
+               s = y;
+            }
          }
          break;
       case F_LEN_A_N:
@@ -1938,7 +1996,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* search */
                for (i = 0; i < n; i++)
                {
-                  if (memcmp(A, B, b) == 0)
+                  if (bwb_memcmp(A, B, b) == 0)
                   {
                      /* FOU ND */
                      i++;  /* C to BASIC */
@@ -1948,6 +2006,12 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                   A++;
                }
             }
+         }
+         break;
+      case F_MATCH_A_B_X_N:
+         /* N = POS( A$, B$, X ) */
+         {
+            N = str_match( A, a, B, b, x );
          }
          break;
       case F_POS_A_B_X_N:
@@ -1973,8 +2037,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                /* search */
                int             i;
                int             n;
-               n = a - b;  /* last valid search
-                      * position */
+               n = a - b;  /* last valid search position */
                n++;
 
                /* search */
@@ -1983,7 +2046,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                    * position */
                for (i = x; i < n; i++)
                {
-                  if (memcmp(A, B, b) == 0)
+                  if (bwb_memcmp(A, B, b) == 0)
                   {
                      /* FOU ND */
                      N = i + 1;  /* C to BASIC */
@@ -1995,18 +2058,18 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_VAL_A_N:
+      case F_NUM_A_N:
          /* N = VAL( A$ ) */
+         /* N = NUM( A$ ) */
          {
-            /* P1BYT */
-            /* FIXME: use the BASIC numeric value parse
-             * routine */
+            /* P1ANY */
             int             ScanResult;
             BasicNumberType Value;
             ScanResult = sscanf(A, BasicNumberScanFormat, &Value);
             if (ScanResult != 1)
             {
                /* not a number */
-               if (OptionFlags & OPTION_BUGS_ON)
+               if (My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* VAL("X") = 0 */ )
                {
                   /* IGNORE */
                   N = 0;
@@ -2024,13 +2087,14 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
          }
          break;
-      case F_STR_X_S:
+      case F_STR4_X_S:
+      case F_NUM4_X_S:
          /* S$ = STR$( X ) */
+         /* S$ = NUM$( X ) */
          {
             /* P1ANY */
-            /* sprintf( S, BasicNumberPrintFormat, X );  */
             BasicNumerc(X, S);
-            s = strlen(S);
+            s = bwb_strlen(S);
          }
          break;
       case F_DATE_N:
@@ -2046,32 +2110,75 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N += 1;
          }
          break;
-      case F_DATE_S:
+      case F_DATE4_X_S:
+      case F_DATE4_S:
+      case F_DAT4_S:
+         /* S$ = DATE$( X ) ' value of X is ignored */
          /* S$ = DATE$ */
+         /* S$ = DAT$ */
          {
             /* PNONE */
             time(&t);
             lt = localtime(&t);
-            s = strftime(S, BasicStringLengthMax, OptionDateFormat, lt);
+            s = strftime(S, BasicStringLengthMax, My->CurrentVersion->OptionDateFormat, lt);
          }
          break;
-      case F_TIME_S:
+      case F_CLK_X_S:
+      case F_CLK4_S:
+      case F_TI4_S:
+      case F_TIME4_S:
+      case F_TIME4_X_S:
+         /* S$ = CLK(X) ' the value of paameter X is ignored */
+         /* S$ = CLK$ */
+         /* S$ = TI$ */
          /* S$ = TIME$ */
+         /* S$ = TIME$(X) ' the value of paameter X is ignored */
          {
             /* PNONE */
             time(&t);
             lt = localtime(&t);
-#if 0
-            sprintf(S, "%02d:%02d:%02d", lt->tm_hour, lt->tm_min, lt->tm_sec);
-            s = strlen(S);
-#endif
-            s = strftime(S, BasicStringLengthMax, OptionTimeFormat, lt);
+            s = strftime(S, BasicStringLengthMax, My->CurrentVersion->OptionTimeFormat, lt);
          }
          break;
-      case F_TIMER_N:
-         /* N = TIMER */
+      case F_TI_N:
+      case F_TIM_N:
       case F_TIME_N:
+      case F_TIME_X_N:
+      case F_TIMER_N:
+         /* N = TI */
+         /* N = TIM */
          /* N = TIME */
+         /* N = TIME( X ) ' value of X is ignored */
+         /* N = TIMER */
+         /* N = CPU */
+         {
+            /* PNONE */
+            time(&t);
+            lt = localtime(&t);
+            if( My->CurrentVersion->OptionVersionBitmask & ( G67 ) )
+            {
+               N = lt->tm_hour;
+               N *= 60;
+               N += lt->tm_min;
+               N *= 60;
+               N += lt->tm_sec;
+               /* number of seconds since midnight */
+               N -= My->StartTime; 
+               /* elapsed run time */
+            }
+            else
+            {
+               N = lt->tm_hour;
+               N *= 60;
+               N += lt->tm_min;
+               N *= 60;
+               N += lt->tm_sec;
+               /* number of seconds since midnight */
+            }
+         }
+         break;
+      case F_CLK_X_N:
+         /* N = CLK( X ) ' value of X is ignored */
          {
             /* PNONE */
             time(&t);
@@ -2081,45 +2188,152 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N += lt->tm_min;
             N *= 60;
             N += lt->tm_sec;
+            N /= 3600;
+            /* decimal hours: 3:30 PM = 15.50 */
+         }
+         break;
+      
+      case F_TIM_X_N:
+         /* N = TIM( X ) */
+         {
+            /* P1BYT */
+            time(&t);
+            lt = localtime(&t);
+            
+            if( My->CurrentVersion->OptionVersionBitmask & (G65 | G67) )
+            {
+               /* value of 'X' is ignored */
+               N = lt->tm_hour;
+               N *= 60;
+               N += lt->tm_min;
+               N *= 60;
+               N += lt->tm_sec;
+               /* number of seconds since midnight */
+               N -= My->StartTime; 
+               /* elapsed run time */
+            }
+            else
+            {
+               switch( x )
+               {
+               case 0:
+                  /* TIM(0) == minute (0..59) */
+                  N += lt->tm_min;
+                  break;
+               case 1:
+                  /* TIM(1) == hour (0..23) */
+                  N = lt->tm_hour;
+                  break;
+               case 2:
+                  /* TIM(2) == day of year (1..366) */
+                  N = 1 + lt->tm_yday;
+                  break;
+               case 3:
+                  /* TIM(3) == year since 1900  (0..) */
+                  N = lt->tm_year;
+                  break;
+               default:
+                  IsError = 'X';
+               }
+            }
+         }
+         break;
+      case F_COMMAND4_X_S:
+         /* S$ = COMMAND$(X) */
+         if( x < 0 || x > 9 )
+         {
+            IsError = 'X';
+         }
+         else
+         {
+            if( My->COMMAND5[x] == NULL )
+            {
+               s = 0;
+            }
+            else
+            {
+               bwb_strcpy( S, My->COMMAND5[x] );
+               s = bwb_strlen( My->COMMAND5[x] );
+            }
          }
          break;
       case F_COSH_X_N:
+      case F_CSH_X_N:
+      case F_HCS_X_N:
          /* N = COSH( X ) */
+         /* N = CSH( X ) */
+         /* N = HCS( X ) */
          {
             /* P1ANY */
             N = cosh(X);
          }
          break;
       case F_SINH_X_N:
+      case F_SNH_X_N:
+      case F_HSN_X_N:
          /* N = SINH( X ) */
+         /* N = SNH( X ) */
+         /* N = HSN( X ) */
          {
             /* P1ANY */
             N = sinh(X);
          }
          break;
       case F_TANH_X_N:
+      case F_HTN_X_N:
          /* N = TANH( X ) */
+         /* N = HTN( X ) */
          {
             /* P1ANY */
             N = tanh(X);
          }
          break;
+      case F_CLG_X_N:
+      case F_CLOG_X_N:
       case F_LOG10_X_N:
+      case F_LGT_X_N:
+         /* N = CLG( X ) */
+         /* N = CLOG( X ) */
          /* N = LOG10( X ) */
+         /* N = LGT( X ) */
          {
             /* P1GTZ */
             N = log10(X);
          }
          break;
+      case F_SLEEP_X_N:
+      case F_WAIT_X_N:
+      case F_PAUSE_X_N:
+         /* N = SLEEP( X ) */
+         /* N = WAIT( X ) */
+         /* N = PAUSE( X ) */
+         {
+            /* P1ANY */
+            X = X * My->OptionSleepValue;
+            if( X <= 0 || X > SHRT_MAX)
+            {
+               /* do nothing */
+            }
+            else
+            {
+               x = (int) bwb_rint( X );
+               sleep(x);
+            }
+         }
+         break;
       case F_LOG2_X_N:
+      case F_LTW_X_N:
          /* N = LOG2( X ) */
+         /* N = LTW( X ) */
          {
             /* P1GTZ */
             N = log(X) / log((BasicNumberType) 2);
          }
          break;
       case F_ACOS_X_N:
+      case F_ACS_X_N:
          /* N = ACOS( X ) */
+         /* N = ACS( X ) */
          {
             /* P1ANY */
             if (X < -1 || X > 1)
@@ -2129,15 +2343,57 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             else
             {
                N = acos(X);
-               if (OptionFlags & OPTION_ANGLE_DEGREES)
+               if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
                {
-                  N = N * 180 / PI;
+                  N = FromRadiansToDegrees( N );
+               }
+               else
+               if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+               {
+                  N = FromRadiansToGradians( N );
                }
             }
          }
          break;
+      case F_ACSD_X_N:
+         /* N = ACSD( X ) */
+         {
+            /* P1ANY */
+            if (X < -1 || X > 1)
+            {
+               IsError = 'X';
+            }
+            else
+            {
+               N = acos(X);
+               /* result is always in DEGREES, regardless of OPTION ANGLE setting */
+               N = FromRadiansToDegrees( N );
+            }
+         }
+         break;
+      case F_ACSG_X_N:
+         /* N = ACSG( X ) */
+         {
+            /* P1ANY */
+            if (X < -1 || X > 1)
+            {
+               IsError = 'X';
+            }
+            else
+            {
+               N = acos(X);
+               /* result is always in GRADIANS, regardless of OPTION ANGLE setting */
+               N = FromRadiansToGradians( N );
+            }
+         }
+         break;
+
       case F_ASIN_X_N:
+      case F_ASN_X_N:
+      case F_ARCSIN_X_N:
          /* N = ASIN( X ) */
+         /* N = ASN( X ) */
+         /* N = ARCSIN( X ) */
          {
             /* P1ANY */
             if (X < -1 || X > 1)
@@ -2147,21 +2403,67 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             else
             {
                N = asin(X);
-               if (OptionFlags & OPTION_ANGLE_DEGREES)
+               if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
                {
-                  N = N * 180 / PI;
+                  N = FromRadiansToDegrees( N );
+               }
+               else
+               if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+               {
+                  N = FromRadiansToGradians( N );
                }
             }
          }
          break;
+
+
+      case F_ASND_X_N:
+         /* N = ASND( X ) */
+         {
+            /* P1ANY */
+            if (X < -1 || X > 1)
+            {
+               IsError = 'X';
+            }
+            else
+            {
+               N = asin(X);
+               /* result is always in DEGREES, regardless of OPTION ANGLE setting */
+               N = FromRadiansToDegrees( N );
+            }
+         }
+         break;
+      case F_ASNG_X_N:
+         /* N = ASNG( X ) */
+         {
+            /* P1ANY */
+            if (X < -1 || X > 1)
+            {
+               IsError = 'X';
+            }
+            else
+            {
+               N = asin(X);
+               /* result is always in GRADIANS, regardless of OPTION ANGLE setting */
+               N = FromRadiansToGradians( N );
+            }
+         }
+         break;
+
+
       case F_COT_X_N:
          /* N = COT( X ) ' = 1 / TAN( X ) */
          {
             /* P1ANY */
             BasicNumberType T;
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               X = X * PI / 180;
+               X = FromDegreesToRadians( X );
+            }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               X = FromGradiansToRadians( X );
             }
             T = tan(X);
             if (T == 0)
@@ -2179,9 +2481,14 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1ANY */
             BasicNumberType T;
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               X = X * PI / 180;
+               X = FromDegreesToRadians( X );
+            }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               X = FromGradiansToRadians( X );
             }
             T = sin(X);
             if (T == 0)
@@ -2199,9 +2506,14 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1ANY */
             BasicNumberType T;
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               X = X * PI / 180;
+               X = FromDegreesToRadians( X );
+            }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               X = FromGradiansToRadians( X );
             }
             T = cos(X);
             if (T == 0)
@@ -2214,7 +2526,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
          }
          break;
-      case F_UCASE_A_S:
+      case F_UCASE4_A_S:
          /* S$ = UCASE$( A$ ) */
          {
             /* P1ANY */
@@ -2225,18 +2537,18 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             else
             {
                int             i;
-               memcpy(S, A, a);
+               bwb_memcpy(S, A, a);
                s = a;
                /* BASIC allows embedded NULL
                 * characters */
                for (i = 0; i < a; i++)
                {
-                  S[i] = ToUpper(S[i]);
+                  S[i] = bwb_toupper(S[i]);
                }
             }
          }
          break;
-      case F_LCASE_A_S:
+      case F_LCASE4_A_S:
          /* S$ = LCASE$( A$ ) */
          {
             /* P1ANY */
@@ -2247,13 +2559,13 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             else
             {
                int             i;
-               memcpy(S, A, a);
+               bwb_memcpy(S, A, a);
                s = a;
                /* BASIC allows embedded NULL
                 * characters */
                for (i = 0; i < a; i++)
                {
-                  S[i] = ToLower(S[i]);
+                  S[i] = bwb_tolower(S[i]);
                }
             }
          }
@@ -2269,9 +2581,14 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             else
             {
                N = atan2(Y, X);
-               if (OptionFlags & OPTION_ANGLE_DEGREES)
+               if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
                {
-                  N = N * 180 / PI;
+                  N = FromRadiansToDegrees( N );
+               }
+               else
+               if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+               {
+                  N = FromRadiansToGradians( N );
                }
             }
          }
@@ -2283,18 +2600,67 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N = ceil(X);
          }
          break;
+      case F_DET_N:
+         /* N = DET */
+         {
+            /* PNONE */
+            N = My->LastDeterminant;
+         }
+         break;
+      case F_NUM_N:
+         /* N = NUM */
+         {
+            /* PNONE */
+            N = My->LastInputCount;
+         }
+         break;
+      case F_DEG_N:
+      case F_DEGREE_N:
+         /* N = DEG */
+         /* N = DEGREE */
+         {
+            /* PNONE */
+            My->CurrentVersion->OptionFlags |= OPTION_ANGLE_DEGREES;
+            My->CurrentVersion->OptionFlags &= ~OPTION_ANGLE_GRADIANS;
+            N = 0;
+         }
+         break;
+      case F_RAD_N:
+      case F_RADIAN_N:
+         /* N = RAD */
+         /* N = RADIAN */
+         {
+            /* PNONE */
+            My->CurrentVersion->OptionFlags &= ~OPTION_ANGLE_DEGREES;
+            My->CurrentVersion->OptionFlags &= ~OPTION_ANGLE_GRADIANS;
+            N = 0;
+         }
+         break;
+      case F_GRAD_N:
+      case F_GRADIAN_N:
+         /* N = GRAD */
+         /* N = GRADIAN */
+         {
+            /* PNONE */
+            My->CurrentVersion->OptionFlags &= ~OPTION_ANGLE_DEGREES;
+            My->CurrentVersion->OptionFlags |= OPTION_ANGLE_GRADIANS;
+            N = 0;
+         }
+         break;
       case F_DEG_X_N:
+      case F_DEGREE_X_N:
          /* N = DEG( X ) */
+         /* N = DEGREE( X ) */
          {
             /* P1ANY */
-            N = X * 180.0 / PI;
+            N = FromRadiansToDegrees( X );
          }
          break;
       case F_RAD_X_N:
          /* N = RAD( X ) */
          {
             /* P1ANY */
-            N = X * PI / 180.0;
+            N = FromDegreesToRadians( X );
          }
          break;
       case F_PI_N:
@@ -2304,7 +2670,14 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N = PI;
          }
          break;
-      case F_LTRIM_A_S:
+      case F_PI_X_N:
+         /* N = PI(X) */
+         {
+            /* P1ANY */
+            N = PI * X;
+         }
+         break;
+      case F_LTRIM4_A_S:
          /* S$ = LTRIM$( A$ ) */
          {
             /* P1ANY */
@@ -2331,13 +2704,13 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                {
                   A += i;
                   a -= i;
-                  memcpy(S, A, a);
+                  bwb_memcpy(S, A, a);
                   s = a;
                }
             }
          }
          break;
-      case F_RTRIM_A_S:
+      case F_RTRIM4_A_S:
          /* S$ = RTRIM$( A$ ) */
          {
             /* P1ANY */
@@ -2363,13 +2736,13 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                else
                {
                   a = i + 1;
-                  memcpy(S, A, a);
+                  bwb_memcpy(S, A, a);
                   s = a;
                }
             }
          }
          break;
-      case F_TRIM_A_S:
+      case F_TRIM4_A_S:
          /* S$ = TRIM$( A$ ) */
          {
             /* P1ANY */
@@ -2397,7 +2770,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                {
                   A += i;
                   a -= i;
-                  memcpy(S, A, a);
+                  bwb_memcpy(S, A, a);
                   s = a;
                   /* RTRIM */
                   A = S;
@@ -2428,7 +2801,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                      else
                      {
                         a = i + 1;
-                        /* memcpy( S,
+                        /* bwb_memcpy( S,
                          * A, a ); */
                         s = a;
                      }
@@ -2443,14 +2816,64 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N = MAX(X, Y);
          }
          break;
+      case F_MAX_A_B_S:
+         /* S$ = MAX( A$, B$ ) */
+         {
+            StringType L;
+            StringType R;
+            
+            L.length = a;
+            R.length = b;
+            L.sbuffer = A;
+            R.sbuffer = B;
+            if( str_cmp( &L, &R ) >= 0 )
+            {
+               /* A >= B */
+               bwb_memcpy( S, A, a );
+               s = a;
+            }
+            else
+            {
+               /* A < B */
+               bwb_memcpy( S, B, b );
+               s = b;
+            }
+         }
+         break;
       case F_MIN_X_Y_N:
          /* N = MIN( X, Y ) */
          {
             N = MIN(X, Y);
          }
          break;
+      case F_MIN_A_B_S:
+         /* S$ = MIN( A$, B$ ) */
+         {
+            StringType L;
+            StringType R;
+            
+            L.length = a;
+            R.length = b;
+            L.sbuffer = A;
+            R.sbuffer = B;
+            if( str_cmp( &L, &R ) <= 0 )
+            {
+               /* A <= B */
+               bwb_memcpy( S, A, a );
+               s = a;
+            }
+            else
+            {
+               /* A > B */
+               bwb_memcpy( S, B, b );
+               s = b;
+            }
+         }
+         break;
       case F_FP_X_N:
+      case F_FRAC_X_N:
          /* N = FP( X ) */
+         /* N = FRAC( X ) */
          {
             BasicNumberType FP;
             BasicNumberType IP;
@@ -2657,15 +3080,17 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             /* P1BYT */
             if (a == 1)
             {
+               /* same as ASC(A$) */
                N = A[0];
             }
             else
             {
+               /* lookup Acronym */
                int             c;
                N = -1;  /* not found */
                for (c = 0; c < NUM_ACRONYMS; c++)
                {
-                  if (strcasecmp(AcronymTable[c].Name, A) == 0)
+                  if (bwb_stricmp(AcronymTable[c].Name, A) == 0)
                   {
                      /* found */
                      N = AcronymTable[c].Value;
@@ -2680,7 +3105,64 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
          }
          break;
-      case F_REPEAT_X_Y_S:
+      case F_RENAME_A_B_N:
+         /* N = RENAME( A$, B$ ) */
+         {
+            /* P1BYT | P2BYT */
+            if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+            {
+               strupper( A ); /* CBASIC-II: file names are always upper case */
+               strupper( B ); /* CBASIC-II: file names are always upper case */
+            }
+            if( rename( A, B ) )
+            {
+               /* ERROR -- return FALSE */
+               N = 0;
+            }
+            else
+            {
+               /* OK -- return TRUE */
+               N = -1;
+            }
+         }
+         break;
+      case F_SIZE_A_N:
+         /* N = SIZE( A$ ) */
+         {
+            /* P1BYT */
+            FILE * F;
+            
+            if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+            {
+               strupper( A ); /* CBASIC-II: file names are always upper case */
+            }
+
+            F = fopen( A, "rb" );
+            if( F != NULL )
+            {
+               long n;
+
+               fseek( F, 0, SEEK_END );
+               n = ftell( F );
+               fclose( F );
+
+               if( n > 0 )
+               {
+                  /* round up filesize to next whole kilobyte */
+                  n += 1023;
+                  n /= 1024;
+               }
+               else
+               {
+                  /* a zero-length file returns 0 */
+                  n = 0;
+               }
+               N = n;
+            }
+            /* a non-existing file returns 0 */
+         }
+         break;
+      case F_REPEAT4_X_Y_S:
          /* S$ = REPEAT$( X, Y ) ' X is count, Y is code */
          {
             /* P1LEN | P2BYT */
@@ -2690,12 +3172,12 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
             else
             {
-               memset(S, (char) y, x);
+               bwb_memset(S, (char) y, x);
                s = x;
             }
          }
          break;
-      case F_REPEAT_X_A_S:
+      case F_REPEAT4_X_A_S:
          /* S$ = REPEAT$( X, A$ ) ' X is count, A$ is code */
          {
             /* P1LEN | P2BYT */
@@ -2705,7 +3187,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
             else
             {
-               memset(S, (char) A[0], x);
+               bwb_memset(S, (char) A[0], x);
                s = x;
             }
          }
@@ -2713,7 +3195,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       case F_FIX_X_N:
          /* N = FIX( X ) */
          {
-            N = rint(X);
+            /* N = bwb_rint(X); */
+            if( X < 0 )
+            {
+               N = -floor(-X);
+            }
+            else
+            {
+               N = floor(X);
+            }
          }
          break;
       case F_ABS_X_N:
@@ -2723,22 +3213,64 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_ATN_X_N:
+      case F_ATAN_X_N:
+      case F_ARCTAN_X_N:
          /* N = ATN( X ) */
+         /* N = ATAN( X ) */
+         /* N = ARCTAN( X ) */
          {
             N = atan(X);
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               N = N * 180 / PI;
+               N = FromRadiansToDegrees( N );
             }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               N = FromRadiansToGradians( N );
+            }
+         }
+         break;
+      case F_ATND_X_N:
+         /* N = ATND( X ) */
+         {
+            N = atan(X);
+            N = FromRadiansToDegrees( N );
+         }
+         break;
+      case F_ATNG_X_N:
+         /* N = ATNG( X ) */
+         {
+            N = atan(X);
+            N = FromRadiansToGradians( N );
          }
          break;
       case F_COS_X_N:
          /* N = COS( X ) */
          {
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               X = X * PI / 180;
+               X = FromDegreesToRadians( X );
             }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               X = FromGradiansToRadians( X );
+            }
+            N = cos(X);
+         }
+         break;
+      case F_COSD_X_N:
+         /* N = COSD( X ) */
+         {
+            X = FromDegreesToRadians( X );
+            N = cos(X);
+         }
+         break;
+      case F_COSG_X_N:
+         /* N = COSG( X ) */
+         {
+            X = FromGradiansToRadians( X );
             N = cos(X);
          }
          break;
@@ -2754,8 +3286,26 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N = floor(X);
          }
          break;
+      case F_FLOAT_X_N:
+      case F_INT5_X_N:
+         /* N = FLOAT( X ) */
+         /* N = INT%( X ) */
+         {
+            N = bwb_rint(X);
+         }
+         break;
+      case F_INITIALIZE_N:
+         /* INITIALIZE */
+         {
+            N = 0;
+         }
+         break;
       case F_LOG_X_N:
+      case F_LN_X_N:
+      case F_LOGE_X_N:
          /* N = LOG( X ) */
+         /* N = LN( X ) */
+         /* N = LOGE( X ) */
          {
             /* P1GTZ */
             N = log(X);
@@ -2796,15 +3346,36 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       case F_SIN_X_N:
          /* N = SIN( X ) */
          {
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               X = X * PI / 180;
+               X = FromDegreesToRadians( X );
+            }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               X = FromGradiansToRadians( X );
             }
             N = sin(X);
          }
          break;
+      case F_SIND_X_N:
+         /* N = SIND( X ) */
+         {
+            X = FromDegreesToRadians( X );
+            N = sin(X);
+         }
+         break;
+      case F_SING_X_N:
+         /* N = SING( X ) */
+         {
+            X = FromGradiansToRadians( X );
+            N = sin(X);
+         }
+         break;
       case F_SQR_X_N:
+      case F_SQRT_X_N:
          /* N = SQR( X ) */
+         /* N = SQRT( X ) */
          {
             /* P1GEZ */
             N = sqrt(X);
@@ -2813,10 +3384,29 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
       case F_TAN_X_N:
          /* N = TAN( X ) */
          {
-            if (OptionFlags & OPTION_ANGLE_DEGREES)
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_DEGREES)
             {
-               X = X * PI / 180;
+               X = FromDegreesToRadians( X );
             }
+            else
+            if (My->CurrentVersion->OptionFlags & OPTION_ANGLE_GRADIANS)
+            {
+               X = FromGradiansToRadians( X );
+            }
+            N = tan(X);
+         }
+         break;
+      case F_TAND_X_N:
+         /* N = TAND( X ) */
+         {
+            X = FromDegreesToRadians( X );
+            N = tan(X);
+         }
+         break;
+      case F_TANG_X_N:
+         /* N = TANG( X ) */
+         {
+            X = FromGradiansToRadians( X );
             N = tan(X);
          }
          break;
@@ -2824,12 +3414,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* S$ = SPC( X ) */
          {
             /* P1ANY */
-            /* SPECIAL RULES APPLY.  PART OF PRINT
-             * COMMAND. WIDTH > 0 */
-            X = rint(X);
+            /* SPECIAL RULES APPLY.  PART OF PRINT COMMAND.  WIDTH > 0 */
+            X = bwb_rint(X);
             if (X < 1 || X > 255)
             {
-               bwb_Warning_Overflow("*** WARNING: INVALID SPC() ***");
+               if( bwb_Warning_Overflow("*** WARNING: INVALID SPC() ***") )
+               {
+                  /* ERROR */
+               }
+               /* CONTINUE */
                X = 1;
             }
             x = (int) X;
@@ -2842,12 +3435,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* S$ = TAB( X ) */
          {
             /* P1ANY */
-            /* SPECIAL RULES APPLY.  PART OF PRINT
-             * COMMAND. WIDTH > 0 */
-            X = rint(X);
+            /* SPECIAL RULES APPLY.  PART OF PRINT COMMAND.  WIDTH > 0 */
+            X = bwb_rint(X);
             if (X < 1 || X > 255)
             {
-               bwb_Warning_Overflow("*** WARNING: INVALID TAB() ***");
+               if( bwb_Warning_Overflow("*** WARNING: INVALID TAB() ***") )
+               {
+                  /* ERROR */
+               }
+               /* CONTINUE */
                X = 1;
             }
             x = (int) X;
@@ -2860,42 +3456,87 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          /* N = POS */
          {
             /* PNONE */
-            N = dev_table[CONSOLE_FILE_NUMBER].col;
+            N = My->SYSOUT->col;
+         }
+         break;
+      case F_COUNT_N:
+         /* N = COUNT */
+         /* COUNT = POS - 1 */
+         {
+            /* PNONE */
+            N = My->SYSOUT->col;
+            N--;
          }
          break;
       case F_POS_X_N:
          /* N = POS( X ) */
          {
-            /* PDEV1 */
-            N = dev_table[x].col;
+            /* P1DEV */
+            if( x == 0 )
+            {
+               N = My->SYSOUT->col;
+            }
+            else
+            if( x < 0 )
+            {
+               N = My->SYSPRN->col;
+            }
+            else
+            {
+               FileType * F;
+               F = find_file_by_number( x );
+               if( F == NULL )
+               {
+                  IsError = 'X';
+               }
+               else
+               {
+                  N = F->col;
+               }
+            }
          }
          break;
-      case F_INPUT_X_Y_S:
+      case F_INPUT4_X_Y_S:
          /* S$ = INPUT$( X, Y )  */
          {
             /* P1LEN|P2DEV */
+            if( y <= 0 )
             {
-               if ((dev_table[y].mode & DEVMODE_READ) == 0)
+               IsError = 'Y';
+            }
+            else
+            {
+               FileType * F;
+   
+               F = find_file_by_number( y );
+               if( F == NULL )
                {
                   IsError = 'Y';
                }
                else
-               if (x == 0)
                {
-                  /* empty string */
-               }
-               else
-               {
-                  FILE           *fp;
-                  fp = dev_table[y].cfp;
-                  if (fp == NULL)
+                  if ((F->mode & DEVMODE_READ) == 0)
                   {
                      IsError = 'Y';
                   }
                   else
+                  if (x == 0)
                   {
-                     s = fread(S, 1, x, fp);
-                     s = MAX(s, 0); /* if( s < 0 ) s = 0; */
+                     /* empty string */
+                  }
+                  else
+                  {
+                     FILE           *fp;
+                     fp = F->cfp;
+                     if (fp == NULL)
+                     {
+                        IsError = 'Y';
+                     }
+                     else
+                     {
+                        s = fread(S, 1, x, fp);
+                        s = MAX(s, 0); /* if( s < 0 ) s = 0; */
+                     }
                   }
                }
             }
@@ -2918,42 +3559,55 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_ERR_N:
+      case F_ERRN_N:
          /* N = ERR */
+         /* N = ERRN */
          {
             /* PNONE */
-            N = err_number;
+            N = My->err_number;
          }
          break;
       case F_ERL_N:
+      case F_ERRL_N:
          /* N = ERL */
+         /* N = ERRL */
          {
             /* PNONE */
-            if( err_line != NULL )
+            if( My->err_line != NULL )
             {
-                N = err_line->number;
+                N = My->err_line->number;
             }
          }
          break;
-      case F_ERR_S:
+      case F_ERR4_S:
+      case F_ERROR4_S:
          /* S = ERR$ */
+         /* S = ERROR$ */
          {
             /* PNONE */
-            s = strlen(ErrMsg);
+            s = bwb_strlen(My->ErrMsg);
             if (s > 0)
             {
-               strcpy(S, ErrMsg);
+               bwb_strcpy(S, My->ErrMsg);
             }
          }
          break;
 
 
          /********************************************************************************************
-                                                      **
-                                                      **  Keep the platform specific functions together.  They should all call  bwx_* functions.
-                                                      **
-                                                      *********************************************************************************************/
+         **  Keep the platform specific functions together.
+         *********************************************************************************************/
       case F_INP_X_N:
+      case F_PIN_X_N:
          /* N = INP( X ) */
+         /* N = PIN( X ) */
+         {
+            /* P1BYT */
+            IsError = 0xFF;
+         }
+         break;
+      case F_PDL_X_N:
+         /* N = PDL( X ) */
          {
             /* P1BYT */
             IsError = 0xFF;
@@ -2984,14 +3638,22 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_PEEK_X_N:
+      case F_EXAM_X_N:
+      case F_FETCH_X_N:
          /* N = PEEK( X ) */
+         /* N = EXAM( X ) */
+         /* N = FETCH( X ) */
          {
             /* P1INT */
             IsError = 0xFF;
          }
          break;
       case F_POKE_X_Y_N:
+      case F_FILL_X_Y_N:
+      case F_STUFF_X_Y_N:
          /* POKE X, Y */
+         /* FILL X, Y */
+         /* STUFF X, Y */
          {
             /* P1NUM|P2NUM */
             /* P1INT|P2BYT */
@@ -2999,25 +3661,27 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_CLS_N:
+      case F_HOME_N:
          /* CLS */
+         /* HOME */
          {
             /* PNONE */
-            switch (OptionTerminalType)
+            switch (My->OptionTerminalType)
             {
             case C_OPTION_TERMINAL_NONE:
                break;
-            case C_OPTION_TERMINAL_ADM_3A:
-               fprintf(stdout, "%c", 26);
+            case C_OPTION_TERMINAL_ADM:
+               fprintf(My->SYSOUT->cfp, "%c", 26);
                break;
             case C_OPTION_TERMINAL_ANSI:
-               fprintf(stdout, "%c[2J", 27);
-               fprintf(stdout, "%c[%d;%dH", 27, 1, 1);
+               fprintf(My->SYSOUT->cfp, "%c[2J", 27);
+               fprintf(My->SYSOUT->cfp, "%c[%d;%dH", 27, 1, 1);
                break;
             default:
                IsError = 0xFF;
                break;
             }
-            fflush(stdout);
+            fflush(My->SYSOUT->cfp);
          }
          break;
       case F_LOCATE_X_Y_N:
@@ -3025,21 +3689,69 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1NUM|P2NUM */
             /* P1BYT|P2BYT */
-            switch (OptionTerminalType)
+            /* X is 1 based */
+            /* Y is 1 based */
+            switch (My->OptionTerminalType)
             {
             case C_OPTION_TERMINAL_NONE:
                break;
-            case C_OPTION_TERMINAL_ADM_3A:
-               fprintf(stdout, "%c=%c%c", 27, x + 32, y + 32);
+            case C_OPTION_TERMINAL_ADM:
+               fprintf(My->SYSOUT->cfp, "%c=%c%c", 27, x + 32, y + 32);
                break;
             case C_OPTION_TERMINAL_ANSI:
-               fprintf(stdout, "%c[%d;%dH", 27, x, y);
+               fprintf(My->SYSOUT->cfp, "%c[%d;%dH", 27, x, y);
                break;
             default:
                IsError = 0xFF;
                break;
             }
-            fflush(stdout);
+            fflush(My->SYSOUT->cfp);
+         }
+         break;
+      case F_CUR_X_Y_S:
+         /* CUR X, Y */
+         {
+            /* P1NUM|P2NUM */
+            /* P1BYT|P2BYT */
+            x++; /* X is 0 based */
+            y++; /* Y is 0 based */
+            switch (My->OptionTerminalType)
+            {
+            case C_OPTION_TERMINAL_NONE:
+               break;
+            case C_OPTION_TERMINAL_ADM:
+               fprintf(My->SYSOUT->cfp, "%c=%c%c", 27, x + 32, y + 32);
+               break;
+            case C_OPTION_TERMINAL_ANSI:
+               fprintf(My->SYSOUT->cfp, "%c[%d;%dH", 27, x, y);
+               break;
+            default:
+               IsError = 0xFF;
+               break;
+            }
+            fflush(My->SYSOUT->cfp);
+            s = 0;
+         }
+         break;
+      case F_VTAB_X_N:
+         /* VTAB X  */
+         {
+            /* P1BYT */
+            switch (My->OptionTerminalType)
+            {
+            case C_OPTION_TERMINAL_NONE:
+               break;
+            case C_OPTION_TERMINAL_ADM:
+               fprintf(My->SYSOUT->cfp, "%c=%c%c", 27, x + 32, 1 + 32);
+               break;
+            case C_OPTION_TERMINAL_ANSI:
+               fprintf(My->SYSOUT->cfp, "%c[%d;%dH", 27, x, 1);
+               break;
+            default:
+               IsError = 0xFF;
+               break;
+            }
+            fflush(My->SYSOUT->cfp);
          }
          break;
       case F_COLOR_X_Y_N:
@@ -3047,54 +3759,114 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1NUM|P2NUM */
             /* P1BYT|P2BYT */
-            switch (OptionTerminalType)
+            switch (My->OptionTerminalType)
             {
             case C_OPTION_TERMINAL_NONE:
                break;
-            case C_OPTION_TERMINAL_ADM_3A:
+            case C_OPTION_TERMINAL_ADM:
                break;
             case C_OPTION_TERMINAL_ANSI:
-               fprintf(stdout, "%c[%d;%dm", 27, 30 + x, 40 + y);
+               fprintf(My->SYSOUT->cfp, "%c[%d;%dm", 27, 30 + x, 40 + y);
                break;
             default:
                IsError = 0xFF;
                break;
             }
-            fflush(stdout);
+            fflush(My->SYSOUT->cfp);
          }
          break;
       case F_FILES_N:
+      case F_CATALOG_N:
          /* FILES */
+         /* CATALOG */
          {
             /* PNONE */
+            VariableType *v; 
             char   Buffer[BasicStringLengthMax + 1];
-            struct bwb_variable *v; 
 
-            v = var_find(DEFVNAME_FILES); 
-            str_btoc(Buffer, var_getsval(v)); 
-            N = system(Buffer);
+            if( (v = var_find(DEFVNAME_FILES,0,FALSE)) == NULL )
+            {
+                bwb_strcpy(Buffer, DEF_FILES);
+            }
+            else
+            {
+               VariantType variant;
+               
+               if( var_get( v, &variant ) == FALSE )
+               {
+                  bwb_strcpy( Buffer, DEF_FILES );
+               }
+               else
+               {
+                  if( variant.TypeChar == '$' )
+                  {
+                     bwb_strcpy( Buffer, variant.Buffer );
+                     RELEASE( (&variant) );
+                  }
+                  else
+                  {
+                     bwb_strcpy( Buffer, DEF_FILES );
+                  }
+               }
+            }
+            N = system( Buffer );
          }
          break;
       case F_FILES_A_N:
+      case F_CATALOG_A_N:
          /* FILES A$ */
+         /* CATALOG A$ */
          {
             /* P1BYT */
+            VariableType *v; 
             char   Buffer[BasicStringLengthMax + 1];
-            struct bwb_variable *v; 
 
-            v = var_find(DEFVNAME_FILES); 
-            str_btoc(Buffer, var_getsval(v)); 
-            strcat(Buffer, " ");
-            strcat(Buffer, A);
+            if( (v = var_find(DEFVNAME_FILES,0,FALSE)) == NULL )
+            {
+                bwb_strcpy(Buffer, DEF_FILES);
+            }
+            else
+            {
+               VariantType variant;
+               
+               if( var_get( v, &variant ) == FALSE )
+               {
+                  bwb_strcpy( Buffer, DEF_FILES );
+               }
+               else
+               {
+                  if( variant.TypeChar == '$' )
+                  {
+                     bwb_strcpy( Buffer, variant.Buffer );
+                     RELEASE( (&variant) );
+                  }
+                  else
+                  {
+                     bwb_strcpy( Buffer, DEF_FILES );
+                  }
+               }
+            }
+            bwb_strcat(Buffer, " ");
+            bwb_strcat(Buffer, A);
             N = system(Buffer);
          }
          break;
       case F_FRE_N:
       case F_FRE_X_N:
       case F_FRE_A_N:
+      case F_FREE_N:
+      case F_FREE_X_N:
+      case F_FREE_A_N:
+      case F_MEM_N:
+      case F_TOP_N:
          /* N = FRE(    ) */
          /* N = FRE( X  ) */
          /* N = FRE( X$ ) */
+         /* N = FREE(    ) */
+         /* N = FREE( X  ) */
+         /* N = FREE( X$ ) */
+         /* N = MEM(    ) */
+         /* N = TOP(    ) */
          {
             N = 32000;  /* reasonable value */
          }
@@ -3144,7 +3916,9 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_KILL_A_N:
+      case F_UNSAVE_A_N:
          /* KILL A$ */
+         /* UNSAVE A$ */
          {
             /* P1BYT */
             N = remove(A);
@@ -3158,7 +3932,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             N = rename(A, B);
          }
          break;
-      case F_INPUT_X_S:
+      case F_INPUT4_X_S:
          /* S$ = INPUT$( X )  */
          {
             /* P1LEN */
@@ -3171,7 +3945,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
                for (s = 0; s < x; s++)
                {
                   int             c;
-                  c = getchar();
+                  c = fgetc( My->SYSIN->cfp );
                   if ((c == EOF) || (c == '\n') || (c == '\r'))
                   {
                      break;
@@ -3182,13 +3956,17 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             }
          }
          break;
-      case F_INKEY_S:
+      case F_INKEY4_S:
+      case F_KEY4_S:
+      case F_KEY_S:
          /* S$ = INKEY$ */
+         /* S$ = KEY$ */
+         /* S$ = KEY */
          {
             /* PNONE */
             int             c;
 
-            c = getchar();
+            c = fgetc( My->SYSIN->cfp );
             if (c < 0 || c > 255)
             {
                /* EOF */
@@ -3206,7 +3984,7 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1NUM */
             /* P1BYT */
-            LPRINT_NULLS = x;
+            My->LPRINT_NULLS = x;
             N = 0;
          }
          break;
@@ -3215,8 +3993,8 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* P1NUM */
             /* P1BYT */
-            LPRINT_WIDTH = x;
-            LPRINT_COLUMN = 1;
+            My->SYSPRN->width = x;
+            My->SYSPRN->col = 1;
             N = 0;
          }
          break;
@@ -3225,29 +4003,41 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          {
             /* PNONE */
             /* PNONE */
-            N = LPRINT_COLUMN;
+            N = My->SYSPRN->col;
          }
          break;
       case F_TRON_N:
+      case F_TRACE_N:
+      case F_FLOW_N:
          /* TRON */
+         /* TRACE */
+         /* FLOW */
          {
             /* PNONE */
             prn_xprintf("Trace is ON\n");
-            bwb_trace = TRUE;
+            My->bwb_trace = TRUE;
             N = 0;
          }
          break;
       case F_TROFF_N:
+      case F_NOTRACE_N:
+      case F_NOFLOW_N:
          /* TROFF */
+         /* NOTRACE */
+         /* NOFLOW */
          {
             /* PNONE */
             prn_xprintf("Trace is OFF\n");
-            bwb_trace = FALSE;
+            My->bwb_trace = FALSE;
             N = 0;
          }
          break;
       case F_RANDOMIZE_N:
+      case F_RAN_N:
+      case F_RANDOM_N:
          /* RANDOMIZE */
+         /* RAN */
+         /* RANDOM */
          {
             /* PNONE */
             /* USE THE CURRENT TIME AS THE SEED */
@@ -3259,11 +4049,15 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          }
          break;
       case F_RANDOMIZE_X_N:
+      case F_RAN_X_N:
+      case F_RANDOM_X_N:
          /* RANDOMIZE X */
+         /* RAN X */
+         /* RANDOM X */
          {
             /* P1NUM */
             /* P1ANY */
-            x = rint( X );
+            x = (int) bwb_rint( X );
             srand(x);
             N = 0;
          }
@@ -3274,31 +4068,30 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             IsError = 0xFF;
          }
       }
+   }
    /* sanity check */
    if (IsError == 0)
    {
-      if (f->ReturnType == STRING)
+      if (f->ReturnType == BasicStringSuffix)
       {
          /* STRING */
          if ( /* s < 0 || */ s > BasicStringLengthMax)
          {
             /* ERROR */
-            sprintf(bwb_ebuf, "INTERNAL ERROR (%s) INVALID STRING LENGTH", f->Name);
-            bwb_error(bwb_ebuf);
+            WARN_INTERNAL_ERROR;
             return NULL;
          }
          else
          if (S != RESULT_BUFFER)
          {
             /* ERROR */
-            sprintf(bwb_ebuf, "INTERNAL ERROR (%s) INVALID STRING BUFFER", f->Name);
-            bwb_error(bwb_ebuf);
+            WARN_INTERNAL_ERROR;
             return NULL;
          }
          else
          {
             RESULT_LENGTH = s;
-            RESULT_BUFFER[RESULT_LENGTH] = '\0';
+            RESULT_BUFFER[RESULT_LENGTH] = BasicNulChar;
          }
       }
       else
@@ -3307,10 +4100,8 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          if (isnan(N))
          {
             /* ERROR */
-            /* this means the parameters were not
-             * properly checked */
-            sprintf(bwb_ebuf, "INTERNAL ERROR (%s) NOT A NUMBER", f->Name);
-            bwb_error(bwb_ebuf);
+            /* this means the parameters were not properly checked */
+            WARN_INTERNAL_ERROR;
             return NULL;
          }
          else
@@ -3329,7 +4120,11 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
             {
                N = DBL_MAX;
             }
-            bwb_Warning_Overflow("*** Arithmetic Overflow ***");
+            if( bwb_Warning_Overflow("*** Arithmetic Overflow ***") )
+            {
+               /* ERROR */
+            }
+            /* CONTINUE */
          }
          RESULT_NUMBER = N;
       }
@@ -3338,8 +4133,8 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
    if (IsError == 0xFF)
    {
       /* NOT IMPLEMENTED ON THIS PLATFORM */
-      sprintf(bwb_ebuf, "%s IS NOT IMPLEMENTED ON THIS PLATFORM", f->Name);
-      bwb_Warning_AdvancedFeature(bwb_ebuf);
+      sprintf(My->bwb_ebuf, "%s IS NOT IMPLEMENTED ON THIS PLATFORM", f->Name);
+      bwb_Warning(73, My->bwb_ebuf); /* WARN_ADVANCED_FEATURE */
    }
    else
    if (IsError != 0)
@@ -3365,8 +4160,8 @@ fnc_intrinsic(int argc, struct bwb_variable * argv, int unique_id)
          sprintf(Buffer, "%s() #%d", f->Name, IsError);
          break;
       }
-      sprintf(bwb_ebuf, "ILLEGAL FUUNCTION CALL: %s", Buffer);
-      bwb_Warning_InvalidParameter(bwb_ebuf);
+      sprintf(My->bwb_ebuf, "ILLEGAL FUUNCTION CALL: %s", Buffer);
+      bwb_Warning(5, My->bwb_ebuf); /* WARN_ILLEGAL_FUNCTION_CALL */
    }
    return argv;      /* released by exp_function() in bwb_elx.c */
 }

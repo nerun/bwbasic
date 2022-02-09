@@ -1,6 +1,0 @@
-Test bwBASIC ON ERROR GOSUB statement                                           
-The next line will include an error                                             
-This is the error handler                                                       
-The error number is  4                                                          
-The error line   is  1040                                                       
-This is the line after the error                                                

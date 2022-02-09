@@ -21,11 +21,4 @@ A$, B$, AND C$ INITIALIZED TO 'AAAAA', 'BBBBB', AND
 'CCCCC', RESPECTIVELY. ABOUT TO EXECUTE 'READ A$,,C$'                           
 FROM 'DATA ABC,DEF,GHI'.                                                        
                                                                                 
-RESULTING VALUES:                                                               
-A$=ABC                                                                          
-B$=BBBBB                                                                        
-C$=DEF                                                                          
-                                                                                
-               END TEST                                                         
-                                                                                
-END PROGRAM 106                                                                 
+ERROR in line 270: Variable Not Declared                                        

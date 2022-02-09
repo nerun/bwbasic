@@ -1,0 +1,1060 @@
+ *                                                                              
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? A                    
+A                                                                               
+            PRINCIPAL ON A LOAN                                                 
+      Calculates an initial amount borrowed.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:          $0.00                                  
+ (B) Annual Interest rate:                0.00%                                 
+ (C) Payments per Year:                   0                                     
+ (D) Number of Years:                     0.0                                   
+                                                                                
+                                                                                
+ Please enter each missing variable using the menu to select each item.         
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? A                    
+A                                                                               
+ *            PRINCIPAL ON A LOAN                                               
+      Calculates an initial amount borrowed.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Annual Interest rate:                0.00%                                 
+ (C) Payments per Year:                   0                                     
+ (D) Number of Years:                     0.0                                   
+                                                                                
+                                                                                
+ Please enter each missing variable using the menu to select each item.         
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? B                    
+B                                                                               
+ *            PRINCIPAL ON A LOAN                                               
+      Calculates an initial amount borrowed.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Annual Interest rate:                3.50%                                 
+ (C) Payments per Year:                   0                                     
+ (D) Number of Years:                     0.0                                   
+                                                                                
+                                                                                
+ Please enter each missing variable using the menu to select each item.         
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *            PRINCIPAL ON A LOAN                                               
+      Calculates an initial amount borrowed.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Annual Interest rate:                3.50%                                 
+ (C) Payments per Year:                  12                                     
+ (D) Number of Years:                     0.0                                   
+                                                                                
+                                                                                
+ Please enter each missing variable using the menu to select each item.         
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? D                    
+D                                                                               
+ *            PRINCIPAL ON A LOAN                                               
+      Calculates an initial amount borrowed.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Annual Interest rate:                3.50%                                 
+ (C) Payments per Year:                  12                                     
+ (D) Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ The calculated PRINCIPAL amount is:       $222694.98                           
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+                                                                                
+       *** LOAN PRINCIPAL AMOUNT ***                                            
+                                                                                
+ This module will calculate the amount of money initially borrowed.             
+ You must enter the amount of the payments, the interest rate, the              
+ number of payments within a year and the number of years over which            
+ the loan is going to be amortized.                                             
+                                                                                
+ Using the menu, select each item that needs to be entered.  As soon            
+ as you've entered the needed variables, the program will perform the           
+ calculation and display the results.  To try a different variable,             
+ use the menu to select which one you want to change.  Enter the new            
+ value and the calculation will be redone automatically for you.                
+                                                                                
+ You cannot enter a negative number for any variable in this program.           
+ Do not use any commas when entering variables.  Press the return               
+ after entering each variable.                                                  
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *            PRINCIPAL ON A LOAN                                               
+      Calculates an initial amount borrowed.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Annual Interest rate:                3.50%                                 
+ (C) Payments per Year:                  12                                     
+ (D) Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ The calculated PRINCIPAL amount is:       $222694.98                           
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? B                    
+B                                                                               
+          REGULAR PAYMENT                                                       
+    Calculates the amount of each payment.                                      
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Annual Interest rate:                3.50%                                 
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Payments per Year:                  12                                     
+ (D) Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ The calculated PAYMENT amount is:          $1000.00                            
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+         ** REGULAR PAYMENT **                                                  
+                                                                                
+ This module will calculate the amount of the regular payment needed to         
+ pay off a loan over a given time.  You must enter the amount borrowed,         
+ the interest rate, the number of payments per year and the number of years     
+ or term of the loan.                                                           
+                                                                                
+ Using the menu, select each item that needs to be entered.  As soon            
+ as you've entered the needed variables, the program will perform the           
+ calculation and display the results.  To try a different variable,             
+ use the menu to select which one you want to change.  Enter the new            
+ value and the calculation will be redone automatically for you.                
+                                                                                
+ You cannot enter a negative number for any variable in this program.           
+ Do not use any commas when entering variables.  Press the return               
+ after entering each variable.                                                  
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *          REGULAR PAYMENT                                                     
+    Calculates the amount of each payment.                                      
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Annual Interest rate:                3.50%                                 
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Payments per Year:                  12                                     
+ (D) Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ The calculated PAYMENT amount is:          $1000.00                            
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+          LAST PAYMENT ON A LOAN                                                
+   Finds the final payment at the end of the term.                              
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Number of Years:                    30.0                                   
+ (D) Annual Interest rate:                3.50%                                 
+ (E) Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ Please wait.  This calculation can take quite a while to run.                  
+                                                                                
+ The calculated LAST PAYMENT amount is:           $1000.20                      
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+        **  LAST PAYMENT ON A LOAN  **                                          
+                                                                                
+ Because of rounding errors, the last payment on a loan is usually slightly     
+ different than the regular payment.  This module actually does a com-          
+ plete loan amortization table in memory and calculates the exact amount        
+ of the final payment.  You must enter the regular payment, the principal,      
+ the term (in years) the interest rate and the number of payments per           
+ year.  If any of these variables need to be calculated, use the other          
+ modules first and then select this module from the MAIN MENU.                  
+                                                                                
+ Using the menu, select each item that needs to be entered.  As soon            
+ as you've entered the needed variables, the program will perform the           
+ calculation and display the results.  To try a different variable,             
+ use the menu to select which one you want to change.  Enter the new            
+ value and the calculation will be redone automatically for you.                
+                                                                                
+ You cannot enter a negative number for any variable in this program.           
+ Do not use any commas when entering variables.  Press the return               
+ after entering each variable.                                                  
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *          LAST PAYMENT ON A LOAN                                              
+   Finds the final payment at the end of the term.                              
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Number of Years:                    30.0                                   
+ (D) Annual Interest rate:                3.50%                                 
+ (E) Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ Please wait.  This calculation can take quite a while to run.                  
+                                                                                
+ The calculated LAST PAYMENT amount is:           $1000.20                      
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? D                    
+D                                                                               
+             REMAINING BALANCE ON A LOAN                                        
+  Finds the balance after a specified number of payments.                       
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Payments per Year:                  12                                     
+ (D) Annual Interest rate:                3.50%                                 
+ (E) Last Payment made (#,year):          0, 0                                  
+ --- Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ Please enter each missing variable using the menu to select each item.         
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? E                    
+E                                                                               
+ Now enter the year number to calculate remaining balance.... 5                 
+ *             REMAINING BALANCE ON A LOAN                                      
+  Finds the balance after a specified number of payments.                       
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Payments per Year:                  12                                     
+ (D) Annual Interest rate:                3.50%                                 
+ (E) Last Payment made (#,year):          6, 5                                  
+ --- Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ Please wait.  This calculation can take quite a while to run.                  
+                                                                                
+ The calculated REMAINING BALANCE amount is:         $202229.89                 
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+                                                                                
+      **  REMAINING BALANCE ON A LOAN  **                                       
+                                                                                
+ This module will calculate the amount remaining on the principal of a          
+ loan after a specific number of payments have been made.  Typically,           
+ this would be needed in the event that it was desired to pay off a loan        
+ early.  The module actually does a loan amortization table in memory           
+ and stops at the payment you have specified.  The balance of the               
+ PRINCIPAL is then displayed.                                                   
+                                                                                
+ Using the menu, select each item that needs to be entered.  As soon            
+ as you've entered the needed variables, the program will perform the           
+ calculation and display the results.  To try a different variable,             
+ use the menu to select which one you want to change.  Enter the new            
+ value and the calculation will be redone automatically for you.                
+                                                                                
+ You cannot enter a negative number for any variable in this program.           
+ Do not use any commas when entering variables.  Press the return               
+ after entering each variable.                                                  
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *             REMAINING BALANCE ON A LOAN                                      
+  Finds the balance after a specified number of payments.                       
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Payments per Year:                  12                                     
+ (D) Annual Interest rate:                3.50%                                 
+ (E) Last Payment made (#,year):          6, 5                                  
+ --- Number of Years:                    30.0                                   
+                                                                                
+                                                                                
+ Please wait.  This calculation can take quite a while to run.                  
+                                                                                
+ The calculated REMAINING BALANCE amount is:         $202229.89                 
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? E                    
+E                                                                               
+           TERM OF A LOAN                                                       
+   Finds the period of time needed to repay.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Annual Interest rate:                3.50%                                 
+ (D) Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ The calculated TERM OF LOAN is:   30.0 years                                   
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+                                                                                
+     **  TERM OF A LOAN  **                                                     
+                                                                                
+ This module will determine the time (in years) needed to repay a loan          
+ for a given set of variables.  For example, this could be used to see          
+ what effect changing the payment or the interest would have on the             
+ period required to repay the loan.  The program will not allow an entry        
+ that would result in the loan being under-amortized such as would happen       
+ in the event that the payment was too small to ever repay the loan.            
+                                                                                
+ Using the menu, select each item that needs to be entered.  As soon            
+ as you've entered the needed variables, the program will perform the           
+ calculation and display the results.  To try a different variable,             
+ use the menu to select which one you want to change.  Enter the new            
+ value and the calculation will be redone automatically for you.                
+                                                                                
+ You cannot enter a negative number for any variable in this program.           
+ Do not use any commas when entering variables.  Press the return               
+ after entering each variable.                                                  
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *           TERM OF A LOAN                                                     
+   Finds the period of time needed to repay.                                    
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Amount of Principal:           $222694.98                                  
+ (C) Annual Interest rate:                3.50%                                 
+ (D) Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ The calculated TERM OF LOAN is:   30.0 years                                   
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? F                    
+F                                                                               
+                ANNUAL INTEREST RATE                                            
+   Finds the interest rate on a specific loan.                                  
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ Please wait.  This calculation can take a while to run.                        
+                                                                                
+ The calculated INTEREST RATE is:      3.50%                                    
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+                                                                                
+      **  ANNUAL INTEREST RATE ON A LOAN  **                                    
+                                                                                
+ This module will calculate the interest rate on a loan given a specific        
+ set of variables.  This is useful if the interest rate is unknown or if        
+ it is desired to determine the impact on interest of changes in other          
+ variables.  The program cannot calculate interest rates that are greater       
+ than 25%.                                                                      
+                                                                                
+ Using the menu, select each item that needs to be entered.  As soon            
+ as you've entered the needed variables, the program will perform the           
+ calculation and display the results.  To try a different variable,             
+ use the menu to select which one you want to change.  Enter the new            
+ value and the calculation will be redone automatically for you.                
+                                                                                
+ You cannot enter a negative number for any variable in this program.           
+ Do not use any commas when entering variables.  Press the return               
+ after entering each variable.                                                  
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *                                                                              
+                ANNUAL INTEREST RATE                                            
+   Finds the interest rate on a specific loan.                                  
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ Please wait.  This calculation can take a while to run.                        
+                                                                                
+ The calculated INTEREST RATE is:      3.50%                                    
+                                                                                
+ The calculated amount above will be automatically recalculated anytime you     
+ change one of the VARIABLES.  Use the menu to select.                          
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? G                    
+G                                                                               
+      LOAN AMORTIZATION TABLE                                                   
+  Provides complete loan progress chart.                                        
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Annual Interest rate:                3.50%                                 
+ --- Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ THE VARIABLES MUST BE PRECISELY CALCULATED FOR THE TABLE TO BE CORRECT.        
+                                                                                
+ Do you want to change any of the above VARIABLES?                              
+ ENTER (Y)ES or (N)O or ...                                                     
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+       **  LOAN AMORTIZATION TABLE  **                                          
+                                                                                
+ This module will show the amount of interest and principal paid for            
+ each payment on a loan.  This listing can be displayed on the console          
+ screen only or it can be listed to a printer simultaneously.  Since            
+ the table can only be accurate if the variables are precisely calculated,      
+ you have to use other modules to make changes to the variables before          
+ you can run the amortization table module.  Selecting an item from             
+ the menu to be changed will automatically chain you into the appropriate       
+ module.                                                                        
+                                                                                
+ If the printer is selected, you will be asked for information to go            
+ on the title block on the printer.  This information will be saved             
+ and does not have to be reentered if you go to another module and then         
+ return to the amortization module.                                             
+                                                                                
+ You should check the printer to be sure it is ready prior to trying            
+ to send a listing to the printer.  If the printer is not ready, the            
+ program will display a message and the program will stop.  If the              
+ printer cannot be made ready, you will have to abort the program using         
+ the ^C key.                                                                    
+                                                                                
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *                                                                              
+      LOAN AMORTIZATION TABLE                                                   
+  Provides complete loan progress chart.                                        
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Annual Interest rate:                3.50%                                 
+ --- Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ THE VARIABLES MUST BE PRECISELY CALCULATED FOR THE TABLE TO BE CORRECT.        
+                                                                                
+ Do you want to change any of the above VARIABLES?                              
+ ENTER (Y)ES or (N)O or ...                                                     
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? G                    
+G                                                                               
+      LOAN AMORTIZATION TABLE                                                   
+  Provides complete loan progress chart.                                        
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Annual Interest rate:                3.50%                                 
+ --- Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ THE VARIABLES MUST BE PRECISELY CALCULATED FOR THE TABLE TO BE CORRECT.        
+                                                                                
+ Do you want to change any of the above VARIABLES?                              
+ ENTER (Y)ES or (N)O or ...                                                     
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? N                    
+N                                                                               
+ Do you want this run to go to the printer?  (Enter Y or N) ? N                 
+No                                                                              
+                                                                                
+                                                                                
+ Do you want to display annual totals only?  (Enter Y or N) ? N                 
+No                                                                              
+                                                                                
+                                                                                
+ Do you want to start with a year other than 1?  (Y or N) ? Y                   
+Yes                                                                             
+ Please enter the year you want to start with..... 25                           
+ * *********************  LOAN AMORTIZATION TABLE  ***********************      
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+   289            $189.15           $810.85              $64043.02              
+   290            $186.79           $813.21              $63229.81              
+   291            $184.42           $815.58              $62414.23              
+   292            $182.04           $817.96              $61596.27              
+   293            $179.65           $820.35              $60775.92              
+   294            $177.26           $822.74              $59953.18              
+   295            $174.86           $825.14              $59128.04              
+   296            $172.45           $827.55              $58300.49              
+   297            $170.04           $829.96              $57470.53              
+   298            $167.62           $832.38              $56638.15              
+   299            $165.19           $834.81              $55803.34              
+   300            $162.76           $837.24              $54966.10              
+                                                                                
+*YEAR: 25        $2112.23          $9887.77              $54966.10              
+                                                                                
+                                                                                
+DISPLAY HAS BEEN PAUSED.  SELECT: (D)ISABLE PAUSE, (C)ONTINUE, OR (A)BORT.      
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *********************  LOAN AMORTIZATION TABLE  ***********************        
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+   301            $160.31           $839.69              $54126.41              
+   302            $157.87           $842.13              $53284.28              
+   303            $155.41           $844.59              $52439.69              
+   304            $152.95           $847.05              $51592.64              
+   305            $150.48           $849.52              $50743.12              
+   306            $148.00           $852.00              $49891.12              
+   307            $145.51           $854.49              $49036.63              
+   308            $143.02           $856.98              $48179.65              
+   309            $140.52           $859.48              $47320.17              
+   310            $138.01           $861.99              $46458.18              
+   311            $135.50           $864.50              $45593.68              
+   312            $132.98           $867.02              $44726.66              
+                                                                                
+*YEAR: 26        $1760.56         $10239.44              $44726.66              
+                                                                                
+                                                                                
+DISPLAY HAS BEEN PAUSED.  SELECT: (D)ISABLE PAUSE, (C)ONTINUE, OR (A)BORT.      
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *********************  LOAN AMORTIZATION TABLE  ***********************        
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+   313            $130.45           $869.55              $43857.11              
+   314            $127.91           $872.09              $42985.02              
+   315            $125.37           $874.63              $42110.39              
+   316            $122.82           $877.18              $41233.21              
+   317            $120.26           $879.74              $40353.47              
+   318            $117.70           $882.30              $39471.17              
+   319            $115.12           $884.88              $38586.29              
+   320            $112.54           $887.46              $37698.83              
+   321            $109.95           $890.05              $36808.78              
+   322            $107.36           $892.64              $35916.14              
+   323            $104.75           $895.25              $35020.89              
+   324            $102.14           $897.86              $34123.03              
+                                                                                
+*YEAR: 27        $1396.37         $10603.63              $34123.03              
+                                                                                
+                                                                                
+DISPLAY HAS BEEN PAUSED.  SELECT: (D)ISABLE PAUSE, (C)ONTINUE, OR (A)BORT.      
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *********************  LOAN AMORTIZATION TABLE  ***********************        
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+   325             $99.52           $900.48              $33222.55              
+   326             $96.90           $903.10              $32319.45              
+   327             $94.26           $905.74              $31413.71              
+   328             $91.62           $908.38              $30505.33              
+   329             $88.97           $911.03              $29594.30              
+   330             $86.32           $913.68              $28680.62              
+   331             $83.65           $916.35              $27764.27              
+   332             $80.98           $919.02              $26845.25              
+   333             $78.30           $921.70              $25923.55              
+   334             $75.61           $924.39              $24999.16              
+   335             $72.91           $927.09              $24072.07              
+   336             $70.21           $929.79              $23142.28              
+                                                                                
+*YEAR: 28        $1019.25         $10980.75              $23142.28              
+                                                                                
+                                                                                
+DISPLAY HAS BEEN PAUSED.  SELECT: (D)ISABLE PAUSE, (C)ONTINUE, OR (A)BORT.      
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *********************  LOAN AMORTIZATION TABLE  ***********************        
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+   337             $67.50           $932.50              $22209.78              
+   338             $64.78           $935.22              $21274.56              
+   339             $62.05           $937.95              $20336.61              
+   340             $59.31           $940.69              $19395.92              
+   341             $56.57           $943.43              $18452.49              
+   342             $53.82           $946.18              $17506.31              
+   343             $51.06           $948.94              $16557.37              
+   344             $48.29           $951.71              $15605.66              
+   345             $45.52           $954.48              $14651.18              
+   346             $42.73           $957.27              $13693.91              
+   347             $39.94           $960.06              $12733.85              
+   348             $37.14           $962.86              $11770.99              
+                                                                                
+*YEAR: 29         $628.71         $11371.29              $11770.99              
+                                                                                
+                                                                                
+DISPLAY HAS BEEN PAUSED.  SELECT: (D)ISABLE PAUSE, (C)ONTINUE, OR (A)BORT.      
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *********************  LOAN AMORTIZATION TABLE  ***********************        
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+   349             $34.33           $965.67              $10805.32              
+   350             $31.51           $968.49               $9836.83              
+   351             $28.69           $971.31               $8865.52              
+   352             $25.86           $974.14               $7891.38              
+   353             $23.02           $976.98               $6914.40              
+   354             $20.17           $979.83               $5934.57              
+   355             $17.31           $982.69               $4951.88              
+   356             $14.44           $985.56               $3966.32              
+   357             $11.57           $988.43               $2977.89              
+   358              $8.69           $991.31               $1986.58              
+   359              $5.79           $994.21                $992.37              
+   360              $2.89           $992.37                  $0.00              
+                                                                                
+*YEAR: 30         $224.27         $11770.99                  $0.00              
+                                                                                
+                                                                                
+DISPLAY HAS BEEN PAUSED.  SELECT: (D)ISABLE PAUSE, (C)ONTINUE, OR (A)BORT.      
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? C                    
+C                                                                               
+ *********************  LOAN AMORTIZATION TABLE  ***********************        
+ PRINCIPAL AMOUNT:       $222694.98  PAYMENT AMOUNT:       $1000.00             
+ TERM IN YEARS:               30.0   INTEREST RATE:            3.50%            
+ ***********************************************************************        
+ PAYMENT #       INTEREST         PRINCIPAL        BALANCE AFTER PAYMENT        
+ -----------------------------------------------------------------------        
+                                                                                
+*TOTALS:       $137300.28        $222694.98                                     
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+ PRESS (Y) TO RETURN TO MENU.                                                   
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? Y                    
+Y                                                                               
+      LOAN AMORTIZATION TABLE                                                   
+  Provides complete loan progress chart.                                        
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Annual Interest rate:                3.50%                                 
+ --- Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ THE VARIABLES MUST BE PRECISELY CALCULATED FOR THE TABLE TO BE CORRECT.        
+                                                                                
+ Do you want to change any of the above VARIABLES?                              
+ ENTER (Y)ES or (N)O or ...                                                     
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? H                    
+H                                                                               
+       **  LOAN AMORTIZATION TABLE  **                                          
+                                                                                
+ This module will show the amount of interest and principal paid for            
+ each payment on a loan.  This listing can be displayed on the console          
+ screen only or it can be listed to a printer simultaneously.  Since            
+ the table can only be accurate if the variables are precisely calculated,      
+ you have to use other modules to make changes to the variables before          
+ you can run the amortization table module.  Selecting an item from             
+ the menu to be changed will automatically chain you into the appropriate       
+ module.                                                                        
+                                                                                
+ If the printer is selected, you will be asked for information to go            
+ on the title block on the printer.  This information will be saved             
+ and does not have to be reentered if you go to another module and then         
+ return to the amortization module.                                             
+                                                                                
+ You should check the printer to be sure it is ready prior to trying            
+ to send a listing to the printer.  If the printer is not ready, the            
+ program will display a message and the program will stop.  If the              
+ printer cannot be made ready, you will have to abort the program using         
+ the ^C key.                                                                    
+                                                                                
+                                                                                
+ PRESS ANY KEY TO RETURN TO THE MENU. ?                                         
+ *                                                                              
+      LOAN AMORTIZATION TABLE                                                   
+  Provides complete loan progress chart.                                        
+                                                                                
+ Variables needed for calculation:                                              
+                                                                                
+       VARIABLE                         CURRENT VALUE                           
+ (A) Amount of Regular Payment:       $1000.00                                  
+ (B) Number of Years:                    30.0                                   
+ (C) Amount of Principal:           $222694.98                                  
+ (D) Annual Interest rate:                3.50%                                 
+ --- Payments per Year:                  12                                     
+                                                                                
+                                                                                
+ THE VARIABLES MUST BE PRECISELY CALCULATED FOR THE TABLE TO BE CORRECT.        
+                                                                                
+ Do you want to change any of the above VARIABLES?                              
+ ENTER (Y)ES or (N)O or ...                                                     
+                                                                                
+ PRESS (H) for HELP.                                                            
+ PRESS (M) to return to the MAIN MENU.                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? M                    
+M                                                                               
+                                                                                
+           *************** MAIN MENU ***************                            
+   This is a program for LOAN CALCULATIONS.  Please select the                  
+             module you would like to run below.                                
+                                                                                
+      (Press the corresponding letter from the menu.)                           
+                                                                                
+  (A)  LOAN PRINCIPAL AMOUNT                                                    
+  (B)  REGULAR LOAN PAYMENT AMOUNT                                              
+  (C)  LAST PAYMENT ON A LOAN                                                   
+  (D)  REMAINING BALANCE ON A LOAN                                              
+  (E)  TERM OF A LOAN                                                           
+  (F)  ANNUAL INTEREST RATE ON A LOAN                                           
+  (G)  LOAN AMORTIZATION TABLE                                                  
+                                                                                
+  (H)ELP-- Choose this for an explanation of the modules above.                 
+                                                                                
+  (X)  EXIT BACK TO THE OPERATING SYSTEM                                        
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? X                    
+X                                                                               
+                                                                                
+                                                                                
+ RETURN TO OPERATING SYSTEM?  (Y OR N)                                          
+                                                                                
+      >>>>>>>>>>>>> NOW WAITING FOR YOUR SELECTION >>>>> ? Y                    
+Y                                                                               
+                                                                                
+                                                                                
+ Now returning control to the operating system.                                 
+                                                                                
+                                                                                

@@ -1,0 +1,16 @@
+bwBASIC: LIST                                                                   
+    1 REM 'MAN' IS USED TO EXIT 'AUTO' COMMAND                                  
+                                                                                
+bwBASIC: NEW                                                                    
+bwBASIC: AUTO                                                                   
+10 REM THIS IS LINE 10                                                          
+20 REM THIS IS LINE 20                                                          
+30 REM THIS IS LINE 30                                                          
+40 REM THIS IS LINE 40                                                          
+50 MAN                                                                          
+bwBASIC: LIST                                                                   
+   10 REM THIS IS LINE 10                                                       
+   20 REM THIS IS LINE 20                                                       
+   30 REM THIS IS LINE 30                                                       
+   40 REM THIS IS LINE 40                                                       
+                                                                                

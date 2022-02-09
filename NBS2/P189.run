@@ -21,4 +21,4 @@ FOR DETAILED CRITERIA.
                               BEGIN TEST.                                       
                                                                                 
                                                                                 
-ERROR in line 240: in bwb_exp(): incomplete expression.                         
+ERROR in line 240: Syntax error                                                 

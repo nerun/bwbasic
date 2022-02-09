@@ -24,5 +24,44 @@ FOR DETAILED CRITERIA.
                                                                                 
                BEGIN TEST                                                       
                                                                                 
+TO HELP IN CHECKING INTERPRETATION, YOU MAY ENTER                               
+VALUES TO BE USED AS SUBSCRIPTS ON THE ARRAY. THE PROGRAM                       
+WILL ASSIGN THE VALUE 777 TO THE INDICATED ELEMENT AND                          
+THEN ECHO THE RESULT. IN THIS WAY YOU CAN CHECK WHICH                           
+SUBSCRIPTS ARE WITHIN THE ARRAY AND WHICH CAUSE EXCEPTIONS.                     
+THE ARRAY IS SET WITH 'DIM A(5)', FOLLOWED BY OPTION BASE 1.                    
+YOU SHOULD AT LEAST TEST SUBSCRIPT VALUES OF ZERO                               
+AND SIX.  THE ARRAY HAS BEEN DIMENSIONED AS A(5).                               
                                                                                 
-ERROR in line 280: at line 280: OPTION BASE must be called before DIM.          
+ENTER 100 WHEN YOU WISH TO STOP.                                                
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 0                                                                             
+A( 0 ) =  777                                                                   
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 1                                                                             
+A( 1 ) =  777                                                                   
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 2                                                                             
+A( 2 ) =  777                                                                   
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 3                                                                             
+A( 3 ) =  777                                                                   
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 4                                                                             
+A( 4 ) =  777                                                                   
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 5                                                                             
+A( 5 ) =  777                                                                   
+                                                                                
+ENTER VALUE TO BE USED AS SUBSCRIPT:                                            
+? 100                                                                           
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 81                                                                  

@@ -20,5 +20,24 @@ FOR DETAILED CRITERIA.
                                                                                 
                BEGIN TEST                                                       
                                                                                 
+VARIABLE A(I) WAS ASSIGNED 111*I + 5000,                                        
+AND SIMPLE VARIABLE A WAS ASSIGNED 777.                                         
+RESULTS BELOW:                                                                  
                                                                                 
-ERROR in line 240: in op_assign(): Assignment must be to variable: level -1 <2> 
+A =  777                                                                        
+                                                                                
+A( 0 ) =  5000                                                                  
+A( 1 ) =  5111                                                                  
+A( 2 ) =  5222                                                                  
+A( 3 ) =  5333                                                                  
+A( 4 ) =  5444                                                                  
+A( 5 ) =  5555                                                                  
+A( 6 ) =  5666                                                                  
+A( 7 ) =  5777                                                                  
+A( 8 ) =  5888                                                                  
+A( 9 ) =  5999                                                                  
+A( 10 ) =  6110                                                                 
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 77                                                                  

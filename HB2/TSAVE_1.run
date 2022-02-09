@@ -1,0 +1,19 @@
+bwBASIC: NEW                                                                    
+bwBASIC: 10 REM 'TSAVE' TEST PROGRAM                                            
+bwBASIC: 20 PRINT "THIS PROGRAM TESTS THE TSAVE FEATURE"                        
+bwBASIC: 99 END                                                                 
+bwBASIC: LIST                                                                   
+   10 REM 'TSAVE' TEST PROGRAM                                                  
+   20 PRINT "THIS PROGRAM TESTS THE TSAVE FEATURE"                              
+   99 END                                                                       
+                                                                                
+bwBASIC: TSAVE "TSAVE_1.DAT"                                                    
+bwBASIC: NEW                                                                    
+bwBASIC: LIST                                                                   
+                                                                                
+bwBASIC: TLOAD "TSAVE_1.DAT"                                                    
+bwBASIC: LIST                                                                   
+   10 REM 'TSAVE' TEST PROGRAM                                                  
+   20 PRINT "THIS PROGRAM TESTS THE TSAVE FEATURE"                              
+   99 END                                                                       
+                                                                                

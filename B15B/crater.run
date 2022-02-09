@@ -1,0 +1,21 @@
+Terrestrial Impact Crater                                                       
+  Impactor diameter (m)? 543                                                    
+  Impactor density (kg/m^3)? 12.34                                              
+  Impactor velocity (km/s)? 5000                                                
+  Graze angle (deg. from horiz.)? 67                                            
+                                                                                
+Impactor Parameters                                                             
+  Volume 8.382974e+07 m^3                                                       
+    Mass 1.034459e+09 kg                                                        
+      KE 1.293074e+22 J                                                         
+         3.078747e+09 kT TNT                                                    
+                                                                                
+Crater Parameters                                                               
+  Diameter --                                                                   
+    Actual    24600 m                                                           
+    Apparent  30751 m                                                           
+  Depth --                                                                      
+    Actual     6150 m                                                           
+    Apparent   7688 m                                                           
+  Target removed 1.461604e+12 m^3                                               
+  Ejecta spread      52891 m                                                    

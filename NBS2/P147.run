@@ -25,4 +25,4 @@ FOR DETAILED CRITERIA.
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF INT.                                             
                                                                                 
-ERROR in line 250: *** Illegal Function Call (INT) ***                          
+ERROR in line 250: Illegal Function Call (INT)                                  

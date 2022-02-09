@@ -27,7 +27,6 @@ ABOUT TO EXECUTE:
    PRINT (-1E-33) ^ (-3333), (-1E-33) / 0, 0 ^ (-1E-33), EXP(1E20)              
                                                                                 
 *** Arithmetic Overflow ***                                                     
-*** Arithmetic Overflow ***                                                     
 -1.79769E+308  *** WARNING:  Divide by 0 ***                                    
 -1.79769E+308  *** Arithmetic Overflow ***                                      
  1.79769E+308  *** Arithmetic Overflow ***                                      

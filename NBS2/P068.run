@@ -31,4 +31,4 @@ HAVE ASSIGNED  13  TO A( 7 ).
                                                                                 
 ABOUT TO ASSIGN TO A( 8 ). *** EXCEPTION SHOULD OCCUR NOW ***                   
                                                                                 
-ERROR in line 300: SUBSCRIPT OUT OF RANGE A(8)                                  
+ERROR in line 300: Subscript out of range                                       

@@ -1,0 +1,5 @@
+Trace is ON                                                                     
+[ 30 PRINT "EACH LINE SHOULD BE TRACED" ]EACH LINE SHOULD BE TRACED             
+[ 40 TRACE OFF ]Trace is OFF                                                    
+BY THE 'TRACE ON' STATEMENT                                                     
+UNTIL TURNED OFF BY THE 'TRACE OFF' STATEMENT                                   

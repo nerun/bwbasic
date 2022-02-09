@@ -21,5 +21,8 @@ FOR DETAILED CRITERIA.
                                                                                 
                BEGIN TEST                                                       
                                                                                 
+VALUE ASSIGNED FOR 4 ^ -2 =  .0625                                              
                                                                                 
-ERROR in line 250: Syntax error                                                 
+                END TEST                                                        
+                                                                                
+END PROGRAM 38                                                                  

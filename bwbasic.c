@@ -32,133 +32,162 @@
 /*                                                               */
 /* Version 3.00 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.10 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
+
 
 
 #include "bwbasic.h"
 
+GlobalType * My = NULL;
+
+static char * DefaultErrorMessage[ 80 ] = 
+{
+   /* 00 */ ""
+,  /* 01 */ "NEXT without FOR"
+,  /* 02 */ "Syntax error"
+,  /* 03 */ "RETURN without GOSUB"
+,  /* 04 */ "Out of DATA"
+,  /* 05 */ "Illegal function call"
+,  /* 06 */ "Overflow"
+,  /* 07 */ "Out of memory"
+,  /* 08 */ "Undefined line"
+,  /* 09 */ "Subscript out of range"
+,  /* 10 */ "Redimensioned array"
+,  /* 11 */ "Division by zero"
+,  /* 12 */ "Illegal direct"
+,  /* 13 */ "Type mismatch"
+,  /* 14 */ "Out of string space"
+,  /* 15 */ "String too long"
+,  /* 16 */ "String formula too complex"
+,  /* 17 */ "Can't continue"
+,  /* 18 */ "Undefined user function"
+,  /* 19 */ "No RESUME"
+,  /* 20 */ "RESUME without error"
+,  /* 21 */ "Unprintable error"
+,  /* 22 */ "Missing operand"
+,  /* 23 */ "Line buffer overflow"
+,  /* 24 */ ""
+,  /* 25 */ ""
+,  /* 26 */ "FOR without NEXT"
+,  /* 27 */ ""
+,  /* 28 */ ""
+,  /* 29 */ "WHILE without WEND"
+,  /* 30 */ "WEND without WHILE"
+,  /* 31 */ "EXIT FUNCTION without FUNCTION"
+,  /* 32 */ "END FUNCTION without FUNCTION"
+,  /* 33 */ "EXIT SUB without SUB"
+,  /* 34 */ "END SUB without SUB"
+,  /* 35 */ "EXIT FOR without FOR"
+,  /* 36 */ ""
+,  /* 37 */ ""
+,  /* 38 */ ""
+,  /* 39 */ ""
+,  /* 40 */ ""
+,  /* 41 */ ""
+,  /* 42 */ ""
+,  /* 43 */ ""
+,  /* 44 */ ""
+,  /* 45 */ ""
+,  /* 46 */ ""
+,  /* 47 */ ""
+,  /* 48 */ ""
+,  /* 49 */ ""
+,  /* 50 */ "Field overflow"
+,  /* 51 */ "Internal error"
+,  /* 52 */ "Bad file number"
+,  /* 53 */ "File not found"
+,  /* 54 */ "Bad file mode"
+,  /* 55 */ "File already open"
+,  /* 56 */ ""
+,  /* 57 */ "Disk I/O error"
+,  /* 58 */ "File already exists"
+,  /* 59 */ ""
+,  /* 60 */ ""
+,  /* 61 */ "Disk full"
+,  /* 62 */ "Input past end"
+,  /* 63 */ "Bad record number"
+,  /* 64 */ "Bad file name"
+,  /* 65 */ ""
+,  /* 66 */ "Direct statement in file"
+,  /* 67 */ "Too many files"
+,  /* 68 */ ""
+,  /* 69 */ ""
+,  /* 70 */ "Variable Not Declared"
+,  /* 71 */ ""
+,  /* 72 */ ""
+,  /* 73 */ "Advanced Feature"
+,  /* 74 */ ""
+,  /* 75 */ ""
+,  /* 76 */ ""
+,  /* 77 */ ""
+,  /* 78 */ ""
+,  /* 79 */ ""
+};
 
 
-char           *bwb_ebuf = NULL;  /* error buffer */
-static char    *read_line = NULL;
-int             bwb_trace = FALSE;
-FILE           *errfdevice = NULL;   /* output device for error messages */
+static char    *Banner[] = {
+             "########  ##    ## ##      ##    ###    ######## ######## ########            ",
+             "##     ##  ##  ##  ##  ##  ##   ## ##      ##    ##       ##     ##           ",
+             "##     ##   ####   ##  ##  ##  ##   ##     ##    ##       ##     ##           ",
+             "########     ##    ##  ##  ## ##     ##    ##    ######   ########            ",
+             "##     ##    ##    ##  ##  ## #########    ##    ##       ##   ##             ",
+             "##     ##    ##    ##  ##  ## ##     ##    ##    ##       ##    ##            ",
+             "########     ##     ###  ###  ##     ##    ##    ######## ##     ##           ",
+             "                                                                              ",
+             "                                                                              ",
+             "                                    ########     ###     ######  ####  ###### ",
+             "                                    ##     ##   ## ##   ##    ##  ##  ##    ##",
+             "                                    ##     ##  ##   ##  ##        ##  ##      ",
+             "                                    ########  ##     ##  ######   ##  ##      ",
+             "                                    ##     ## #########       ##  ##  ##      ",
+             "                                    ##     ## ##     ## ##    ##  ##  ##    ##",
+             "                                    ########  ##     ##  ######  ####  ###### ",
+             "                                                                              ",
+             "Bywater BASIC Interpreter, version 3.10                                       ",
+             "Copyright (c) 1993, Ted A. Campbell                                           ",
+             "Copyright (c) 1995-1997, Jon B. Volkoff                                       ",
+             "Copyright (c) 2014-2016, Howard Wulf, AF5NE                                   ",
+             "                                                                              ",
+             NULL
+};
 
-
-int             bwb_curtask = 0;/* current task */
-
-struct bwb_variable *ed = NULL;   /* BWB.EDITOR$ variable */
-struct bwb_variable *fi = NULL;   /* BWB.FILES$ variable */
-struct bwb_variable *pr = NULL;   /* BWB.PROMPT$ variable */
-struct bwb_variable *im = NULL;   /* BWB.IMPLEMENTATION$ variable */
-struct bwb_variable *co = NULL;   /* BWB.COLORS variable */
-
-char            progfile[FILENAME_MAX + 1];  /* program filename */
-int             rescan = TRUE;   /* program needs to be rescanned */
-int             number = 0;   /* current line number */
-struct bwb_line *bwb_l = NULL;    /* current line pointer */
-struct bwb_line bwb_start; /* starting line marker */
-struct bwb_line user_line;
-struct bwb_line bwb_end;   /* ending line marker */
-struct bwb_line *data_line = NULL;   /* current line to read data */
-int             data_pos = 0; /* position in data_line */
-struct bwb_variable var_start;   /* variable list start marker */
-struct bwb_variable var_end;  /* variable list end marker */
-struct bwb_function fnc_start;   /* function list start marker */
-struct bwb_function fnc_end;  /* function list end marker */
-struct fslte    fslt_start;   /* function-sub-label lookup table start
-             * marker */
-struct fslte    fslt_end;  /* function-sub-label lookup table end marker */
-int             exsc = -1; /* EXEC stack counter */
-int             expsc = 0; /* expression stack counter */
-struct exse    *excs = NULL;      /* EXEC stack */
-struct exp_ese *exps = NULL;      /* Expression stack */
-int             IsInteractive = TRUE;
-int             IsCommandLineFile = FALSE;
-struct dev_element *dev_table = NULL;  /* table of devices */
-OptionVersionType OptionVersion = 0;   /* VersionBitmask for compatibility
-                * via OPTION VERSION ... */
-unsigned short  OptionFlags = 0x0000;
-char            OptionCommentChar = '\0'; /* ', ! */
-char            OptionStatementChar = '\0'; /* :, \ */
-char            OptionDateFormat[81];
-char            OptionTimeFormat[81];
-int             OptionIndentValue = 2;
-int             OptionTerminalType = C_OPTION_TERMINAL_NONE;
-int             LPRINT_COLUMN = 1;  /* LPRINT_FILE_NUMBER */
-int             LPRINT_WIDTH = 80;  /* LPRINT_FILE_NUMBER */
-int             LPRINT_NULLS = 0;   /* LPRINT_FILE_NUMBER */
-struct          bwb_line * err_line = NULL; /* line in which error occurred */
-int             err_number = 0;  /* number of last error */
-int             stopped_line = 0;   /* line number of the last executed
-                * STOP command */
-int             dim_base = 0; /* OPTION BASE ... */
-
-/* Error messages used more than once */
-
-char            err_openfile[] = ERR_OPENFILE;
-char            err_getmem[] = ERR_GETMEM;
-char            err_noln[] = ERR_NOLN;
-char            err_nofn[] = ERR_NOFN;
-char            err_lnnotfound[] = ERR_LNNOTFOUND;
-char            err_incomplete[] = ERR_INCOMPLETE;
-char            err_valoorange[] = ERR_VALOORANGE;
-char            err_syntax[] = ERR_SYNTAX;
-char            err_devnum[] = ERR_DEVNUM;
-char            err_dev[] = ERR_DEV;
-char            err_opsys[] = ERR_OPSYS;
-char            err_argstr[] = ERR_ARGSTR;
-char            err_defchar[] = ERR_DEFCHAR;
-char            err_mismatch[] = ERR_MISMATCH;
-char            err_dimnotarray[] = ERR_DIMNOTARRAY;
-char            err_retnogosub[] = ERR_RETNOGOSUB;
-char            err_od[] = ERR_OD;
-char            err_overflow[] = ERR_OVERFLOW;
-char            err_nf[] = ERR_NF;
-char            err_uf[] = ERR_UF;
-char            err_dbz[] = ERR_DBZ;
-char            err_redim[] = ERR_REDIM;
-char            err_obdim[] = ERR_OBDIM;
-char            err_uc[] = ERR_UC;
-char            err_noprogfile[] = ERR_NOPROGFILE;
-
-
-
-int             NextValidLineNumber = BasicLineNumberMin;   /* Used only to verify
-                         * BASIC files are
-                         * loaded in ascending
-                         * line number order */
-
-BasicLineNumberType tmr_gotol = 0;
-BasicNumberType tmr_count = 0;
-BasicNumberType tmr_expires = 0;
-
-static FILE    *LPRINTER = NULL;
-static char     EventQueue = 0x00;   /* may change to int/long/array */
-
-
-#if AUTOMATED_REGRESSION
-/* for automated testing */
-FILE           *ExternalInputFile = NULL;
-#endif            /* AUTOMATED_REGRESSION */
-
-int             MaintainerDebugOn = FALSE;
-FILE           *MaintainerDebugFile = NULL;
-
-int             DefaultVariableType[26];  /* bwb_variable->type, A-Z */
 
 int
-bwx_LPRINT(char a)
+bwx_DEBUG(const char *A)
 {
-   bwx_DEBUG(__FUNCTION__);
-   /* send character to printer */
-   if (LPRINTER == NULL)
+   /* 
+   ** -- RECURSION WARNING -- 
+   ** -- DO NOT SEND IT TO BACK TO BWBASIC --  
+   ** This is DEBUG output.  
+   ** Send it to a file, OutputDebugString, or fputs() 
+   */
+   if (My->MaintainerDebugOn)
    {
-      LPRINTER = fopen(LPRINTFILENAME, "w");
-   }
-   if (LPRINTER != NULL)
-   {
-      fputc(a, LPRINTER);
+      if (My->MaintainerDebugFile == NULL)
+      {
+         My->MaintainerDebugFile = fopen(DEBUGFILENAME, "w");
+      }
+      if (My->MaintainerDebugFile != NULL)
+      {
+         fputs(A, My->MaintainerDebugFile);
+         fputs("\n", My->MaintainerDebugFile);
+         fflush(My->MaintainerDebugFile);
+      }
+      else
+      {
+         /* unable to open DEBUG file, so send the message to My->SYSOUT->cfp */
+         if( My->SYSOUT != NULL )
+         {
+            if( My->SYSOUT->cfp != NULL )
+            {
+               fputs( A, My->SYSOUT->cfp );
+               fputs( "\n", My->SYSOUT->cfp );
+               fflush( My->SYSOUT->cfp );
+            }
+         }
+      }
    }
    return 0;
 }
@@ -196,22 +225,24 @@ break_handler(void)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   if (IsInteractive)
+   My->AutomaticLineNumber = 0;
+   My->AutomaticLineIncrement = 0;
+
+   if (My->IsInteractive)
    {
       /* INTERACTIVE: terminate program */
 
       /* reset all stack counters */
-      CURTASK         exsc = -1;
-      CURTASK         expsc = 0;
+      bwb_clrexec();
       SetOnError(0);
 
-      err_number = -1;/* in break_handler() */
+      My->err_number = -1; /* in break_handler() */
 
 
       /* reset the break handler */
       signal(SIGINT, break_mes);
 
-      longjmp(mark, -1);
+      longjmp(My->mark, -1);
 
 
       return;
@@ -232,24 +263,36 @@ break_handler(void)
 ***************************************************************/
 
 void
-break_mes(int x)
+break_mes(int x /* Parameter 'x' is never used */ )
 {
    /* break_mes() is FATAL */
    bwx_DEBUG(__FUNCTION__);
-   if (err_number < 0)  /* don't make a bad situation worse */
+   if (My->err_number < 0)  /* do not make a bad situation worse */
    {
       /* an error has already ben reported */
    }
    else
    {
       prn_xprintf("\n");
-      prn_xprintf(MES_BREAK);
-      if (CURTASK number > 0)
+      if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
       {
-         char            tbuf[33];
-         sprintf(tbuf, "%d", CURTASK number);
-         prn_xprintf(" ");
-         prn_xprintf(tbuf);
+         if( is_empty_filename( My->progfile ) == FALSE )
+         {
+            prn_xprintf("FILE:");
+            prn_xprintf(My->progfile);
+            prn_xprintf(", ");
+         }
+      }
+      prn_xprintf("Program interrupted at line");
+      if( My->ThisLine != NULL )
+      {
+         if ( BasicLineNumberMin <= My->ThisLine->number &&  My->ThisLine->number <= BasicLineNumberMax )
+         {
+            char            tbuf[33];
+            sprintf(tbuf, "%d", My->ThisLine->number);
+            prn_xprintf(" ");
+            prn_xprintf(tbuf);
+         }
       }
       prn_xprintf("\n");
    }
@@ -263,73 +306,6 @@ bwx_STOP(void)
    break_mes(0);
 }
 
-/***************************************************************
-  
-   FUNCTION:       bwb_error()
-  
-   DESCRIPTION:    This function is called to handle errors
-         in Bywater.  It displays the error
-         message, then calls the break_handler()
-         routine.
-  
-***************************************************************/
-
-int
-bwb_error(char *message)
-{
-   /* bwb_error() is FATAL */
-   bwx_DEBUG(__FUNCTION__);
-   if (err_number < 0)  /* don't make a bad situation worse */
-   {
-      /* an error has already ben reported */
-   }
-   else
-   {
-      prn_xprintf("\n");
-      prn_xprintf(ERROR_HEADER);
-      if (CURTASK number > 0)
-      {
-         char            tbuf[32];
-         sprintf(tbuf, "%d", CURTASK number);
-         prn_xprintf(" ");
-         prn_xprintf(tbuf);
-      }
-      prn_xprintf(": ");
-      prn_xprintf(message);
-      prn_xprintf("\n");
-
-      if (OptionFlags & OPTION_TRACE_ON)
-      {
-         /* * dump BASIC stack trace when FATAL error * First
-          * line is the TOP of the stack * Last line is the
-          * BOTTOM of the stack */
-
-         int             i;
-         prn_xprintf("\nSTACK TRACE:\n");
-         for (i = CURTASK exsc; i >= 0; i--)
-         {
-            struct bwb_line *l;
-
-            l = CURTASK excs[i].line;
-            if (l != NULL)
-            {
-               char            LineNumber[32];
-
-               sprintf(LineNumber, "%d:", l->number);
-               prn_xprintf(LineNumber);
-               if (l->buffer != NULL)
-               {
-                  prn_xprintf(l->buffer);
-               }
-               prn_xprintf("\n");
-            }
-         }
-      }
-   }
-   break_handler();
-   return FALSE;
-}
-
 
 /***************************************************************
   
@@ -339,31 +315,6 @@ bwb_error(char *message)
          message for bwBASIC.
   
 ***************************************************************/
-static char    *Banner[] = {
-             "########  ##    ## ##      ##    ###    ######## ######## ########            ",
-             "##     ##  ##  ##  ##  ##  ##   ## ##      ##    ##       ##     ##           ",
-             "##     ##   ####   ##  ##  ##  ##   ##     ##    ##       ##     ##           ",
-             "########     ##    ##  ##  ## ##     ##    ##    ######   ########            ",
-             "##     ##    ##    ##  ##  ## #########    ##    ##       ##   ##             ",
-             "##     ##    ##    ##  ##  ## ##     ##    ##    ##       ##    ##            ",
-             "########     ##     ###  ###  ##     ##    ##    ######## ##     ##           ",
-             "                                                                              ",
-             "                                                                              ",
-             "                                    ########     ###     ######  ####  ###### ",
-             "                                    ##     ##   ## ##   ##    ##  ##  ##    ##",
-             "                                    ##     ##  ##   ##  ##        ##  ##      ",
-             "                                    ########  ##     ##  ######   ##  ##      ",
-             "                                    ##     ## #########       ##  ##  ##      ",
-             "                                    ##     ## ##     ## ##    ##  ##  ##    ##",
-             "                                    ########  ##     ##  ######  ####  ###### ",
-             "                                                                              ",
-             MES_SIGNON " " VERSION,
-             MES_COPYRIGHT_1,
-             MES_COPYRIGHT_2,
-             MES_COPYRIGHT_3,
-             MES_LANGUAGE,
-             NULL
-};
 
 
 int
@@ -383,52 +334,7 @@ bwx_signon(void)
 
 }
 
-int
-bwx_CONSOLE_WIDTH()
-{
-   /* default CONSOLE width */
-   return 80;
-}
 
-int
-bwx_LPRINT_WIDTH()
-{
-   /* default PRINTER file width */
-   return 80;
-}
-
-int
-bwx_RANDOM_RECORD_SIZE()
-{
-   /* default RANDOM record size */
-   return 128;
-}
-
-int
-bwx_DEBUG(const char *A)
-{
-   /* -- RECURSION WARNING -- DO NOT SEND IT TO BACK TO BWBASIC --  */
-   /* This is DEBUG output.  Send it to a file, OutputDebugString, or
-    * puts() */
-   if (MaintainerDebugOn)
-   {
-      if (MaintainerDebugFile == NULL)
-      {
-         MaintainerDebugFile = fopen(DEBUGFILENAME, "w");
-      }
-      if (MaintainerDebugFile != NULL)
-      {
-         fputs(A, MaintainerDebugFile);
-         fputs("\n", MaintainerDebugFile);
-         fflush(MaintainerDebugFile);
-      }
-      else
-      {
-         puts(A);
-      }
-   }
-   return 0;
-}
 
 BasicNumberType
 bwx_TIMER(BasicNumberType Seconds)
@@ -446,7 +352,7 @@ bwx_TIMER(BasicNumberType Seconds)
    bwx_DEBUG(__FUNCTION__);
    if (Seconds < 0)
    {
-      bwb_error("INTERNAL ERROR: bwx_TIMER called with negative value");
+      WARN_INTERNAL_ERROR;
       return 0;
    }
    else
@@ -459,29 +365,56 @@ bwx_TIMER(BasicNumberType Seconds)
    }
 }
 
-static void
+void
 CleanLine(char *buffer)
 {
+   /* cleanup the line, so it is easier to parse */
    char           *newbuffer;
 
    bwx_DEBUG(__FUNCTION__);
-   
 
-   /* cleanup the line, so it's easier to parse  */
-   newbuffer = buffer;
-   while (*newbuffer != 0)
+
+   if( buffer == NULL )
    {
-      if (*newbuffer < ' ')
+      /* do nothing */
+      return;
+   }
+   if( buffer[0] == BasicNulChar )
+   {
+      /* do nothing */
+      return;
+   }
+      
+   /* remove CR/LF */
+   newbuffer = bwb_strchr( buffer, '\r' );
+   if( newbuffer != NULL )
+   {
+      *newbuffer = BasicNulChar;
+   }
+   newbuffer = bwb_strchr( buffer, '\n' );
+   if( newbuffer != NULL )
+   {
+      *newbuffer = BasicNulChar;
+   }
+   
+   /* remove ALL embedded control characters */
+   /* if you want a control character, then use CHR$ */
+   newbuffer = buffer;
+   while (*newbuffer != BasicNulChar)
+   {
+      if( bwb_isprint( *newbuffer ) )
       {
-         /* remove ALL embedded control characters */
-         /* if you want a control character, then use CHR$ */
+         /* OK */
+      }
+      else
+      {
          *newbuffer = ' ';
       }
       newbuffer++;
    }
    /* LTRIM$ */
    newbuffer = buffer;
-   if (*newbuffer != 0)
+   if (*newbuffer != BasicNulChar)
    {
       /* not an empty line, so remove one (or more) leading spaces */
       while (*newbuffer == ' ')
@@ -490,21 +423,21 @@ CleanLine(char *buffer)
       }
       if (newbuffer > buffer)
       {
-         strcpy(buffer, newbuffer);
+         bwb_strcpy(buffer, newbuffer);
       }
    }
    /* RTRIM$ */
    newbuffer = buffer;
-   if (*newbuffer != 0)
+   if (*newbuffer != BasicNulChar)
    {
       /* not an empty line, so remove one (or more) trailing spaces */
       char           *E;
 
-      E = strchr(newbuffer, 0);
+      E = bwb_strchr(newbuffer, BasicNulChar);
       E--;
       while (E >= newbuffer && *E == ' ')
       {
-         *E = 0;
+         *E = BasicNulChar;
          E--;
       }
    }
@@ -520,129 +453,488 @@ CleanLine(char *buffer)
 ***************************************************************/
 
 void
-bwb_init(int argc, char **argv)
+bwb_init( void )
 {
    register int    n;
    static char     start_buf[] = "\0";
    static char     end_buf[] = "\0";
    bwx_DEBUG(__FUNCTION__);
 
-    strcpy( progfile, "" );
-    
-    memset( &bwb_start, 0, sizeof(struct bwb_line) );
-    memset( &user_line, 0, sizeof(struct bwb_line) );
-    memset( &bwb_end  , 0, sizeof(struct bwb_line) );
-    
-    memset( &var_start, 0, sizeof(struct bwb_variable) );
-    memset( &var_end  , 0, sizeof(struct bwb_variable) );
-    
-    memset( &fnc_start, 0, sizeof(struct bwb_function) );
-    memset( &fnc_end  , 0, sizeof(struct bwb_function) );
-    
-    memset( &fslt_start, 0, sizeof(struct fslte) );
-    memset( &fslt_end  , 0, sizeof(struct fslte) );
 
+   My->IsCommandLineFile = FALSE;
+   My->ExternalInputFile = NULL; /* for automated testing, TAPE command */
+   My->IsPrinter = FALSE; /* CBASIC-II: CONSOLE and LPRINTER commands */
+
+    bwb_strcpy( My->progfile, "" );
+    
+    bwb_memset( &My->bwb_start, 0, sizeof(LineType) );
+    bwb_memset( &My->bwb_end  , 0, sizeof(LineType) );
+    bwb_memset( &My->user_line, 0, sizeof(LineType) );
+
+
+   My->bwb_start.number = BasicLineNumberMin - 1;
+   My->bwb_start.next = &My->bwb_end;
+   My->bwb_start.position = 0;
+   My->bwb_start.buffer = start_buf;
+
+   My->bwb_end.number = BasicLineNumberMax + 1;
+   My->bwb_end.next = &My->bwb_end;
+   My->bwb_end.position = 0;
+   My->bwb_end.buffer = end_buf;
+
+   My->user_line.number = BasicLineNumberMin - 1;
+   My->user_line.next = &My->bwb_end;
+   My->user_line.position = 0;
+   My->user_line.buffer = NULL;
+
+   My->data_line = &My->bwb_start;
+   My->data_pos = 0;
+
+   My->stack_head = NULL;
+   My->stack_level = 0;
+
+   My->field_head = NULL;
+
+#if NEW_VIRTUAL
+   My->virtual_head = NULL;
+#endif /* NEW_VIRTUAL */
+   My->ThisLine = &My->bwb_start;
+
+    
    SortAllCommands();
    SortAllFunctions();
+   SortAllOperators();
 
-
-   errfdevice = stderr;
 
    /* Memory allocation */
+   if ((My->bwb_ebuf = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_init")) == NULL)
+   {
+      WARN_OUT_OF_MEMORY;
+      return;
+   }
+   if ((My->read_line = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_init")) == NULL)
+   {
+      WARN_OUT_OF_MEMORY;
+      return;
+   }
+   if ((My->SYSIN = CALLOC(1, sizeof(FileType), "bwb_init")) == NULL)
+   {
+      WARN_OUT_OF_MEMORY;
+      return;
+   }
+   if ((My->SYSOUT = CALLOC(1, sizeof(FileType), "bwb_init")) == NULL)
+   {
+      WARN_OUT_OF_MEMORY;
+      return;
+   }
+   if ((My->SYSPRN = CALLOC(1, sizeof(FileType), "bwb_init")) == NULL)
+   {
+      WARN_OUT_OF_MEMORY;
+      return;
+   }
 
-
-   /* expression stack */
-   /* Revised to CALLOC pass-thru call by JBV */
-   if ((exps = CALLOC(ESTACKSIZE, sizeof(struct exp_ese), "bwb_init")) == NULL)
-   {
-      bwb_error("in bwb_init(): failed to find memory for exps");
-      return;
-   }
-   /* EXEC stack */
-
-   /* Revised to CALLOC pass-thru call by JBV */
-   if ((excs = CALLOC(EXECLEVELS, sizeof(struct exse), "bwb_init")) == NULL)
-   {
-      bwb_error("in bwb_init(): failed to find memory for excs");
-      return;
-   }
-   /* character buffers */
-
-   /* Revised to CALLOC pass-thru call by JBV */
-   if ((bwb_ebuf = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_init")) == NULL)
-   {
-      bwb_error("in bwb_init(): failed to find memory for bwb_ebuf");
-      return;
-   }
-   /* Revised to CALLOC pass-thru call by JBV */
-   if ((read_line = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_init")) == NULL)
-   {
-      bwb_error("in bwb_init(): failed to find memory for read_line");
-      return;
-   }
-   /* assign memory for the device table */
-   /* Revised to CALLOC pass-thru call by JBV */
-   if ((dev_table = CALLOC(BasicFileNumberMax + 1 /* console is #0 */ , sizeof(struct dev_element), "bwb_init")) == NULL)
-   {
-      bwb_error("in bwb_init(): failed to find memory for dev_table");
-      return;
-   }
    /* initialize tables of variables, functions */
-
-   bwb_start.number = BasicLineNumberMin - 1;
-   bwb_start.next = &bwb_end;
-   user_line.number = BasicLineNumberMin - 1;
-   user_line.next = &bwb_end;
-   bwb_end.number = BasicLineNumberMax + 1;
-   bwb_end.next = &bwb_end;
-   bwb_start.buffer = start_buf;
-   user_line.buffer = NULL;
-   bwb_end.buffer = end_buf;
-   data_line = &bwb_start;
-   data_pos = 0;
-   exsc = -1;
-   expsc = 0;
-   bwb_start.position = 0;
-   user_line.position = 0;
-   bwb_l = &bwb_start;
-
-   var_init(0);
-   fnc_init(0);
-   fslt_init(0);
+   var_init();
+   fnc_init();
+   fslt_init();
    OptionVersionSet(0);
 
+   My->SYSIN->mode = DEVMODE_INPUT;
+   My->SYSIN->width = 80;
+   My->SYSIN->col = 1;
+   My->SYSIN->row = 1;
+   My->SYSIN->delimit = ',';
+   My->SYSIN->cfp = stdin;
+
+   My->SYSOUT->mode = DEVMODE_OUTPUT;
+   My->SYSOUT->width = 80;
+   My->SYSOUT->col = 1;
+   My->SYSOUT->row = 1;
+   My->SYSOUT->delimit = ',';
+   My->SYSOUT->cfp = stdout;
+
+   My->SYSPRN->mode = DEVMODE_OUTPUT;
+   My->SYSPRN->width = 80;
+   My->SYSPRN->col = 1;
+   My->SYSPRN->row = 1;
+   My->SYSPRN->delimit = ',';
+   My->SYSPRN->cfp = stderr;
 
 
-   /* initialize all devices to DEVMODE_CLOSED */
+   My->LPRINT_NULLS = 0;
+   My->SCREEN_ROWS = 24;
 
-   for (n = 0; n <= BasicFileNumberMax; n++)
-   {
-      dev_table[n].mode = DEVMODE_CLOSED;
-      dev_table[n].width = 0;
-      dev_table[n].col = 0;
-      dev_table[n].filename[0] = '\0';
-      dev_table[n].cfp = NULL;
-      dev_table[n].buffer = NULL;
-   }
-   /* NOTE: File #0 is the console for both INPUT and OUTPUT. */
-   if (TRUE)
-   {
-      dev_table[CONSOLE_FILE_NUMBER].mode = DEVMODE_INPUT | DEVMODE_OUTPUT;
-      dev_table[CONSOLE_FILE_NUMBER].width = bwx_CONSOLE_WIDTH();
-      dev_table[CONSOLE_FILE_NUMBER].col = 1;
-      LPRINT_WIDTH = bwx_LPRINT_WIDTH();
-      LPRINT_COLUMN = 1;
-      LPRINT_NULLS = 0;
-      /* OPEN #0 is an ERROR. */
-      /* CLOSE #0 is an ERROR. */
-      /* WIDTH #0, 80 is the same as WIDTH 80. */
-      /* LPRINT and LLIST are sent to bwx_LPRINT() */
-   }
+   /* OPEN #0 is an ERROR. */
+   /* CLOSE #0 is an ERROR. */
+   /* WIDTH #0, 80 is the same as WIDTH 80. */
+   /* LPRINT and LLIST are sent to bwx_LPRINT() */
+
+   /* default variable type */
    for (n = 0; n < 26; n++)
    {
-      DefaultVariableType[n] = NUMBER;
+      My->DefaultVariableType[n] = BasicDoubleSuffix;
+   }
+   /* default COMMAND$(0-9) */   
+   for( n = 0; n < 10; n++ )
+   {
+      My->COMMAND5[n] = NULL;
+   } 
+}
+
+
+void strupper(char *C)
+{
+   if (C == NULL)
+   {
+      return;
+   }
+   while (*C)
+   {
+      *C = bwb_toupper(*C);
+      C++;
    }
 }
+
+void strlower(char *C)
+{
+   if (C == NULL)
+   {
+      return;
+   }
+   while (*C)
+   {
+      *C = bwb_tolower(*C);
+      C++;
+   }
+}
+
+/***************************************************************
+  
+        FUNCTION:       main()
+  
+        DESCRIPTION:    As in any C program, main() is the basic
+                        function from which the rest of the
+                        program is called. Some environments,
+         however, provide their own main() functions
+         (Microsoft Windows (tm) is an example).
+         In these cases, the following code will
+         have to be included in the initialization
+         function that is called by the environment.
+  
+***************************************************************/
+
+void
+bwb_single_step( char * buffer )
+{
+   bwx_DEBUG(__FUNCTION__);
+
+   CleanLine(buffer);
+   if ( buffer[0] == BasicNulChar )
+   {
+      /* empty -- do nothing */
+   }
+   else
+   if (is_ln(buffer) == FALSE)
+   {
+      /* If there is no line number, then execute the line as received */
+      /* RUN */
+      bwb_Warning_Clear();
+      SetOnError(0);
+      bwb_xtxtline(buffer);
+   }
+   else
+   if (is_numconst(buffer) == TRUE)
+   {
+      /*-----------------------------------------------------------------*/
+      /* Another possibility: if buffer is a numeric constant,           */
+      /* then delete the indicated line number (JBV)                     */
+      /*-----------------------------------------------------------------*/
+      /* DELETE ... */
+      int             LineNumber;
+
+      LineNumber = atoi(buffer);
+      bwb_Warning_Clear();
+      SetOnError(0);
+      sprintf(buffer, "delete %d", LineNumber);
+      bwb_xtxtline(buffer);
+   }
+   else
+   {
+      /* If there is a line number, then add it to the BASIC program */
+      /* 100 REM */
+      bwb_ladd(buffer, &My->bwb_start);
+   }
+
+   while( My->stack_head != NULL )
+   {
+      bwb_execline();
+   }
+}
+
+
+static void execute_profile( char * FileName /*, int IsRequired */  )
+{
+   FILE           *profile;
+
+   My->NextValidLineNumber = BasicLineNumberMin;   
+   profile = fopen( FileName, "r" );
+   if ( profile == NULL )
+   {
+      /* NOT FOUND */
+      /* OPTIONAL */
+      return;
+   }
+   /* FOUND */
+   if (My->IsInteractive)
+   {
+      /* set a buffer for jump: program execution returns to this point in
+       * case of a jump (error, interrupt, or finish program) */
+      My->program_run = 0;
+      signal(SIGINT, break_mes);
+      setjmp(My->mark);
+      if (My->program_run > 0)
+      {
+         /* error in PROFILE */
+         exit( 1 );
+      }
+      My->program_run++;
+   }
+
+   /* 
+   The profile only exists to allow 
+   setting the BWB... variables 
+   and executing OPTION ... commands
+   No other use is supported. 
+   */
+   {
+      int             Loop;
+   
+      Loop = TRUE;
+      if (feof(profile))
+      {
+         Loop = FALSE;
+      }
+      while (Loop == TRUE)
+      {
+         My->read_line[0] = BasicNulChar;
+         fgets(My->read_line, BasicStringLengthMax, profile);
+   
+         /* be sure that this is not EOF with a NULL line */
+         if (feof(profile))
+         {
+            Loop = FALSE;
+         }
+         else
+         {
+            bwb_single_step(My->read_line);
+         }
+      }
+      fclose( profile ); /* profile != NULL */
+      profile = NULL;
+
+   }
+}
+
+static void mark_preset_variables( void )
+{
+   /* mark all existing variables as preset */
+   /* this includes the BWB.* variables and all variables declared in any PROFILE */
+   VariableType *v;
+
+   for (v = My->var_head; v != NULL; v = v->next)
+   {
+      v->VariableFlags |= VARIABLE_PRESET;
+      v->VariableFlags |= VARIABLE_COMMON;   
+   }
+}
+
+
+static void execute_program( char * FileName )
+{
+   My->NextValidLineNumber = BasicLineNumberMin;   
+   My->IsCommandLineFile = TRUE;
+   if( bwb_fload( FileName ) == FALSE )
+   {
+      sprintf(My->bwb_ebuf, "Failed to open file %s\n", FileName); fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+      /* the file load has failed, so do NOT run the program */
+      exit(1);
+   }
+   if (My->err_number < 0 /* file load failed */ )
+   {
+      /* the file load has failed, so do NOT run the program */
+      exit(1);
+   }
+   bwb_RUN(&My->bwb_start);
+}
+
+int
+main(int argc, char **argv)
+{
+   int i;
+
+   My = calloc( 1, sizeof( GlobalType ) );
+   if( My == NULL )
+   {
+      puts( "My == NULL" );
+      return 1;
+   }
+   My->CurrentVersion = &bwb_vertable[ 0 ]; 
+   My->IsInteractive = TRUE;
+   My->OptionSleepValue = 1;
+   My->OptionIndentValue = 2;
+   My->OptionTerminalType = C_OPTION_TERMINAL_NONE;
+   My->OptionRoundType = C_OPTION_ROUND_BANK;
+   My->NextValidLineNumber = BasicLineNumberMin;
+   My->IncludeLevel = 0; /* %INCLUDE */
+   
+   bwx_DEBUG(__FUNCTION__);
+
+   bwb_init();
+   if (My->err_number < 0 /* bwb_init() failed */ )
+   {
+      /* FATAL */
+      return 1;
+   }
+   /* Signon message banner */
+   if (argc < 2)
+   {
+      /* no parameters */
+      if (My->IsInteractive)
+      {
+         bwx_signon();
+      }
+      else
+      {
+         /* if INTERACTIVE is FALSE, then we must have a program file */
+         fputs( "Program file not specified\n", My->SYSOUT->cfp );
+         return 1;
+      }
+   }
+
+   /* initialize preset variables */
+   if (My->IsInteractive)
+   {
+      /* set a buffer for jump: program execution returns to this point in
+       * case of a jump (error, interrupt, or finish program) */
+      My->program_run = 0;
+      signal(SIGINT, break_mes);
+      setjmp(My->mark);
+      if (My->program_run > 0)
+      {
+         /* error in profile */
+         return 1;
+      }
+      My->program_run++;
+   }
+   
+   sprintf( My->read_line, "LET %s = \"%s\"", DEFVNAME_EDITOR, DEF_EDITOR );
+   bwb_single_step(My->read_line);
+
+   sprintf( My->read_line, "LET %s = \"%s\"", DEFVNAME_FILES, DEF_FILES );
+   bwb_single_step(My->read_line);
+
+   sprintf( My->read_line, "LET %s = \"%s\"", DEFVNAME_IMPL, IMP_IDSTRING );
+   bwb_single_step(My->read_line);
+
+   sprintf( My->read_line, "LET %s = \"%s\"", DEFVNAME_PROMPT, PROMPT );
+   bwb_single_step(My->read_line);
+
+   sprintf( My->read_line, "LET %s = \"%s\"", DEFVNAME_RENUM, DEF_RENUM );
+   bwb_single_step(My->read_line);
+
+   sprintf( My->read_line, "LET %s = %d", DEFVNAME_COLORS, DEF_COLORS );
+   bwb_single_step(My->read_line);
+
+
+   /* check to see if there is a program file: but do this only the first time around! */
+
+
+#if PROFILE
+   execute_profile( PROFILENAME );
+#endif
+
+
+   for( i = 1; i < argc; i++ )
+   {
+      /* 
+      SYNTAX:    bwbasic
+      SYNTAX:    bwbasic --tape TapefileName.txt
+      SYNTAX:    bwbasic --profile ProfileName.txt
+      SYNTAX:    bwbasic program.bas
+      SYNTAX:    bwbasic --tape tapefile.inp --profile profile.bas program.bas 
+      */
+      if( bwb_stricmp( argv[i], "--tape" ) == 0 
+      ||  bwb_stricmp( argv[i], "-t"     ) == 0 
+      ||  bwb_stricmp( argv[i], "/tape"  ) == 0 
+      ||  bwb_stricmp( argv[i], "/t"     ) == 0 
+      )
+      {
+         i++;
+         if( i < argc )
+         {
+            /* --tape filename */
+            My->ExternalInputFile = fopen(argv[i], "r");
+         }
+      }
+      else
+      if( bwb_stricmp( argv[i], "--profile" ) == 0 
+      ||  bwb_stricmp( argv[i], "-p"        ) == 0 
+      ||  bwb_stricmp( argv[i], "/profile"  ) == 0 
+      ||  bwb_stricmp( argv[i], "/p"        ) == 0 
+      )
+      {
+         i++;
+         if( i < argc )
+         {
+            /* --profile filename */
+            execute_profile( argv[i] );
+         }
+      }
+      else
+      {
+         /* program */
+         mark_preset_variables();
+         {
+            int j = i;
+            int n = 0;
+            for( n = 0; n < 10 && j < argc; n++, j++ )
+            {
+               My->COMMAND5[n] = argv[j];
+            } 
+         }
+         execute_program( argv[i] );
+         break;
+      }
+   }   
+
+   if (My->IsInteractive)
+   {
+      /* set a buffer for jump: program execution returns to this point in
+       * case of a jump (error, interrupt, or finish program) */
+      My->program_run = 0;
+      signal(SIGINT, break_mes);
+      setjmp(My->mark);
+      if (My->program_run > 0)
+      {
+         /* error in console mode */
+      }
+      My->program_run++;
+   }
+
+   /* main program loop */
+   My->NextValidLineNumber = BasicLineNumberMin;   
+   mark_preset_variables();
+   while (!feof(My->SYSIN->cfp)) /* condition !feof( My->SYSIN->cfp ) added in v1.11 */
+   {
+      bwb_mainloop();
+   }
+
+   bwx_terminate();  /* allow ^D (Unix) exit with grace */
+
+   return 0;
+}
+
+
 
 /***************************************************************
   
@@ -656,46 +948,144 @@ bwb_init(int argc, char **argv)
 int
 bwb_interact(void)
 {
+   char LineExists = ' ';
+   char prompt[BasicStringLengthMax + 1]; 
+
    bwx_DEBUG(__FUNCTION__);
 
-
    /* take input from keyboard */
+   if( My->AutomaticLineNumber > 0 && My->AutomaticLineIncrement > 0 )
+   {
+      /* AUTO 100, 10 */
+      LineType * l;
+      for (l = &My->bwb_start; l != &My->bwb_end; l = l->next)
+      {
+         if( l->number == My->AutomaticLineNumber )
+         {
+            /* FOUND */
+            LineExists = '*';
+            break;
+         }
+         else
+         if( l->number > My->AutomaticLineNumber )
+         {
+            /* NOT FOUND */
+            LineExists = ' ';
+            break;
+         }
+      }
+      sprintf(prompt,"%d%c", My->AutomaticLineNumber, LineExists );
+   }
+   else
+   {
+      VariableType *v; 
 
-   bwb_gets(read_line);
-   CleanLine(read_line);   /* JBV */
+      if( (v = var_find(DEFVNAME_PROMPT,0,FALSE)) == NULL )
+      {
+         bwb_strcpy(prompt, PROMPT);
+      }
+      else
+      {
+         VariantType variant;
 
-   NextValidLineNumber = BasicLineNumberMin;
+         if( var_get( v, &variant ) == FALSE )
+         {
+            bwb_strcpy(prompt, PROMPT);
+         }
+         else
+         {
+            if( variant.TypeChar == '$' )
+            {
+               bwb_strcpy( prompt, variant.Buffer );
+               RELEASE( (&variant) );
+            }
+            else
+            {
+               bwb_strcpy(prompt, PROMPT);
+            }
+         }
+      }
+   }
+   bwx_input(prompt, My->read_line);
+   CleanLine(My->read_line);   /* JBV */
+
+   My->NextValidLineNumber = BasicLineNumberMin;
 
 
-   if (is_ln(read_line) == FALSE)
+   if( My->AutomaticLineNumber > 0 && My->AutomaticLineIncrement > 0 )
+   {
+       if( My->read_line[0] != BasicNulChar )
+       {
+           /* non-empty response */
+           if( bwb_stricmp( My->read_line, "MAN" ) == 0 )
+           {
+               /* MAN terminates AUTO mode */
+               My->AutomaticLineNumber = 0;
+               My->AutomaticLineIncrement = 0;
+           }
+           else
+           {
+               /* overwrite any existing line */
+               char tbuf[BasicStringLengthMax + 1];
+        
+               sprintf(tbuf,"%d ", My->AutomaticLineNumber );
+               bwb_strcat( tbuf, My->read_line );
+               bwb_ladd(tbuf, &My->bwb_start);
+               My->AutomaticLineNumber += My->AutomaticLineIncrement;
+           }
+       }
+       else
+       {
+           /* empty response */
+           if( LineExists == '*' )
+           {
+               /*
+               An empty response with an existing line,
+               causes AUTO to continue with the next line,
+               leaving the current line intact.
+               */
+               My->AutomaticLineNumber += My->AutomaticLineIncrement;
+           }
+           else
+           {
+               /* 
+               An empty response with a non-existing line,
+               causes AUTO to terminate.
+               */
+               My->AutomaticLineNumber = 0;
+               My->AutomaticLineIncrement = 0;
+           }
+       }
+   }
+   else
+   if (is_ln(My->read_line) == FALSE)
    {
       /* If there is no line number, execute the line as received */
       /* RUN */
       bwb_Warning_Clear();
       SetOnError(0);
-      bwb_xtxtline(read_line);
+      bwb_xtxtline(My->read_line);
    }
    else
-   if (is_numconst(read_line) == TRUE)
+   if (is_numconst(My->read_line) == TRUE)
    {
       /*-----------------------------------------------------------------*/
-      /* Another possibility: if read_line is a numeric constant,
+      /* Another possibility: if My->read_line is a numeric constant,
        * delete */
       /* the indicated line number (JBV)                                 */
       /*-----------------------------------------------------------------*/
       /* DELETE ... */
       int             LineNumber;
-      LineNumber = atoi(read_line);
+      LineNumber = atoi(My->read_line);
       bwb_Warning_Clear();
       SetOnError(0);
-      sprintf(read_line, "delete %d", LineNumber);
-      bwb_xtxtline(read_line);
+      sprintf(My->read_line, "delete %d", LineNumber);
+      bwb_xtxtline(My->read_line);
    }
    else
    {
-      /* If there is a line number, add the line to the file in
-       * memory */
-      bwb_ladd(read_line, &CURTASK bwb_start);
+      /* If there is a line number, add the line to the file in memory */
+      bwb_ladd(My->read_line, &My->bwb_start);
    }
 
    return TRUE;
@@ -714,13 +1104,158 @@ bwb_interact(void)
   
 ***************************************************************/
 
-int
-bwb_fload(FILE * file)
+static void FixQuotes( char * buffer )
 {
+   /* fix unbalanced quotes */
+   /* 'buffer' shall be declared "char buffer[BasicStringLengthMax + 1]". */
+   int p;
+   int QuoteCount = 0;
+   
+   p = 0;
+   while( buffer[p] != BasicNulChar )
+   {
+      if( buffer[p] == BasicQuoteChar )
+      {
+         QuoteCount++;
+      }
+      p++;
+      if( p > BasicStringLengthMax )
+      {
+         p = BasicStringLengthMax;
+         buffer[p] = BasicNulChar;
+      }
+   }
+   if( QuoteCount & 1 )
+   {
+      /* odd == missing trailing quote */
+      if( p > BasicStringLengthMax )
+      {
+         p = BasicStringLengthMax;
+      }
+      buffer[p] = BasicQuoteChar;
+      p++;
+      buffer[p] = BasicNulChar;
+   }
+}
+
+extern int bwb_fload ( char * FileName )
+{
+   FILE * file = NULL;
    int             Loop;
    bwx_DEBUG(__FUNCTION__);
 
-   NextValidLineNumber = BasicLineNumberMin;
+   /*
+   Just in case you are wondering...
+   Although this handles the most common cases, it does not handle all possible cases.
+   The correct solution is to provide the actual filename (with extension),
+   as it exists in the operating system.
+   */
+   file = NULL;
+   if( FileName == NULL /* My->progfile */ )
+   {
+      /* the FileName is already in My->progfile */
+      if (My->progfile[0] == BasicNulChar)
+      {
+         return FALSE;
+      }
+      if (file == NULL)
+      {
+         /* AS-IS */
+         file = fopen(My->progfile, "r");
+      }
+      if (file == NULL)
+      {
+         /* UPPERCASE */
+         strupper(My->progfile);
+         file = fopen(My->progfile, "r");
+      }
+      if (file == NULL)
+      {
+         /* LOWERCASE */
+         strlower(My->progfile);
+         file = fopen(My->progfile, "r");
+      }
+      /* do NOT add extensions to existing filenames */
+      if (file == NULL)
+      {
+         /* NOT FOUND */
+         return FALSE;
+      }
+   }
+   else
+   {
+      if (FileName[0] == BasicNulChar)
+      {
+         return FALSE;
+      }
+      if( My->IncludeLevel > 0 )
+      {
+         /* %INCLUDE filename */
+         if (file == NULL)
+         {
+            /* AS-IS */
+            file = fopen( FileName, "r");
+         }
+         if (file == NULL)
+         {
+            /* UPPERCASE */
+            strupper(FileName);
+            file = fopen( FileName, "r");
+         }
+         if (file == NULL)
+         {
+            /* LOWERCASE */
+            strlower(FileName);
+            file = fopen( FileName, "r");
+         }
+         /* do NOT add extensions to %INCLUDE filenames */
+      }
+      else
+      {
+         if (file == NULL)
+         {
+            /* AS-IS */
+            bwb_strcpy(My->progfile, FileName);
+            file = fopen(My->progfile, "r");
+         }
+         if (file == NULL)
+         {
+            /* UPPERCASE */
+            bwb_strcpy(My->progfile, FileName);
+            strupper(My->progfile);
+            file = fopen(My->progfile, "r");
+         }
+         if (file == NULL)
+         {
+            /* LOWERCASE */
+            bwb_strcpy(My->progfile, FileName);
+            strlower(My->progfile);
+            file = fopen(My->progfile, "r");
+         }
+         if (file == NULL)
+         {
+            /* UPPERCASE + EXTENSION */
+            bwb_strcpy(My->progfile, FileName);
+            bwb_strcat(My->progfile, ".BAS");
+            strupper(My->progfile);
+            file = fopen(My->progfile, "r");
+         }
+         if (file == NULL)
+         {
+            /* LOWERCASE + EXTENSION */
+            bwb_strcpy(My->progfile, FileName);
+            bwb_strcat(My->progfile, ".bas");
+            strlower(My->progfile);
+            file = fopen(My->progfile, "r");
+         }
+      }
+      if (file == NULL)
+      {
+         /* NOT FOUND */
+         return FALSE;
+      }
+   }
+   My->NextValidLineNumber = BasicLineNumberMin;
    Loop = TRUE;
    if (feof(file))
    {
@@ -728,65 +1263,95 @@ bwb_fload(FILE * file)
    }
    while (Loop == TRUE)
    {
-      read_line[0] = '\0';
-      fgets(read_line, BasicStringLengthMax, file);
-      if (file == stdin)
+      My->read_line[0] = BasicNulChar;
+      fgets(My->read_line, BasicStringLengthMax, file);
+      if (file == My->SYSIN->cfp)
       {
          ResetConsoleColumn();
-
       }
-      CleanLine(read_line);
-
       /* be sure that this is not EOF with a NULL line */
       if (feof(file))
       {
          Loop = FALSE;
       }
       else
-      if (strlen(read_line) > 0)
       {
-         bwb_ladd(read_line, &CURTASK bwb_start);
+         CleanLine(My->read_line);
+         if ( My->read_line[0] != BasicNulChar )
+         {
+            if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+            {
+               /* SYNTAX: %INCLUDE literal.file.name */
+
+               const char Magic_Word[] = "%INCLUDE";
+               int Magic_Length = bwb_strlen( Magic_Word );
+               if( bwb_strnicmp( My->read_line, Magic_Word, Magic_Length ) == 0 )
+               {
+                  int Result;
+                  int p = Magic_Length;
+                  char varname[ BasicNameLengthMax + 1 ];
+                  
+                  if( buff_read_varname( My->read_line, &p, varname ) == FALSE )
+                  {
+                     fputs( "Did not find filename after %INCLUDE\n", My->SYSOUT->cfp );
+                     fputs( My->read_line, My->SYSOUT->cfp );
+                     return FALSE;
+                  }
+                  if( buff_is_eol( My->read_line, &p ) == FALSE )
+                  {
+                     fputs( "Found garbage after %INCLUDE\n", My->SYSOUT->cfp );
+                     fputs( My->read_line, My->SYSOUT->cfp );
+                     return FALSE;
+                  }
+                  My->IncludeLevel++; /* %INCLUDE */
+                  Result = bwb_fload( varname );
+                  My->IncludeLevel--; /* %INCLUDE */
+                  if( Result == FALSE )
+                  {
+                     fputs( "Failed to load file\n", My->SYSOUT->cfp );
+                     fputs( My->read_line, My->SYSOUT->cfp );
+                     return FALSE;
+                  }
+               }
+               else
+               {
+                  bwb_ladd(My->read_line, &My->bwb_start);
+               }
+            }
+            else
+            {
+               bwb_ladd(My->read_line, &My->bwb_start);
+            }
+         }
       }
    }
 
    /* close file stream */
 
-   fclose(file);
+   fclose(file); /* file != NULL */
 
-   NextValidLineNumber = BasicLineNumberMin;
+   My->NextValidLineNumber = BasicLineNumberMin;
 
    return TRUE;
 }
 
 
-static
-char           *
-FindClassicStatementEnd(char *C)
+static char * FindClassicStatementEnd(char *C)
 {
    /* 
-    * find an unquoted OptionStatementChar
-    * that is NOT in a comment 
+    * find the end of the current statement
     */
+   
    bwx_DEBUG(__FUNCTION__);
 
-#if 0
-   if (OptionFlags & OPTION_BUGS_ON)
+
+   if( My->CurrentVersion->OptionStatementChar == BasicNulChar && My->CurrentVersion->OptionCommentChar == BasicNulChar )
    {
-      /* OK */
-   }
-   else
-   {
-      /* ERROR */
-      return NULL;
-   }
-#endif
-   if( OptionStatementChar == '\0' )
-   {
-      /* DO NOTHING: Multi-statment lines are not allowed */
+      /* DO NOTHING: Multi-statment lines are not possible */
       return NULL;
    }
    /* skip line number */
-   while (isdigit(*C))
+   while (bwb_isdigit(*C))
    {
       C++;
    }
@@ -795,82 +1360,63 @@ FindClassicStatementEnd(char *C)
    {
       C++;
    }
-   if (strncasecmp(C, "REM", 3) == 0)
+   if( IS_CHAR( *C, My->CurrentVersion->OptionCommentChar ) )
    {
-      /* REMark */
+      /* The entire line is a comment */
       return NULL;
    }
-   if (OptionFlags & OPTION_LABELS_ON)
+   if (bwb_strnicmp(C, "REM", 3) == 0)
+   {
+      /* The entire line is a comment */
+      return NULL;
+   }
+   if( (My->CurrentVersion->OptionFlags & OPTION_LABELS_ON) && (My->CurrentVersion->OptionStatementChar != BasicNulChar) )
    {
       /* determine if this line is a LABEL */
-      if (isalpha(*C))
-      {
-         char           *T = C;
-         
-         /* LABEL : ' */
+      int p;
+      char label[BasicNameLengthMax + 1];
 
-         if (OptionFlags & OPTION_BUGS_ON)
+      p = 0;
+      if( buff_read_label( C, &p, label ) )
+      {
+         buff_skip_spaces( C, &p );
+         if( buff_skip_char( C, &p, My->CurrentVersion->OptionStatementChar ) )
          {
-             /* labels may be alphanumeric with extra symbols */
-             while (isalnum(*T) || *T == '_' || *T == '.')
-             {
-                T++;
-             }
-         }
-         else
-         {
-             /* labels may only be alphanumeric */
-             while (isalnum(*T))
-             {
-                T++;
-             }
-         }
-         while (*T == ' ')
-         {
-            T++;
-         }
-         if (*T == OptionStatementChar)
-         {
-            T++;
-            while (*T == ' ')
+            if( buff_is_eol( C, &p ) )
             {
-               T++;
-            }
-            if (*T == OptionCommentChar
-                || *T == '\0'
-               )
-            {
-               /* LABEL */
+               /* The entire line is a label */
+               /* LABEL : \0 */
                return NULL;
             }
          }
       }
    }
-   while (*C != '\0')
+   /* not a special case, so split on the first unquoted OptionCommentChar or OptionStatementChar */
+   while (*C != BasicNulChar)
    {
-      if (*C == '\"')
+      if (*C == BasicQuoteChar)
       {
          /* skip leading quote */
          C++;
-         while (*C != '\"' && *C != '\0')
+         while (*C != BasicQuoteChar && *C != BasicNulChar)
          {
             /* skip string constant */
             C++;
          }
-         if (*C == '\"')
+         if (*C == BasicQuoteChar)
          {
             /* skip trailing quote */
             C++;
          }
       }
       else
-      if (*C == OptionCommentChar)
+      if ( IS_CHAR( *C, My->CurrentVersion->OptionCommentChar ) /* ', ! */ )
       {
-         /* comment */
-         return NULL;
+         /* FOUND */
+         return C;
       }
       else
-      if (*C == OptionStatementChar /* :, \ */ )
+      if ( IS_CHAR( *C, My->CurrentVersion->OptionStatementChar ) /* :, \ */ )
       {
          /* FOUND */
          return C;
@@ -885,8 +1431,7 @@ FindClassicStatementEnd(char *C)
 }
 
 
-static void
-ImportClassicIfThenElse(char *InBuffer)
+static void ImportClassicIfThenElse(char *InBuffer)
 {
 /*
 **
@@ -913,9 +1458,9 @@ ImportClassicIfThenElse(char *InBuffer)
 **
 */
 
-#define NULLCHAR     '\0'
-#define QUOTECHAR    '\"'
-#define COLONCHAR    OptionStatementChar
+#define NULLCHAR     BasicNulChar
+#define QUOTECHAR    BasicQuoteChar
+#define COLONCHAR    My->CurrentVersion->OptionStatementChar
 #define SPACECHAR    ' '
    int             i;
 
@@ -945,19 +1490,19 @@ ImportClassicIfThenElse(char *InBuffer)
    char           *Output = OutBuffer;
    char            LastChar = COLONCHAR;
 
-   int             REM_len = strlen(REM);
-   int             IF_len = strlen(IF);
-   int             THEN_len = strlen(THEN);
-   int             THEN2_len = strlen(THEN2);
-   int             ELSE_len = strlen(ELSE);
-   int             ENDIF_len = strlen(ENDIF);
-   int             GOTO_len = strlen(GOTO);
-   int             DATA_len = strlen(DATA);
-   int             CASE_len = strlen(CASE);
+   int             REM_len = bwb_strlen(REM);
+   int             IF_len = bwb_strlen(IF);
+   int             THEN_len = bwb_strlen(THEN);
+   int             THEN2_len = bwb_strlen(THEN2);
+   int             ELSE_len = bwb_strlen(ELSE);
+   int             ENDIF_len = bwb_strlen(ENDIF);
+   int             GOTO_len = bwb_strlen(GOTO);
+   int             DATA_len = bwb_strlen(DATA);
+   int             CASE_len = bwb_strlen(CASE);
 
 #define OUTPUTCHAR( c ) { *Output = c; Output++; }
 #define COPYCHAR  { LastChar = *Input; *Output = *Input; Output++; Input++; }
-#define COPY_LINENUMBER  while( isdigit( *Input )       ) COPYCHAR;
+#define COPY_LINENUMBER  while( bwb_isdigit( *Input )       ) COPYCHAR;
 #define COPY_SPACES      while( *Input == SPACECHAR     ) COPYCHAR;
 #define COPY_IF          for( i = 0; i < IF_len; i++    ) COPYCHAR;
 #define COPY_THEN        for( i = 0; i < THEN_len; i++  ) COPYCHAR;
@@ -970,14 +1515,7 @@ ImportClassicIfThenElse(char *InBuffer)
 
    bwx_DEBUG(__FUNCTION__);
 
-#if 0
-   if (OptionFlags & OPTION_LABELS_ON)
-   {
-      /* DO NOTHING: All IFs must be STANDARD or STRUCTURED */
-      return;
-   }
-#endif
-   if( OptionStatementChar == '\0' )
+   if( My->CurrentVersion->OptionStatementChar == BasicNulChar )
    {
       /* DO NOTHING: All IFs must be STANDARD or STRUCTURED */
       return;
@@ -991,7 +1529,7 @@ ImportClassicIfThenElse(char *InBuffer)
 
    while (*Input != NULLCHAR)
    {
-      if (*Input == OptionCommentChar)
+      if (*Input == My->CurrentVersion->OptionCommentChar)
       {
          /* comment */
          break;
@@ -1012,36 +1550,36 @@ ImportClassicIfThenElse(char *InBuffer)
          COPY_SPACES;
       }
       else
-      if (isalnum(LastChar))
+      if (bwb_isalnum(LastChar))
       {
          /* can NOT be the start of a command */
          COPYCHAR;
       }
       else
-      if (!isalpha(*Input))
+      if (!bwb_isalpha(*Input))
       {
          /* can NOT be the start of a command */
          COPYCHAR;
       }
       else
-      if (strncasecmp(Input, REM, REM_len) == 0)
+      if (bwb_strnicmp(Input, REM, REM_len) == 0)
       {
          break;
       }
       else
-      if (strncasecmp(Input, DATA, DATA_len) == 0)
+      if (bwb_strnicmp(Input, DATA, DATA_len) == 0)
       {
          /* DATA ... */
          break;
       }
       else
-      if (strncasecmp(Input, CASE, CASE_len) == 0)
+      if (bwb_strnicmp(Input, CASE, CASE_len) == 0)
       {
          /* CASE ... */
          break;
       }
       else
-      if (strncasecmp(Input, IF, IF_len) == 0)
+      if (bwb_strnicmp(Input, IF, IF_len) == 0)
       {
          /* IF */
          LastCommand = IF_COMMAND;
@@ -1050,7 +1588,7 @@ ImportClassicIfThenElse(char *InBuffer)
          COPY_SPACES;
       }
       else
-      if (strncasecmp(Input, GOTO, GOTO_len) == 0 && nIF > nTHEN)
+      if (bwb_strnicmp(Input, GOTO, GOTO_len) == 0 && nIF > nTHEN)
       {
          /* I F 
           *
@@ -1067,7 +1605,7 @@ ImportClassicIfThenElse(char *InBuffer)
          COPY_SPACES;
          COPY_LINENUMBER;
          COPY_SPACES;
-         if (strncasecmp(Input, ELSE, ELSE_len) == 0)
+         if (bwb_strnicmp(Input, ELSE, ELSE_len) == 0)
          {
             /* E L S E 
              *
@@ -1088,14 +1626,14 @@ ImportClassicIfThenElse(char *InBuffer)
          LastCommand = ENDIF_COMMAND;
       }
       else
-      if (strncasecmp(Input, THEN, THEN_len) == 0)
+      if (bwb_strnicmp(Input, THEN, THEN_len) == 0)
       {
          /* T H E N */
          LastCommand = THEN_COMMAND;
          nTHEN++;
          COPY_THEN;
          COPY_SPACES;
-         if (isdigit(*Input))
+         if (bwb_isdigit(*Input))
          {
             /* * 
              *
@@ -1121,14 +1659,14 @@ ImportClassicIfThenElse(char *InBuffer)
 
             COPY_LINENUMBER;
             COPY_SPACES;
-            if (strncasecmp(Input, ELSE, ELSE_len) == 0)
+            if (bwb_strnicmp(Input, ELSE, ELSE_len) == 0)
             {
                /* E L S E 
                 *
                 * Li n e N u m b e r */
                COPY_ELSE;
                COPY_SPACES;
-               if (isdigit(*Input))
+               if (bwb_isdigit(*Input))
                {
                   COPY_LINENUMBER;
                   COPY_SPACES;
@@ -1175,7 +1713,7 @@ ImportClassicIfThenElse(char *InBuffer)
             }
          }
          else
-         if (*Input == OptionCommentChar || *Input == NULLCHAR)
+         if (*Input == My->CurrentVersion->OptionCommentChar || *Input == NULLCHAR)
          {
             /* I S 
              *
@@ -1210,7 +1748,7 @@ ImportClassicIfThenElse(char *InBuffer)
          FORCE_COLON;
       }
       else
-      if (strncasecmp(Input, THEN2, THEN2_len) == 0)
+      if (bwb_strnicmp(Input, THEN2, THEN2_len) == 0)
       {
          /* t r a i l i n g 
           *
@@ -1223,7 +1761,7 @@ ImportClassicIfThenElse(char *InBuffer)
          {
              PeekInput++;
          }
-         if (*PeekInput == OptionCommentChar || *PeekInput == NULLCHAR)
+         if (*PeekInput == My->CurrentVersion->OptionCommentChar || *PeekInput == NULLCHAR)
          {
             /* I S 
              *
@@ -1246,7 +1784,7 @@ ImportClassicIfThenElse(char *InBuffer)
          }
       }
       else
-      if (strncasecmp(Input, ELSE, ELSE_len) == 0)
+      if (bwb_strnicmp(Input, ELSE, ELSE_len) == 0)
       {
          /* E L S E */
          if (LastCommand == ELSE_COMMAND)
@@ -1270,7 +1808,7 @@ ImportClassicIfThenElse(char *InBuffer)
          COPY_ELSE;
          FORCE_COLON;
          COPY_SPACES;
-         if (isdigit(*Input))
+         if (bwb_isdigit(*Input))
          {
             /* I F 
              *
@@ -1288,7 +1826,7 @@ ImportClassicIfThenElse(char *InBuffer)
          FORCE_COLON;
       }
       else
-      if (strncasecmp(Input, ENDIF, ENDIF_len) == 0)
+      if (bwb_strnicmp(Input, ENDIF, ENDIF_len) == 0)
       {
          /* E N D 
           *
@@ -1325,7 +1863,7 @@ ImportClassicIfThenElse(char *InBuffer)
       }
    }
    /* fixup trailing REMark command */
-   if (strncasecmp(Input, REM, REM_len) == 0)
+   if (bwb_strnicmp(Input, REM, REM_len) == 0)
    {
       /* REMark */
       /* 100 A=1 REMark */
@@ -1340,7 +1878,7 @@ ImportClassicIfThenElse(char *InBuffer)
       /* cppcheck: (style) Variable 'LastChar' is assigned a value that is never used. */
    }
    OUTPUTCHAR(NULLCHAR);
-   strcpy(InBuffer, OutBuffer);
+   bwb_strcpy(InBuffer, OutBuffer);
 }
 
 
@@ -1354,188 +1892,257 @@ ImportClassicIfThenElse(char *InBuffer)
 ***************************************************************/
 
 int
-bwb_ladd(char *buffer, struct bwb_line * p)
+bwb_ladd(char *buffer, LineType * p)
 {
-   struct bwb_line *l;
-   struct bwb_line *previous;
-   char            s_buffer[BasicStringLengthMax + 1];
+   LineType *l;
+   LineType *previous;
    char           *newbuffer;
 
    char           *NextStatement;
    char           *ThisStatement;
    int             Replace = TRUE;
+   char            BreakChar = BasicNulChar;
 
 
    bwx_DEBUG(__FUNCTION__);
    
 
    CleanLine(buffer);
-
-   if (strlen(buffer) == 0)
+   if ( buffer[0] == BasicNulChar )
    {
       return FALSE;
    }
-   /* * from here, the line WILL be added so the user can EDIT it, * we
-    * just complain and refuse to run */
+   /* AUTO-FIX UNBALANCED QUOTES */
+   FixQuotes(buffer);
+   /*
+   from here, the line WILL be added so the user can EDIT it,  
+   we just complain and refuse to run if any error is detected.
+   */
 
-   CURTASK         rescan = TRUE;   /* program needs to be scanned again */
+   My->rescan = TRUE;   /* program needs to be scanned again */
 
-#if 0
-   if (OptionFlags & OPTION_BUGS_ON)
-#endif
+   if( IS_CHAR( *buffer, My->CurrentVersion->OptionStatementChar ) )
+   {
+      /* part of a multi-statement line */
+   }
+   else
+   if( IS_CHAR( *buffer, My->CurrentVersion->OptionCommentChar ) )
+   {
+      /* part of a multi-statement line */
+   }
+   else
    {
       ImportClassicIfThenElse(buffer);
    }
    ThisStatement = buffer;
    NextStatement = NULL;
-
+   BreakChar = BasicNulChar;
 
    do
    {
-#if 0
-      if (OptionFlags & OPTION_BUGS_ON)
-#endif
+      if( BreakChar == BasicNulChar )
+      {
+          /* first pass thru the do{} while loop, do nothing */
+      }
+      else
+      if( IS_CHAR( BreakChar, My->CurrentVersion->OptionCommentChar ) )
+      {
+          /* ThisStatment will turn out to be the last */
+          *ThisStatement = My->CurrentVersion->OptionCommentChar;
+      }
+      else
+      if( IS_CHAR( BreakChar, My->CurrentVersion->OptionStatementChar ) )
+      {
+          /* we are NOT the last statement, skip over the OptionStatementChar */
+          ThisStatement++;
+      }
+      else
+      {
+         /* Internal Error */
+      }
+      
+      if( BreakChar == BasicNulChar && IS_CHAR( *buffer, My->CurrentVersion->OptionStatementChar ) )
+      {
+         /* first pass thru and line begins with colon */
+         /* part of a multi-statement line */
+         NextStatement = NULL;
+         if( My->NextValidLineNumber > 1 )
+         {
+            My->NextValidLineNumber--;
+         }
+         Replace = FALSE;
+      }
+      else
+      if( BreakChar == BasicNulChar  && IS_CHAR( *buffer, My->CurrentVersion->OptionCommentChar ) )
+      {
+         /* first pass thru and line begins with apostrophe */
+         /* part of a multi-statement line */
+         NextStatement = NULL;
+         if( My->NextValidLineNumber > 1 )
+         {
+            My->NextValidLineNumber--;
+         }
+         Replace = FALSE;
+      }
+      else
       {
          NextStatement = FindClassicStatementEnd(ThisStatement);
-         if (NextStatement == NULL)
-         {
-            /* we are the last part */
-         }
-         else
-         {
-            /* another statement follows */
-            *NextStatement = '\0';
-            NextStatement++;
-         }
+      }
+      
+      if (NextStatement == NULL)
+      {
+         /* we are the last statement */
+      }
+      else
+      {
+         /* another statement follows */
+         BreakChar = *NextStatement;
+         *NextStatement = BasicNulChar;
       }
       CleanLine(ThisStatement);
-      if (strlen(ThisStatement) > 0)
+      if ( ThisStatement[0] != BasicNulChar )
       {
 
          /* get memory for this line */
 
          /* Revised to CALLOC pass-thru call by JBV */
-         if ((l = (struct bwb_line *) CALLOC((size_t) 1, sizeof(struct bwb_line), "bwb_ladd")) == NULL)
+         if ((l = (LineType *) CALLOC((size_t) 1, sizeof(LineType), "bwb_ladd")) == NULL)
          {
-            bwb_error("in bwb_ladd(): failed to find memory for new line");
+            WARN_OUT_OF_MEMORY;
             return FALSE;
          }
          /* this line has not been executed or numbered */
-#if 0
-         l->Coverage = ' ';   
-#endif
          l->LineFlags = 0;
+         l->IncludeLevel = My->IncludeLevel; /* %INCLUDE */
 
          /* get the first element and test for a line number */
-
-         adv_element(ThisStatement, &(l->position), s_buffer);
+         l->position = 0;
 
          /* set line number in line structure */
 
-#if 0
-         CleanLine(ThisStatement);
-#endif
          /* ALL lines will have a line number.  If a line
           * number is not provided, then the next available
           * line number is assigned.  */
          newbuffer = ThisStatement;
-         l->number = NextValidLineNumber;
-         if (is_numconst(s_buffer) == TRUE)
+         l->number = My->NextValidLineNumber;
+
+         if( buff_read_line_number(newbuffer, &(l->position), &l->number) )
          {
-            l->number = atoi(s_buffer);
-            if (l->number < NextValidLineNumber)
+            if (l->number < My->NextValidLineNumber)
             {
                /* ERROR */
-               sprintf(bwb_ebuf, "%d < %d - LINE OUT OF ORDER: %s", l->number, NextValidLineNumber, buffer);
-               puts(bwb_ebuf);
-               err_number = -1;  /* in bwb_ladd(), LINE
-                         * OUT OF ORDER */
-               l->number = NextValidLineNumber; /* sane default */
+               sprintf(My->bwb_ebuf, "%d < %d - LINE OUT OF ORDER: %s\n", l->number, My->NextValidLineNumber, buffer);
+               fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+               My->err_number = -1;  /* in bwb_ladd(), LINE OUT OF ORDER */
+               l->number = My->NextValidLineNumber; /* sane default */
             }
             else
             if (l->number < BasicLineNumberMin || l->number > BasicLineNumberMax)
             {
                /* ERROR */
-               sprintf(bwb_ebuf, "INVALID LINE NUMBER: %s", buffer);
-               puts(bwb_ebuf);
-               err_number = -1;  /* in bwb_ladd(),
-                         * INVALID LINE NUMBER */
-               l->number = NextValidLineNumber; /* sane default */
+               sprintf(My->bwb_ebuf, "INVALID LINE NUMBER: %s\n", buffer);
+               fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+               My->err_number = -1;  /* in bwb_ladd(), INVALID LINE NUMBER */
+               l->number = My->NextValidLineNumber; /* sane default */
             }
             else
             {
                /* OK */
-               NextValidLineNumber = l->number;
+               My->NextValidLineNumber = l->number;
                l->LineFlags |= LINE_NUMBERED; /* line was manually numbered */
             }
             /* A SPACE IS REQUIRED AFTER THE LINE NUMBER
              * -- NO EXCEPTIONS */
-            if (buffer[l->position] != ' ')
+            if (newbuffer[l->position] != ' ')
             {
                /* ERROR */
-               sprintf(bwb_ebuf, "MISSING SPACE AFTER LINE NUMBER: %s", buffer);
-               puts(bwb_ebuf);
-               err_number = -1;  /* in bwb_ladd(),
-                         * MISSING SPACE AFTER
-                         * LINE NUMBER */
+               sprintf(My->bwb_ebuf, "MISSING SPACE AFTER LINE NUMBER: %s\n", buffer);
+               fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+               My->err_number = -1;  /* in bwb_ladd(), MISSING SPACE AFTER LINE NUMBER */
             }
             /* the buffer does NOT contain the line
              * number */
             newbuffer += l->position;
          }
-         /* the next valid line number is this line number
-          * plus one */
-#if 0
-         NextValidLineNumber++;
-#endif
+         /* the next valid line number is this line number plus one */
 
          CleanLine(newbuffer);
-         if (*newbuffer != 0)
+         if (*newbuffer != BasicNulChar)
          {
             /* not an empty line, so it must start with a
              * BASIC COMMAND or VARIABLE */
-            if (isalpha(*newbuffer) || *newbuffer == OptionCommentChar || *newbuffer == '?')
+            if( *newbuffer == My->CurrentVersion->OptionStatementChar )
+            {
+               /* this is a multi-statement line */
+               newbuffer++;
+               while( *newbuffer == ' ' )
+               {
+                  newbuffer++;
+               }
+            }
+            if (bwb_isalpha(*newbuffer))
+            {
+               /* OK */
+            }
+            else
+            if (*newbuffer == My->CurrentVersion->OptionCommentChar)
+            {
+               /* OK */
+            }
+            else
+            if (*newbuffer == My->CurrentVersion->OptionPrintChar)
+            {
+               /* OK */
+            }
+            else
+            if (*newbuffer == My->CurrentVersion->OptionImageChar)
             {
                /* OK */
             }
             else
             {
                /* ERROR */
-               sprintf(bwb_ebuf, "ILLEGAL CHARACTER AFTER LINE NUMBER: %s", newbuffer);
-               puts(bwb_ebuf);
-               err_number = -1;  /* in bwb_ladd(),
-                         * ILLEGAL CHARACTER
-                         * AFTER LINE NUMBER */
+               sprintf(My->bwb_ebuf, "ILLEGAL CHARACTER AFTER LINE NUMBER: %s\n", newbuffer);
+               fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+               My->err_number = -1;  /* in bwb_ladd(), ILLEGAL CHARACTER AFTER LINE NUMBER */
             }
          }
          if (ln_asbuf(l, newbuffer) == FALSE)
          {
             /* ERROR */
-            sprintf(bwb_ebuf, "in bwb_ladd(): INTERNAL ERROR, ln_asbuf() == FALSE");
-            puts(bwb_ebuf);
-            err_number = -1;  /* in bwb_ladd(),
-                      * INTERNAL ERROR,
-                      * ln_asbuf() == FALSE */
+            sprintf(My->bwb_ebuf, "INTERNAL ERROR, ln_asbuf() == FALSE\n");
+            fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+            My->err_number = -1;  /* in bwb_ladd(), INTERNAL ERROR, ln_asbuf() == FALSE */
          }
-         if (l->cmdnum <= 0)
+         if (l->cmdnum > 0)
+         {
+            /* OK */
+         }
+         else
          {
             /* ERROR */
-            sprintf(bwb_ebuf, "ILLEGAL COMMAND AFTER LINE NUMBER: %d %s", l->number, l->buffer);
-            puts(bwb_ebuf);
-            err_number = -1;  /* in bwb_ladd(),
-                      * ILLEGAL COMMAND AFTER
-                      * LINE NUMBER */
+            sprintf(My->bwb_ebuf, "ILLEGAL COMMAND AFTER LINE NUMBER: %d %s\n", l->number, l->buffer);
+            fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+            My->err_number = -1;  /* in bwb_ladd(), ILLEGAL COMMAND AFTER LINE NUMBER */
          }
-         for (previous = p; previous != &CURTASK bwb_end; previous = previous->next)
+         for (previous = p; previous != &My->bwb_end; previous = previous->next)
          {
             if (previous->number == l->number)
             {
                if (Replace == TRUE)
                {
                   /* REPLACE 'previous' */
-                  l->next = previous->next;
+                  while (previous->number == l->number)
+                  {
+                     LineType * z;
+                     
+                     z = previous;
+                     previous = previous->next;
+                     bwb_freeline( z );
+                  }
+                  l->next = previous;
                   p->next = l;
-                  bwb_freeline(previous);
+                  
                }
                else
                {
@@ -1562,21 +2169,14 @@ bwb_ladd(char *buffer, struct bwb_line * p)
          }
 
       }
-      if (NextStatement == NULL)
-      {
-         /* we are the last part */
-      }
-      else
-      {
-         /* another statement follows */
-         ThisStatement = NextStatement;
-         Replace = FALSE;
-      }
+      /* another statement may follow */
+      ThisStatement = NextStatement;
+      Replace = FALSE;
 
    }
-   while (NextStatement != NULL);
+   while (ThisStatement != NULL);
 
-   NextValidLineNumber++;
+   My->NextValidLineNumber++;
 
    return TRUE;
 
@@ -1592,34 +2192,36 @@ bwb_ladd(char *buffer, struct bwb_line * p)
   
 ***************************************************************/
 
-struct bwb_line *
+LineType *
 bwb_xtxtline(char *buffer)
 {
    bwx_DEBUG(__FUNCTION__);
 
 
    /* remove old program from memory */
-   bwb_xnew(&user_line);
+   bwb_xnew(&My->user_line);
 
    /* advance past whitespace */
    while (*buffer == ' ')
    {
       buffer++;
    }
-   if (*buffer == '\0')
+   if (*buffer == BasicNulChar)
    {
-      return &CURTASK bwb_end;
+      return &My->bwb_end;
    }
-   bwb_ladd(buffer, &user_line);
+   bwb_ladd(buffer, &My->user_line);
 
 
    /* execute the line as BASIC command line */
-   bwb_incexec();    /* increment EXEC stack */
-   bwb_setexec(user_line.next, 0, EXEC_NORM);   /* and set current line
-                      * in it */
-
-   return user_line.next;
-
+   if( bwb_incexec() )
+   {
+      My->stack_head->line = My->user_line.next; /* and set current line in it */
+      My->stack_head->code = EXEC_NORM;   
+      return My->user_line.next;
+   }
+   /* ERROR */
+   return &My->bwb_end;
 }
 
 /***************************************************************
@@ -1631,26 +2233,29 @@ bwb_xtxtline(char *buffer)
   
 ***************************************************************/
 
-void
+int
 bwb_incexec(void)
 {
+   StackType * stack_item;
    bwx_DEBUG(__FUNCTION__);
-   ++CURTASK exsc;
-
-   if (CURTASK exsc >= EXECLEVELS)
+   if( My->stack_level >= EXECLEVELS )
    {
-      --CURTASK exsc;
-      sprintf(bwb_ebuf, "in bwb_incexec(): incremented EXEC stack past max <%d>",
-         EXECLEVELS);
-      bwb_error(bwb_ebuf);
-      return;
+      WARN_OUT_OF_MEMORY;
+      return FALSE;
    }
-   CURTASK         excs[CURTASK exsc].LoopTopLine = NULL;
-   CURTASK         excs[CURTASK exsc].LoopBottomLine = NULL;
-   CURTASK         excs[CURTASK exsc].local_variable = NULL;
-   CURTASK         excs[CURTASK exsc].OnErrorGoto = 0;
-
-
+   if ((stack_item = calloc(1, sizeof(StackType))) == NULL)
+   {
+      WARN_OUT_OF_MEMORY;
+      return FALSE;
+   }
+   stack_item->line = My->ThisLine;
+   stack_item->LoopTopLine = NULL;
+   stack_item->local_variable = NULL;
+   stack_item->OnErrorGoto = 0;
+   stack_item->next = My->stack_head;
+   My->stack_head = stack_item;
+   My->stack_level++;
+   return TRUE;
 }
 
 /***************************************************************
@@ -1661,44 +2266,30 @@ bwb_incexec(void)
          stack counter.
   
 ***************************************************************/
+void bwb_clrexec( void )
+{
+   bwx_DEBUG(__FUNCTION__);
+   while(  My->stack_head != NULL )
+   {
+      bwb_decexec();
+   }
+}
 
 void
 bwb_decexec(void)
 {
-
-   /* decrement the exec stack counter */
+   StackType * stack_item;
    bwx_DEBUG(__FUNCTION__);
 
-   --CURTASK exsc;      /* NBS_P164_0840 fixed */
-
-   if (CURTASK exsc < -1)
+   if( My->stack_head == NULL )
    {
-      CURTASK         exsc = -1;
-      sprintf(bwb_ebuf, "in bwb_decexec(): decremented EXEC stack past min <-1>");
-      bwb_error(bwb_ebuf);
+      WARN_RETURN_WITHOUT_GOSUB;
       return;
    }
-}
-
-/***************************************************************
-  
-        FUNCTION:       bwb_setexec()
-  
-        DESCRIPTION:    This function sets the line and position
-         for the next call to bwb_execline();
-  
-***************************************************************/
-
-int
-bwb_setexec(struct bwb_line * l, int position, int code)
-{
-   bwx_DEBUG(__FUNCTION__);
-
-   CURTASK         excs[CURTASK exsc].line = l;
-   CURTASK         excs[CURTASK exsc].code = code;
-
-   return TRUE;
-
+   stack_item = My->stack_head;
+   My->stack_head = stack_item->next;
+   free( stack_item );
+   My->stack_level--;
 }
 
 /***************************************************************
@@ -1717,20 +2308,43 @@ bwb_mainloop(void)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   if (CURTASK exsc > -1)
+   if( My->stack_head != NULL )
    {
+      /* BASIC program running */
       bwb_execline();   /* execute one line of program */
+      return;
    }
-   else
-   if (IsCommandLineFile == TRUE)
+   /* BASIC program completed */
+   
+   if( My->ExternalInputFile != NULL )
    {
+      /* for automated testing, TAPE command */
+      if( bwb_is_eof( My->ExternalInputFile ) == FALSE )
+      {
+         /* TAPE command is active */
+         bwb_interact();   /* get user interaction */
+         return;
+      }
+   }
+   /* TAPE command inactive or completed */
+   
+   if (My->IsCommandLineFile == TRUE)
+   {
+      /* BASIC program was started from command line */
       bwx_terminate();
+      return;
    }
-   else
-   if (IsInteractive)
+   /* BASIC program was not started from command line */
+
+   if (My->IsInteractive)
    {
+      /* interactive */
       bwb_interact();   /* get user interaction */
+      return;
    }
+   /* non-interactive */
+
+   bwx_terminate();
 }
 
 /***************************************************************
@@ -1758,23 +2372,20 @@ ON ERROR GOTO line_number
 #define EVENT_TIMER 0X40
 #define EVENT_USER  0X80
 
-static void
-SetEvent(char EventType)
+static void SetEvent(char EventType)
 {
    bwx_DEBUG(__FUNCTION__);
-   EventQueue |= EventType;
+   My->EventQueue |= EventType;
 }
-static void
-ClrEvent(char EventType)
+static void ClrEvent(char EventType)
 {
    bwx_DEBUG(__FUNCTION__);
-   EventQueue &= ~EventType;
+   My->EventQueue &= ~EventType;
 }
-static int
-HasEvent(char EventType)
+static int HasEvent(char EventType)
 {
    bwx_DEBUG(__FUNCTION__);
-   return EventQueue & EventType;
+   return My->EventQueue & EventType;
 }
 void
 bwb_Timer_On(void)
@@ -1789,44 +2400,51 @@ bwb_Timer_Off(void)
    ClrEvent(EVENT_TIMER);
 }
 
-char            ErrMsg[256];  /* ERROR$ */
 void
-bwb_Warning(int ErrorLevel, char *ErrorMessage)
+bwb_Warning( int ErrorLevel, char *ErrorMessage )
 {
    bwx_DEBUG(__FUNCTION__);
-   if (ErrorLevel < 0)
+   if( ErrorLevel == 0 )
    {
-      bwb_error("bwb_warning() called with invalid ErrorLevel");
-      return;
-   }
-   if (ErrorMessage == NULL)
-   {
-      bwb_error("bwb_warning() called with invalid ErrorMessage");
-      return;
-   }
-   if (strlen(ErrorMessage) > 255)
-   {
-      bwb_error("bwb_warning() called with invalid ErrorMessage");
-      return;
-   }
-   if (ErrorLevel > 0)
-   {
-      if (err_number == 0) /* no errors pending */
-      {
-         /* only keep the first pending error to occur */
-         err_number = ErrorLevel;   /* ERR */
-         err_line = CURTASK excs[CURTASK exsc].line;
-         strcpy(ErrMsg, ErrorMessage); /* ERROR$ */
-         SetEvent(EVENT_ERROR);
-      }
+      /* clear any existing error */
+      My->err_number = 0;          /* ERR */
+      My->err_line = NULL;         /* ERL */
+      bwb_strcpy(My->ErrMsg, "");  /* ERROR$ */
+      ClrEvent(EVENT_ERROR);
    }
    else
-   if (ErrorLevel == 0)
    {
-      err_number = 0;   /* ERR */
-      err_line = NULL;  /* ERL */
-      strcpy(ErrMsg, "");  /* ERROR$ */
-      ClrEvent(EVENT_ERROR);
+      if( HasEvent(EVENT_ERROR) == 0 ) /* no errors pending */
+      {
+         /* only keep the first pending error to occur */
+         if( ErrorMessage == NULL )
+         {
+            /* use the default error message */
+            if( ErrorLevel > 0 && ErrorLevel < 80 )
+            {
+               ErrorMessage = DefaultErrorMessage[ ErrorLevel ];
+            }
+            else
+            {
+               ErrorMessage = DefaultErrorMessage[ 0 ];
+            }
+         }
+         else
+         {
+            /* use a specified error message */
+            if( bwb_strlen(ErrorMessage) > 255 )
+            {
+               ErrorMessage[ 255 ] = BasicNulChar;
+            }
+         }
+         My->err_number = ErrorLevel;          /* ERR */
+         if( My->stack_head != NULL )
+         {
+            My->err_line = My->stack_head->line;  /* ERL */
+         }
+         bwb_strcpy(My->ErrMsg, ErrorMessage); /* ERROR$ */
+         SetEvent(EVENT_ERROR);
+      }
    }
 }
 int
@@ -1841,123 +2459,117 @@ bwb_Warning_Clear(void)
    bwx_DEBUG(__FUNCTION__);
    bwb_Warning(0, "");  /* clear */
 }
-void
-bwb_Warning_OutOfData(char *Message)
-{
-   bwx_DEBUG(__FUNCTION__);
-   bwb_Warning(4, Message);/* Out of DATA */
-}
-void
-bwb_Warning_InvalidParameter(char *Message)
-{
-   bwx_DEBUG(__FUNCTION__);
-   bwb_Warning(5, Message);/* Illegal function call */
-}
-void
+int
 bwb_Warning_Overflow(char *Message)
 {
    /* Numeric overflow, String overflow, SPC() and TAB() */
-   /* OVERFLOW is different.  A default value is used. */
+   /* OVERFLOW is different.  A default value can be used. */
+   /* If ON ERROR GOTO 0, then display message and continue (returns FALSE), otherwise ERROR 6 (returns TRUE) */
    bwx_DEBUG(__FUNCTION__);
    if (GetOnError() == 0)
    {
       /* user error handler NOT active */
-      puts(Message);
+#if TRUE
+      fputs( Message, My->SYSOUT->cfp );
+      fputs( "\n", My->SYSOUT->cfp );
+#else
+      sprintf( My->bwb_ebuf, "LINE %d: %s\n", My->ThisLine->number, Message );
+      fputs( My->bwb_ebuf, My->SYSOUT->cfp );
+#endif
+      return FALSE;
    }
-   else
-   {
-      /* user error handler IS active */
-      bwb_Warning(6, Message);   /* Overflow */
-   }
+   /* user error handler IS active */
+   bwb_Warning(6, Message);   /* Overflow */
+   return TRUE;
 }
-void
-bwb_Warning_AdvancedFeature(char *Message)
-{
-   bwx_DEBUG(__FUNCTION__);
-   bwb_Warning(73, Message);  /* Advanced Feature */
-}
-
-
 void
 bwb_execline(void)
 {
-   struct bwb_line *r, *l;
+   LineType *r, *l;
 
    bwx_DEBUG(__FUNCTION__);
 
-   l = CURTASK excs[CURTASK exsc].line;
+   l = My->stack_head->line;
 
-   /* if the line is &CURTASK bwb_end, then break out of EXEC loops */
-
-   if (l == &CURTASK bwb_end || err_number < 0)
+   /* if the line is &My->bwb_end, then break out of EXEC loops */
+   if (l == &My->bwb_end || My->err_number < 0)
    {
-      CURTASK         exsc = -1;
+      bwb_clrexec();
       return;
    }
    /* Check for wacko line numbers  */
 
+   My->ThisLine = l;
 
    /* Print line number if trace is on */
 
-   if (bwb_trace == TRUE)
+   if (My->bwb_trace == TRUE)
    {
       if (l->number > 0)
       {
-         sprintf(bwb_ebuf, "[ %d %s ]", l->number, l->buffer);
-         prn_xprintf(bwb_ebuf);
+         sprintf(My->bwb_ebuf, "[ %d %s ]", l->number, l->buffer);
+         prn_xprintf(My->bwb_ebuf);
       }
    }
-   /* Set current line for error/break handling */
-
-   CURTASK         number = l->number;
-   CURTASK         bwb_l = l;
-
    l->position = l->Startpos;
 
    /* if there is a BASIC command in the line, execute it here */
 
 
-   if (l->cmdnum <= 0)
+   if (l->cmdnum > 0)
    {
-      bwb_error(err_syntax);
-      return;
+      /* OK */
+   }
+   else
+   {
+      WARN_ILLEGAL_DIRECT;
+      l->cmdnum = C_REM;
    }
    /* l->cmdnum > 0 */
+   
+   if( l->LineFlags & LINE_BREAK )
+   {
+      /* BREAK line */
+      l->LineFlags &= ~LINE_BREAK;
+      My->ContinueLine = l;
+      bwx_STOP();
+      return;
+   }
 
 
    /* execute the command vector */
    /* advance beyond whitespace */
 
-   adv_ws(l->buffer, &(l->position));
+   line_skip_spaces(l);
 
-   /* FIXME: use NextLine = l->next, any jumps update NextLine */
-
-   if (OptionFlags & OPTION_COVERAGE_ON)
+   if (My->CurrentVersion->OptionFlags & (OPTION_COVERAGE_ON) )
    {
       /* * We do this here * so "END" and "STOP" * are marked */
       if (l->cmdnum == C_DATA)
       {
-         /* * DATA lines are marked * when they are READ */
+         /* DATA lines are marked when they are READ */
       }
       else
       {
-         /* * this line was executed */
-#if 0
-         l->Coverage = '*';
-#endif         
+         /* this line was executed */
          l->LineFlags |= LINE_EXECUTED;
       }
    }
 
    r = bwb_vector(l);
-
-   if (err_number < 0)  /* in bwb_execline, FATAL ERROR PENDING */
+   if( r == NULL )
    {
-      /* FATAL */
-      CURTASK         exsc = -1;
+      WARN_INTERNAL_ERROR;
       return;
    }
-   if (ERROR_PENDING)
+
+   if (My->err_number < 0)  /* in bwb_execline, FATAL ERROR PENDING */
+   {
+      /* FATAL */
+      bwb_clrexec();
+      return;
+   }
+   if( bwb_Warning_Pending() /* Keep This */ )
    {
       /* we are probably not at the end-of-the-line */
    }
@@ -1965,9 +2577,14 @@ bwb_execline(void)
    if (r == l)
    {
       /* we should be at the end-of-the-line */
-      if (l->buffer[l->position] != '\0')
+      if ( line_is_eol(l) )
       {
-         bwb_error(err_syntax);
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return;
       }
    }
    else
@@ -1989,14 +2606,14 @@ bwb_execline(void)
          /* fall thru to the DEFAULT ERROR HANDLER */
       }
       else
-      if (err_line == NULL)
+      if (My->err_line == NULL)
       {
          /* BASIC PROMPT */
          /* For example: 10 ON ERROR GOTO 20 ERROR 1 */
          /* fall thru to the DEFAULT ERROR HANDLER */
       }
       else
-      if (err_line->number == 0)
+      if (My->err_line->number == 0)
       {
          /* BASIC PROMPT */
          /* For example: 10 ON ERROR GOTO 20 ERROR 1 */
@@ -2007,7 +2624,7 @@ bwb_execline(void)
       {
          /* ON ERROR RESUME NEXT */
          r->next->position = 0;
-         bwb_setexec(r->next, 0, CURTASK excs[CURTASK exsc].code);
+         My->stack_head->line = r->next;
          return;
       }
       else
@@ -2017,7 +2634,7 @@ bwb_execline(void)
          /* fall thru to the DEFAULT ERROR HANDLER */
       }
       else
-      if (err_gotol == err_line->number)
+      if (err_gotol == My->err_line->number)
       {
          /* RECURSION */
          /* For example: 10 ON ERROR GOTO 20 20 ERROR 1 */
@@ -2026,27 +2643,34 @@ bwb_execline(void)
       else
       {
          /* USER ERROR HANDLER SPECIFIED */
-         /* find the user-specified error handler and jump
-          * there */
-         struct bwb_line *x;
+         /* find the user-specified error handler and jump there */
+         LineType *x;
 
-         for (x = &CURTASK bwb_start; x != &CURTASK bwb_end; x = x->next)
+         for (x = &My->bwb_start; x != &My->bwb_end; x = x->next)
          {
             if (x->number == err_gotol)
             {
                /* FOUND */
-               if( OptionFlags & OPTION_ERROR_GOSUB )
+               if( My->CurrentVersion->OptionFlags & ( OPTION_ERROR_GOSUB ) )
                {
                    /* OPTION ERROR GOSUB */
-                   bwb_incexec();
-                   x->position = 0;
-                   bwb_setexec(x, 0, EXEC_GOSUB);
+                   if( bwb_incexec() )
+                   {
+                      x->position = 0;
+                      My->stack_head->line = x;
+                      My->stack_head->code = EXEC_GOSUB;
+                   }
+                   else
+                   {
+                      /* ERROR */
+                      My->stack_head->line = &My->bwb_end;
+                   }
                }
                else
                {
                    /* OPTION ERROR GOTO */
                    x->position = 0;  /* start of line */
-                   bwb_setexec(x, 0, CURTASK excs[CURTASK exsc].code);
+                   My->stack_head->line = x;
                }
                return;
             }
@@ -2056,8 +2680,89 @@ bwb_execline(void)
       }
       /* DEFAULT ERROR HANDLER */
       /* FATAL */
-      bwb_error(ErrMsg);
-      return;
+      bwx_DEBUG(My->ErrMsg); /* My->MaintainerDebugOn */
+      prn_xprintf("\n");
+
+      if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+      {
+         if( My->progfile[ 0 ] != BasicNulChar )
+         {
+            prn_xprintf("FILE:");
+            prn_xprintf(My->progfile);
+            prn_xprintf(", ");
+         }
+      }
+      prn_xprintf("ERROR in line");
+      if( My->ThisLine != NULL )
+      {
+         if ( BasicLineNumberMin <= My->ThisLine->number &&  My->ThisLine->number <= BasicLineNumberMax )
+         {
+            /* BASIC program line */
+            char            tbuf[32];
+            sprintf(tbuf, "%d", My->ThisLine->number);
+            prn_xprintf(" ");
+            prn_xprintf(tbuf);
+         }
+      }
+      prn_xprintf(": ");
+      prn_xprintf(My->ErrMsg);
+      prn_xprintf("\n");
+
+      if (My->CurrentVersion->OptionFlags & ( OPTION_TRACE_ON ) )
+      {
+         /* 
+         ** Dump the BASIC stack trace when a FATAL error occurs.
+         ** First line is the TOP of the stack.
+         ** Last line is the BOTTOM of the stack.
+         */
+         StackType *stack_item;
+         prn_xprintf("\nSTACK TRACE:\n");
+         for( stack_item = My->stack_head; stack_item != NULL; stack_item = stack_item->next )
+         {
+            LineType *l;
+
+            l = stack_item->line;
+            if (l != NULL)
+            {
+               if ( BasicLineNumberMin <= l->number &&  l->number <= BasicLineNumberMax )
+               {
+                  /* BASIC program line */
+                  char            LineNumber[32];
+                  sprintf(LineNumber, "%d:", l->number);
+                  prn_xprintf(LineNumber);
+                  if (l->buffer != NULL)
+                  {
+                     prn_xprintf(l->buffer);
+                  }
+                  prn_xprintf("\n");
+               }
+            }
+         }
+      }
+
+      My->AutomaticLineNumber = 0;
+      My->AutomaticLineIncrement = 0;
+   
+      if (My->IsInteractive)
+      {
+         /* INTERACTIVE: terminate program */
+   
+         /* reset all stack counters */
+         bwb_clrexec();
+         SetOnError(0);
+   
+         My->err_number = -1; /* in break_handler() */
+   
+   
+         /* reset the break handler */
+         signal(SIGINT, break_mes);
+   
+   
+         return;
+      }
+      /* NOT INTERACTIVE:  terminate immediately */
+      bwx_terminate();
+      return; /* never reached */
    }
    if (l->number > 0)
    {
@@ -2066,26 +2771,37 @@ bwb_execline(void)
       if (HasEvent(EVENT_TIMER))
       {
          /* TIMER ON */
-         if (tmr_count > 0)
+         if (My->tmr_count > 0)
          {
 
-            if (bwx_TIMER(0) > tmr_expires)
+            if (bwx_TIMER(0) > My->tmr_expires)
             {
                ClrEvent(EVENT_TIMER);
-               if (tmr_gotol > 0)
+               if (My->tmr_line > 0)
                {
-                  /* ON TIMER(...) GOSUB ...
-                   * ... */
-                  struct bwb_line *x;
+                  /* ON TIMER( My->tmr_count ) GOSUB My->tmr_line */
+                  LineType *x;
 
-                  for (x = &CURTASK bwb_start; x != &CURTASK bwb_end; x = x->next)
+                  for (x = &My->bwb_start; x != &My->bwb_end; x = x->next)
                   {
-                     if (x->number == tmr_gotol)
+                     if (x->number == My->tmr_line)
                      {
                         /* FOUND */
-                        bwb_incexec();
-                        x->position = 0;
-                        bwb_setexec(x, 0, EXEC_GOSUB);
+                        /* save current stack level */
+                        My->stack_head->line = r; 
+                        /* increment exec stack */
+                        if( bwb_incexec() )
+                        {
+                           /* set the new position to x and return x */
+                           x->position = 0;
+                           My->stack_head->line = x;
+                           My->stack_head->code = EXEC_GOSUB;
+                        }
+                        else
+                        {
+                           /* ERROR */
+                           My->stack_head->line = &My->bwb_end;
+                        }
                         return;
                      }
                   }
@@ -2103,7 +2819,7 @@ bwb_execline(void)
       r = l->next;
    }
    else
-   if (r->buffer[r->position] == '\0')
+   if ( line_is_eol( r ) )
    {
       /* we could be at the end-of-the-line, added for RETURN */
       /* advance to the next line */
@@ -2111,9 +2827,7 @@ bwb_execline(void)
       r = r->next;
    }
    /* else reset with the value in r */
-
-   bwb_setexec(r, r->position, CURTASK excs[CURTASK exsc].code);
-
+   My->stack_head->line = r;
 
 }
 
@@ -2127,7 +2841,7 @@ bwb_execline(void)
 ***************************************************************/
 
 int
-ln_asbuf(struct bwb_line * l, char *s)
+ln_asbuf(LineType * l, char *s)
 {
    bwx_DEBUG(__FUNCTION__);
 
@@ -2138,15 +2852,14 @@ ln_asbuf(struct bwb_line * l, char *s)
       l->buffer = NULL; /* JBV */
    }
    /* Revised to CALLOC pass-thru call by JBV */
-   if ((l->buffer = CALLOC(strlen(s) + 2, sizeof(char), "ln_asbuf"))
-       == NULL)
+   if ((l->buffer = CALLOC(bwb_strlen(s) + 2, sizeof(char), "ln_asbuf")) == NULL)
    {
-      bwb_error("in ln_asbuf(): failed to find memory for new line");
+      WARN_OUT_OF_MEMORY;
       return FALSE;
    }
    /* copy the whole line to the line structure buffer */
 
-   strcpy(l->buffer, s);
+   bwb_strcpy(l->buffer, s);
 
 
    /* strip CR from the buffer */
@@ -2160,28 +2873,6 @@ ln_asbuf(struct bwb_line * l, char *s)
    return TRUE;
 
 }
-
-/***************************************************************
-  
-        FUNCTION:       bwb_gets()
-  
-        DESCRIPTION:    This function reads a single line from
-                        the specified buffer.
-  
-***************************************************************/
-
-int
-bwb_gets(char *buffer)
-{
-    struct bwb_variable *v; 
-    char Buffer[BasicStringLengthMax + 1]; 
-
-    v = var_find(DEFVNAME_PROMPT); 
-    str_btoc(Buffer, var_getsval(v)); 
-    bwx_input(Buffer, buffer);
-    return TRUE;
-}
-
 
 
 /***************************************************************
@@ -2200,23 +2891,12 @@ is_ln(char *buffer)
    bwx_DEBUG(__FUNCTION__);
 
    position = 0;
-   adv_ws(buffer, &position);
-   switch (buffer[position])
+   buff_skip_spaces(buffer, &position);
+   if( bwb_isdigit(buffer[position]) )
    {
-   case '0':
-   case '1':
-   case '2':
-   case '3':
-   case '4':
-   case '5':
-   case '6':
-   case '7':
-   case '8':
-   case '9':
       return TRUE;
-   default:
-      return FALSE;
    }
+   return FALSE;
 }
 
 
@@ -2260,447 +2940,688 @@ FREE(void *ptr, char *str)
 }
 
 /* SWITCH */
-struct bwb_line *
-bwb_vector(struct bwb_line * l)
+LineType *
+bwb_vector( LineType *l )
 {
-   struct bwb_line *r;
-
+   LineType *r;
    bwx_DEBUG(__FUNCTION__);
-
-   switch (l->cmdnum)
+   bwx_DEBUG( l->buffer ); /* My->MaintainerDebugOn */
+   switch( l->cmdnum )
    {
    case C_QUEST:
-      r = bwb_QUEST(l);
+      r = bwb_QUEST( l );
+      break;
+   case C_APPEND:
+      r = bwb_APPEND( l );
+      break;
+   case C_AS:
+      r = bwb_AS( l );
+      break;
+   case C_AUTO:
+      r = bwb_AUTO( l );
+      break;
+   case C_BACKSPACE:
+      r = bwb_BACKSPACE( l );
+      break;
+   case C_BREAK:
+      r = bwb_BREAK( l );
+      break;
+   case C_BYE:
+      r = bwb_BYE( l );
       break;
    case C_CALL:
-      r = bwb_CALL(l);
+      r = bwb_CALL( l );
       break;
    case C_CASE:
-      r = bwb_CASE(l);
+      r = bwb_CASE( l );
       break;
    case C_CASE_ELSE:
-      r = bwb_CASE_ELSE(l);
-      break;
-   case C_CASE_IF:
-      r = bwb_CASE_IF(l);
-      break;
-   case C_CASE_IS:
-      r = bwb_CASE_IS(l);
+      r = bwb_CASE_ELSE( l );
       break;
    case C_CHAIN:
-      r = bwb_CHAIN(l);
+      r = bwb_CHAIN( l );
       break;
    case C_CHANGE:
-      r = bwb_CHANGE(l);
+      r = bwb_CHANGE( l );
       break;
    case C_CLEAR:
-      r = bwb_CLEAR(l);
+      r = bwb_CLEAR( l );
       break;
    case C_CLOAD:
-      r = bwb_CLOAD(l);
+      r = bwb_CLOAD( l );
       break;
-   case C_CLOAD_:
-      r = bwb_CLOAD_(l);
+   case C_CLOAD8:
+      r = bwb_CLOAD8( l );
+      break;
+   case C_CLOSE:
+      r = bwb_CLOSE( l );
+      break;
+   case C_CLR:
+      r = bwb_CLR( l );
       break;
    case C_CMDS:
-      r = bwb_CMDS(l);
+      r = bwb_CMDS( l );
       break;
    case C_COMMON:
-      r = bwb_COMMON(l);
+      r = bwb_COMMON( l );
+      break;
+   case C_CONSOLE:
+      r = bwb_CONSOLE( l );
       break;
    case C_CONT:
-      r = bwb_CONT(l);
+      r = bwb_CONT( l );
+      break;
+   case C_CREATE:
+      r = bwb_CREATE( l );
       break;
    case C_CSAVE:
-      r = bwb_CSAVE(l);
+      r = bwb_CSAVE( l );
       break;
-   case C_CSAVE_:
-      r = bwb_CSAVE_(l);
+   case C_CSAVE8:
+      r = bwb_CSAVE8( l );
       break;
    case C_DATA:
-      r = bwb_DATA(l);
+      r = bwb_DATA( l );
       break;
    case C_DEF:
-      r = bwb_DEF(l);
+      r = bwb_DEF( l );
       break;
    case C_DEF_SUB:
-      r = bwb_DEF_SUB(l);
+      r = bwb_DEF_SUB( l );
+      break;
+   case C_DEFBYT:
+      r = bwb_DEFBYT( l );
+      break;
+   case C_DEFCUR:
+      r = bwb_DEFCUR( l );
       break;
    case C_DEFDBL:
-      r = bwb_DEFDBL(l);
+      r = bwb_DEFDBL( l );
       break;
    case C_DEFINT:
-      r = bwb_DEFINT(l);
+      r = bwb_DEFINT( l );
+      break;
+   case C_DEFLNG:
+      r = bwb_DEFLNG( l );
       break;
    case C_DEFSNG:
-      r = bwb_DEFSNG(l);
+      r = bwb_DEFSNG( l );
       break;
    case C_DEFSTR:
-      r = bwb_DEFSTR(l);
+      r = bwb_DEFSTR( l );
       break;
    case C_DELETE:
-      r = bwb_DELETE(l);
+      r = bwb_DELETE( l );
+      break;
+   case C_DELIMIT:
+      r = bwb_DELIMIT( l );
       break;
    case C_DIM:
-      r = bwb_DIM(l);
+      r = bwb_DIM( l );
       break;
    case C_DO:
-      r = bwb_DO(l);
+      r = bwb_DO( l );
       break;
-   case C_DO_UNTIL:
-      r = bwb_DO_UNTIL(l);
-      break;
-   case C_DO_WHILE:
-      r = bwb_DO_WHILE(l);
+   case C_DSP:
+      r = bwb_DSP( l );
       break;
    case C_EDIT:
-      r = bwb_EDIT(l);
+      r = bwb_EDIT( l );
       break;
    case C_ELSE:
-      r = bwb_ELSE(l);
+      r = bwb_ELSE( l );
       break;
    case C_ELSEIF:
-      r = bwb_ELSEIF(l);
+      r = bwb_ELSEIF( l );
       break;
    case C_END:
-      r = bwb_END(l);
+      r = bwb_END( l );
       break;
    case C_END_FUNCTION:
-      r = bwb_END_FUNCTION(l);
+      r = bwb_END_FUNCTION( l );
       break;
    case C_END_IF:
-      r = bwb_END_IF(l);
+      r = bwb_END_IF( l );
       break;
    case C_END_SELECT:
-      r = bwb_END_SELECT(l);
+      r = bwb_END_SELECT( l );
       break;
    case C_END_SUB:
-      r = bwb_END_SUB(l);
+      r = bwb_END_SUB( l );
       break;
    case C_ERASE:
-      r = bwb_ERASE(l);
+      r = bwb_ERASE( l );
+      break;
+   case C_EXCHANGE:
+      r = bwb_EXCHANGE( l );
       break;
    case C_EXIT:
-      r = bwb_EXIT(l);
+      r = bwb_EXIT( l );
       break;
    case C_EXIT_DO:
-      r = bwb_EXIT_DO(l);
+      r = bwb_EXIT_DO( l );
       break;
    case C_EXIT_FOR:
-      r = bwb_EXIT_FOR(l);
+      r = bwb_EXIT_FOR( l );
       break;
    case C_EXIT_FUNCTION:
-      r = bwb_EXIT_FUNCTION(l);
+      r = bwb_EXIT_FUNCTION( l );
       break;
    case C_EXIT_SUB:
-      r = bwb_EXIT_SUB(l);
+      r = bwb_EXIT_SUB( l );
       break;
    case C_EXIT_UNTIL:
-      r = bwb_EXIT_UNTIL(l);
+      r = bwb_EXIT_UNTIL( l );
       break;
    case C_EXIT_WHILE:
-      r = bwb_EXIT_WHILE(l);
+      r = bwb_EXIT_WHILE( l );
+      break;
+   case C_FEND:
+      r = bwb_FEND( l );
       break;
    case C_FIELD:
-      r = bwb_FIELD(l);
+      r = bwb_FIELD( l );
+      break;
+   case C_FILE:
+      r = bwb_FILE( l );
+      break;
+   case C_FILES:
+      r = bwb_FILES( l );
       break;
    case C_FNCS:
-      r = bwb_FNCS(l);
+      r = bwb_FNCS( l );
+      break;
+   case C_FNEND:
+      r = bwb_FNEND( l );
       break;
    case C_FOR:
-      r = bwb_FOR(l);
+      r = bwb_FOR( l );
       break;
    case C_FUNCTION:
-      r = bwb_FUNCTION(l);
+      r = bwb_FUNCTION( l );
+      break;
+   case C_GET:
+      r = bwb_GET( l );
       break;
    case C_GO:
-      r = bwb_GO(l);
+      r = bwb_GO( l );
+      break;
+   case C_GO_SUB:
+      r = bwb_GO_SUB( l );
+      break;
+   case C_GO_TO:
+      r = bwb_GO_TO( l );
+      break;
+   case C_GOODBYE:
+      r = bwb_GOODBYE( l );
       break;
    case C_GOSUB:
-      r = bwb_GOSUB(l);
+      r = bwb_GOSUB( l );
       break;
    case C_GOTO:
-      r = bwb_GOTO(l);
+      r = bwb_GOTO( l );
       break;
    case C_HELP:
-      r = bwb_HELP(l);
+      r = bwb_HELP( l );
       break;
    case C_IF:
-      r = bwb_IF(l);
+      r = bwb_IF( l );
+      break;
+   case C_IF_END:
+      r = bwb_IF_END( l );
+      break;
+   case C_IF_MORE:
+      r = bwb_IF_MORE( l );
       break;
    case C_IF_THEN:
-      r = bwb_IF_THEN(l);
+      r = bwb_IF_THEN( l );
+      break;
+   case C_IMAGE:
+      r = bwb_IMAGE( l );
       break;
    case C_INPUT:
-      r = bwb_INPUT(l);
+      r = bwb_INPUT( l );
       break;
    case C_LET:
-      r = bwb_LET(l);
+      r = bwb_LET( l );
       break;
    case C_LINE:
-      r = bwb_LINE(l);
+      r = bwb_LINE( l );
       break;
    case C_LIST:
-      r = bwb_LIST(l);
+      r = bwb_LIST( l );
+      break;
+   case C_LLIST:
+      r = bwb_LLIST( l );
       break;
    case C_LOAD:
-      r = bwb_LOAD(l);
+      r = bwb_LOAD( l );
       break;
    case C_LOOP:
-      r = bwb_LOOP(l);
-      break;
-   case C_LOOP_UNTIL:
-      r = bwb_LOOP_UNTIL(l);
-      break;
-   case C_LOOP_WHILE:
-      r = bwb_LOOP_WHILE(l);
+      r = bwb_LOOP( l );
       break;
    case C_LPRINT:
-      r = bwb_LPRINT(l);
+      r = bwb_LPRINT( l );
+      break;
+   case C_LPRINTER:
+      r = bwb_LPRINTER( l );
       break;
    case C_LSET:
-      r = bwb_LSET(l);
+      r = bwb_LSET( l );
       break;
    case C_MAINTAINER:
-      r = bwb_MAINTAINER(l);
+      r = bwb_MAINTAINER( l );
+      break;
+   case C_MARGIN:
+      r = bwb_MARGIN( l );
+      break;
+   case C_MAT:
+      r = bwb_MAT( l );
+      break;
+   case C_MAT_GET:
+      r = bwb_MAT_GET( l );
+      break;
+   case C_MAT_INPUT:
+      r = bwb_MAT_INPUT( l );
+      break;
+   case C_MAT_PRINT:
+      r = bwb_MAT_PRINT( l );
+      break;
+   case C_MAT_PUT:
+      r = bwb_MAT_PUT( l );
+      break;
+   case C_MAT_READ:
+      r = bwb_MAT_READ( l );
+      break;
+   case C_MAT_WRITE:
+      r = bwb_MAT_WRITE( l );
       break;
    case C_MERGE:
-      r = bwb_MERGE(l);
+      r = bwb_MERGE( l );
       break;
-   case C_MID_:
-      r = bwb_MID_(l);
+   case C_MID4:
+      r = bwb_MID4( l );
       break;
    case C_NAME:
-      r = bwb_NAME(l);
+      r = bwb_NAME( l );
       break;
    case C_NEW:
-      r = bwb_NEW(l);
+      r = bwb_NEW( l );
       break;
    case C_NEXT:
-      r = bwb_NEXT(l);
+      r = bwb_NEXT( l );
+      break;
+   case C_OF:
+      r = bwb_OF( l );
+      break;
+   case C_OLD:
+      r = bwb_OLD( l );
       break;
    case C_ON:
-      r = bwb_ON(l);
+      r = bwb_ON( l );
       break;
-   case C_ON_ERROR_GOTO:
-      r = bwb_ON_ERROR_GOTO(l);
+   case C_ON_ERROR:
+      r = bwb_ON_ERROR( l );
       break;
    case C_ON_ERROR_GOSUB:
-      r = bwb_ON_ERROR_GOSUB(l);
+      r = bwb_ON_ERROR_GOSUB( l );
+      break;
+   case C_ON_ERROR_GOTO:
+      r = bwb_ON_ERROR_GOTO( l );
+      break;
+   case C_ON_ERROR_RESUME:
+      r = bwb_ON_ERROR_RESUME( l );
       break;
    case C_ON_ERROR_RESUME_NEXT:
-      r = bwb_ON_ERROR_RESUME_NEXT(l);
+      r = bwb_ON_ERROR_RESUME_NEXT( l );
+      break;
+   case C_ON_ERROR_RETURN:
+      r = bwb_ON_ERROR_RETURN( l );
       break;
    case C_ON_ERROR_RETURN_NEXT:
-      r = bwb_ON_ERROR_RETURN_NEXT(l);
+      r = bwb_ON_ERROR_RETURN_NEXT( l );
       break;
    case C_ON_TIMER:
-      r = bwb_ON_TIMER(l);
+      r = bwb_ON_TIMER( l );
       break;
    case C_OPEN:
-      r = bwb_OPEN(l);
+      r = bwb_OPEN( l );
       break;
    case C_OPTION:
-      r = bwb_OPTION(l);
+      r = bwb_OPTION( l );
+      break;
+   case C_OPTION_ANGLE:
+      r = bwb_OPTION_ANGLE( l );
       break;
    case C_OPTION_ANGLE_DEGREES:
-      r = bwb_OPTION_ANGLE_DEGREES(l);
+      r = bwb_OPTION_ANGLE_DEGREES( l );
+      break;
+   case C_OPTION_ANGLE_GRADIANS:
+      r = bwb_OPTION_ANGLE_GRADIANS( l );
       break;
    case C_OPTION_ANGLE_RADIANS:
-      r = bwb_OPTION_ANGLE_RADIANS(l);
+      r = bwb_OPTION_ANGLE_RADIANS( l );
+      break;
+   case C_OPTION_ARITHMETIC:
+      r = bwb_OPTION_ARITHMETIC( l );
       break;
    case C_OPTION_ARITHMETIC_DECIMAL:
-      r = bwb_OPTION_ARITHMETIC_DECIMAL(l);
+      r = bwb_OPTION_ARITHMETIC_DECIMAL( l );
       break;
    case C_OPTION_ARITHMETIC_FIXED:
-      r = bwb_OPTION_ARITHMETIC_FIXED(l);
+      r = bwb_OPTION_ARITHMETIC_FIXED( l );
       break;
    case C_OPTION_ARITHMETIC_NATIVE:
-      r = bwb_OPTION_ARITHMETIC_NATIVE(l);
+      r = bwb_OPTION_ARITHMETIC_NATIVE( l );
       break;
-   case C_OPTION_BASE_0:
-      r = bwb_OPTION_BASE_0(l);
+   case C_OPTION_BASE:
+      r = bwb_OPTION_BASE( l );
       break;
-   case C_OPTION_BASE_1:
-      r = bwb_OPTION_BASE_1(l);
+   case C_OPTION_BUGS:
+      r = bwb_OPTION_BUGS( l );
       break;
    case C_OPTION_BUGS_OFF:
-      r = bwb_OPTION_BUGS_OFF(l);
+      r = bwb_OPTION_BUGS_OFF( l );
       break;
    case C_OPTION_BUGS_ON:
-      r = bwb_OPTION_BUGS_ON(l);
+      r = bwb_OPTION_BUGS_ON( l );
       break;
    case C_OPTION_COMMENT:
-      r = bwb_OPTION_COMMENT(l);
+      r = bwb_OPTION_COMMENT( l );
+      break;
+   case C_OPTION_COMPARE:
+      r = bwb_OPTION_COMPARE( l );
       break;
    case C_OPTION_COMPARE_BINARY:
-      r = bwb_OPTION_COMPARE_BINARY(l);
+      r = bwb_OPTION_COMPARE_BINARY( l );
       break;
    case C_OPTION_COMPARE_DATABASE:
-      r = bwb_OPTION_COMPARE_DATABASE(l);
+      r = bwb_OPTION_COMPARE_DATABASE( l );
       break;
    case C_OPTION_COMPARE_TEXT:
-      r = bwb_OPTION_COMPARE_TEXT(l);
+      r = bwb_OPTION_COMPARE_TEXT( l );
+      break;
+   case C_OPTION_COVERAGE:
+      r = bwb_OPTION_COVERAGE( l );
       break;
    case C_OPTION_COVERAGE_OFF:
-      r = bwb_OPTION_COVERAGE_OFF(l);
+      r = bwb_OPTION_COVERAGE_OFF( l );
       break;
    case C_OPTION_COVERAGE_ON:
-      r = bwb_OPTION_COVERAGE_ON(l);
+      r = bwb_OPTION_COVERAGE_ON( l );
       break;
    case C_OPTION_DATE:
-      r = bwb_OPTION_DATE(l);
+      r = bwb_OPTION_DATE( l );
+      break;
+   case C_OPTION_DISABLE:
+      r = bwb_OPTION_DISABLE( l );
       break;
    case C_OPTION_DISABLE_COMMAND:
-      r = bwb_OPTION_DISABLE_COMMAND(l);
+      r = bwb_OPTION_DISABLE_COMMAND( l );
       break;
    case C_OPTION_DISABLE_FUNCTION:
-      r = bwb_OPTION_DISABLE_FUNCTION(l);
+      r = bwb_OPTION_DISABLE_FUNCTION( l );
       break;
    case C_OPTION_DISABLE_OPERATOR:
-      r = bwb_OPTION_DISABLE_OPERATOR(l);
+      r = bwb_OPTION_DISABLE_OPERATOR( l );
+      break;
+   case C_OPTION_ENABLE:
+      r = bwb_OPTION_ENABLE( l );
       break;
    case C_OPTION_ENABLE_COMMAND:
-      r = bwb_OPTION_ENABLE_COMMAND(l);
+      r = bwb_OPTION_ENABLE_COMMAND( l );
       break;
    case C_OPTION_ENABLE_FUNCTION:
-      r = bwb_OPTION_ENABLE_FUNCTION(l);
+      r = bwb_OPTION_ENABLE_FUNCTION( l );
       break;
    case C_OPTION_ENABLE_OPERATOR:
-      r = bwb_OPTION_ENABLE_OPERATOR(l);
+      r = bwb_OPTION_ENABLE_OPERATOR( l );
+      break;
+   case C_OPTION_ERROR:
+      r = bwb_OPTION_ERROR( l );
       break;
    case C_OPTION_ERROR_GOSUB:
-      r = bwb_OPTION_ERROR_GOSUB(l);
+      r = bwb_OPTION_ERROR_GOSUB( l );
       break;
    case C_OPTION_ERROR_GOTO:
-      r = bwb_OPTION_ERROR_GOTO(l);
+      r = bwb_OPTION_ERROR_GOTO( l );
+      break;
+   case C_OPTION_EXPLICIT:
+      r = bwb_OPTION_EXPLICIT( l );
+      break;
+   case C_OPTION_IMAGE:
+      r = bwb_OPTION_IMAGE( l );
+      break;
+   case C_OPTION_IMPLICIT:
+      r = bwb_OPTION_IMPLICIT( l );
       break;
    case C_OPTION_INDENT:
-      r = bwb_OPTION_INDENT(l);
+      r = bwb_OPTION_INDENT( l );
+      break;
+   case C_OPTION_LABELS:
+      r = bwb_OPTION_LABELS( l );
       break;
    case C_OPTION_LABELS_OFF:
-      r = bwb_OPTION_LABELS_OFF(l);
+      r = bwb_OPTION_LABELS_OFF( l );
       break;
    case C_OPTION_LABELS_ON:
-      r = bwb_OPTION_LABELS_ON(l);
+      r = bwb_OPTION_LABELS_ON( l );
+      break;
+   case C_OPTION_PRINT:
+      r = bwb_OPTION_PRINT( l );
+      break;
+   case C_OPTION_ROUND:
+      r = bwb_OPTION_ROUND( l );
+      break;
+   case C_OPTION_ROUND_BANK:
+      r = bwb_OPTION_ROUND_BANK( l );
+      break;
+   case C_OPTION_ROUND_MATH:
+      r = bwb_OPTION_ROUND_MATH( l );
+      break;
+   case C_OPTION_ROUND_TRUNCATE:
+      r = bwb_OPTION_ROUND_TRUNCATE( l );
+      break;
+   case C_OPTION_SLEEP:
+      r = bwb_OPTION_SLEEP( l );
       break;
    case C_OPTION_STATEMENT:
-      r = bwb_OPTION_STATEMENT(l);
+      r = bwb_OPTION_STATEMENT( l );
+      break;
+   case C_OPTION_STDERR:
+      r = bwb_OPTION_STDERR( l );
+      break;
+   case C_OPTION_STDIN:
+      r = bwb_OPTION_STDIN( l );
+      break;
+   case C_OPTION_STDOUT:
+      r = bwb_OPTION_STDOUT( l );
+      break;
+   case C_OPTION_STRICT:
+      r = bwb_OPTION_STRICT( l );
       break;
    case C_OPTION_STRICT_OFF:
-      r = bwb_OPTION_STRICT_OFF(l);
+      r = bwb_OPTION_STRICT_OFF( l );
       break;
    case C_OPTION_STRICT_ON:
-      r = bwb_OPTION_STRICT_ON(l);
+      r = bwb_OPTION_STRICT_ON( l );
       break;
-   case C_OPTION_TERMINAL_ADM_3A:
-      r = bwb_OPTION_TERMINAL_ADM_3A(l);
+   case C_OPTION_TERMINAL:
+      r = bwb_OPTION_TERMINAL( l );
+      break;
+   case C_OPTION_TERMINAL_ADM:
+      r = bwb_OPTION_TERMINAL_ADM( l );
       break;
    case C_OPTION_TERMINAL_ANSI:
-      r = bwb_OPTION_TERMINAL_ANSI(l);
+      r = bwb_OPTION_TERMINAL_ANSI( l );
       break;
    case C_OPTION_TERMINAL_NONE:
-      r = bwb_OPTION_TERMINAL_NONE(l);
+      r = bwb_OPTION_TERMINAL_NONE( l );
       break;
    case C_OPTION_TIME:
-      r = bwb_OPTION_TIME(l);
+      r = bwb_OPTION_TIME( l );
+      break;
+   case C_OPTION_TRACE:
+      r = bwb_OPTION_TRACE( l );
       break;
    case C_OPTION_TRACE_OFF:
-      r = bwb_OPTION_TRACE_OFF(l);
+      r = bwb_OPTION_TRACE_OFF( l );
       break;
    case C_OPTION_TRACE_ON:
-      r = bwb_OPTION_TRACE_ON(l);
+      r = bwb_OPTION_TRACE_ON( l );
+      break;
+   case C_OPTION_USING:
+      r = bwb_OPTION_USING( l );
       break;
    case C_OPTION_VERSION:
-      r = bwb_OPTION_VERSION(l);
+      r = bwb_OPTION_VERSION( l );
+      break;
+   case C_PAUSE:
+      r = bwb_PAUSE( l );
+      break;
+   case C_POP:
+      r = bwb_POP( l );
       break;
    case C_PRINT:
-      r = bwb_PRINT(l);
+      r = bwb_PRINT( l );
+      break;
+   case C_PUT:
+      r = bwb_PUT( l );
       break;
    case C_QUIT:
-      r = bwb_QUIT(l);
+      r = bwb_QUIT( l );
       break;
    case C_READ:
-      r = bwb_READ(l);
+      r = bwb_READ( l );
+      break;
+   case C_RECALL:
+      r = bwb_RECALL( l );
       break;
    case C_REM:
-      r = bwb_REM(l);
+      r = bwb_REM( l );
+      break;
+   case C_RENAME:
+      r = bwb_RENAME( l );
       break;
    case C_RENUM:
-      r = bwb_RENUM(l);
+      r = bwb_RENUM( l );
+      break;
+   case C_RENUMBER:
+      r = bwb_RENUMBER( l );
+      break;
+   case C_RESET:
+      r = bwb_RESET( l );
       break;
    case C_RESTORE:
-      r = bwb_RESTORE(l);
+      r = bwb_RESTORE( l );
       break;
    case C_RESUME:
-      r = bwb_RESUME(l);
+      r = bwb_RESUME( l );
       break;
    case C_RETURN:
-      r = bwb_RETURN(l);
+      r = bwb_RETURN( l );
       break;
    case C_RSET:
-      r = bwb_RSET(l);
+      r = bwb_RSET( l );
       break;
    case C_RUN:
-      r = bwb_RUN(l);
+      r = bwb_RUN( l );
       break;
    case C_SAVE:
-      r = bwb_SAVE(l);
+      r = bwb_SAVE( l );
+      break;
+   case C_SCRATCH:
+      r = bwb_SCRATCH( l );
       break;
    case C_SELECT:
-      r = bwb_SELECT(l);
+      r = bwb_SELECT( l );
       break;
    case C_SELECT_CASE:
-      r = bwb_SELECT_CASE(l);
+      r = bwb_SELECT_CASE( l );
+      break;
+   case C_STEP:
+      r = bwb_STEP( l );
       break;
    case C_STOP:
-      r = bwb_STOP(l);
+      r = bwb_STOP( l );
+      break;
+   case C_STORE:
+      r = bwb_STORE( l );
       break;
    case C_SUB:
-      r = bwb_SUB(l);
+      r = bwb_SUB( l );
+      break;
+   case C_SUBEND:
+      r = bwb_SUBEND( l );
       break;
    case C_SWAP:
-      r = bwb_SWAP(l);
+      r = bwb_SWAP( l );
       break;
    case C_SYSTEM:
-      r = bwb_SYSTEM(l);
+      r = bwb_SYSTEM( l );
+      break;
+   case C_TEXT:
+      r = bwb_TEXT( l );
+      break;
+   case C_THEN:
+      r = bwb_THEN( l );
       break;
    case C_TIMER:
-      r = bwb_TIMER(l);
+      r = bwb_TIMER( l );
       break;
    case C_TIMER_OFF:
-      r = bwb_TIMER_OFF(l);
+      r = bwb_TIMER_OFF( l );
       break;
    case C_TIMER_ON:
-      r = bwb_TIMER_ON(l);
+      r = bwb_TIMER_ON( l );
       break;
    case C_TIMER_STOP:
-      r = bwb_TIMER_STOP(l);
+      r = bwb_TIMER_STOP( l );
+      break;
+   case C_TLOAD:
+      r = bwb_TLOAD( l );
+      break;
+   case C_TO:
+      r = bwb_TO( l );
+      break;
+   case C_TRACE:
+      r = bwb_TRACE( l );
+      break;
+   case C_TRACE_OFF:
+      r = bwb_TRACE_OFF( l );
+      break;
+   case C_TRACE_ON:
+      r = bwb_TRACE_ON( l );
+      break;
+   case C_TSAVE:
+      r = bwb_TSAVE( l );
       break;
    case C_UEND:
-      r = bwb_UEND(l);
+      r = bwb_UEND( l );
       break;
    case C_UNTIL:
-      r = bwb_UNTIL(l);
+      r = bwb_UNTIL( l );
+      break;
+   case C_USE:
+      r = bwb_USE( l );
       break;
    case C_USER_LBL:
-      r = bwb_USER_LBL(l);
+      r = bwb_USER_LBL( l );
       break;
    case C_VARS:
-      r = bwb_VARS(l);
+      r = bwb_VARS( l );
       break;
    case C_WEND:
-      r = bwb_WEND(l);
+      r = bwb_WEND( l );
       break;
    case C_WHILE:
-      r = bwb_WHILE(l);
+      r = bwb_WHILE( l );
       break;
    case C_WRITE:
-      r = bwb_WRITE(l);
+      r = bwb_WRITE( l );
       break;
    default:
-      sprintf(bwb_ebuf, "in bwb_vector(), INTERNAL ERROR: %d not in switch", l->cmdnum);
-      bwb_error(bwb_ebuf);
+      WARN_INTERNAL_ERROR;
       r = l;
       break;
    }

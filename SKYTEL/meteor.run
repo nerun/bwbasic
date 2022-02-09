@@ -1,9 +1,0 @@
-                                                                                
-INITIAL MASS (KG)? 987                                                          
-DENSITY (KG PER CUBIC METER)? 65.43                                             
-SPEED AT ENTRY (KM/S)? 2109                                                     
-ZENITH ANGLE (DEG)? 87.65                                                       
-                                                                                
- TIME    HEIGHT    SPEED    DECEL    MASS     VISUAL                            
-  (S)     (KM)    (KM/S)   (M/S/S)    (%)      MAG                              
- .1      140.4    2108.9   71       5.03    -24.7                               

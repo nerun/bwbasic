@@ -26,4 +26,4 @@ SETTING A$='123' AND X=123
 ABOUT TO EXECUTE: IF A$ = X...                                                  
                                                                                 
                                                                                 
-ERROR in line 300: in op_equals(): Type mismatch in string comparison.          
+ERROR in line 300: Type mismatch                                                

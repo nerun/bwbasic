@@ -25,4 +25,4 @@ FOR DETAILED CRITERIA.
                                                                                 
 ABOUT TO COMPUTE: 8+(7-(9-88)/3+(7-9)-3                                         
                                                                                 
-ERROR in line 250: Incomplete statement                                         
+ERROR in line 250: Syntax error                                                 

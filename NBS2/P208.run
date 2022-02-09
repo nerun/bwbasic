@@ -22,4 +22,4 @@ FOR DETAILED CRITERIA.
 SETTING A$='123' AND X=111                                                      
 ABOUT TO EXECUTE: LET A$ = X                                                    
                                                                                 
-ERROR in line 270: Type Mismatch                                                
+ERROR in line 270: Type mismatch                                                

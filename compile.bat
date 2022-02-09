@@ -12,10 +12,8 @@ call stdcomp bwb_var.c
 call stdcomp bwb_inp.c
 call stdcomp bwb_fnc.c
 call stdcomp bwb_cnd.c
-call stdcomp bwb_ops.c
 call stdcomp bwb_dio.c
 call stdcomp bwb_str.c
-call stdcomp bwb_elx.c
 call stdcomp bwb_stc.c
 call stdcomp bwx_tty.c
 call stdcomp bwd_cmd.c

@@ -1,0 +1,617 @@
+.pl 66
+                           APPENDIX F
+
+                    General File Information
+
+    Perhaps  the most important aspect of any business system  is 
+the  general  DATA  file structure and the  way  data  files  are 
+handled.  In  this  system,  all access to general DATA files  is 
+RANDOM or DIRECT. This means that we call each DATA file entry by 
+a relative record number.
+
+    The  records  are  established via the ??ENTRY  and  ????TRAN 
+programs.  If  a program that requires DATA files is entered  and 
+the  file  is NOT found on the disk in  drive  "B",  the  program 
+"defaults" to the create new file part. It will ask you to either 
+insert a diskette with the appropriate file in the drive and type 
+"c" to continue or,  if you want to create the file for the first 
+time,  typing  an  "n" will cause the system to ask you how  many 
+records you want.
+
+    You  should  have  some  notion  of  the  number  of  records 
+required.  In  payroll for example if you have 10  employees,  it 
+would be reasonable to create between 15 and 25 records.  In this 
+way  your data files can be established without sample files  but 
+for test purposes,  running the sample files included can be very 
+educational.
+
+    In  the file layouts that follow,  the contents of each  DATA 
+record  are shown.  A group of DATA records makes up a  file.  In 
+each  of the layouts that follow the generic name of the file  is 
+indicated first,  followed by the name used on the file diskette. 
+COMPANY NAME ENTRY FILE is a generic name,  NM is the actual file 
+name  on  the  diskette.  Each  record  is  170  total  bytes  or 
+characters long and contains the entries shown as Items 1 through 
+11.
+
+    The Item is followed by a description and a byte or character 
+length for each item. The variable name most commonly used is the 
+last entry.
+
+
+
+
+NAME ENTRY FILE		                 NA (170 bytes)
+
+Item #	Description	       Bytes  	 Expression
+
+1	Tag	               4	 N(2,1) 
+2	Ref Number	       10	 N(2,2)
+3	Name	               24	 K$(3,3)
+4	Company	               24	 K$(3,4)
+5	Address	               24	 K$(3,5)
+6	City	               17	 K$(3,6)
+7	State	               2	 K$(3,7)
+8	Zip Code	       5	 K$(3,8)
+9	Telephone	       14	 K$(3,9)
+10	Federal Tax ID #       20	 K$(3,10)
+11	State Tax ID #	       20	 K$(3,11)
+
+
+DATE INFORMATION		         DATE
+
+
+Item #	Description	       Bytes	 Expression
+
+1	Current date	       8	 D$(1)
+2	Period ending	       8	 D$(2)
+3	Prev period ending     8	 D$(3)
+4	Month ending	       8	 D$(4)
+5	Quarter ending	       8	 D$(5)
+6	Year ending	       8	 D$(6)
+7	Reserved	       8	 D$(7)
+8	Fiscal ending	       8	 D$(8)
+
+
+
+
+
+
+
+
+
+
+GENERAL LEDGER REPORT TABS		 GLT
+
+
+Item #	Description	       Bytes	 Expression
+
+1	Page width	       3	 T%(1)
+2	Tag tab	               3	 T%(2)
+3	Account number tab     3	 T%(3)
+4	Major heading tab      3	 T%(4)
+5	Subheading tab	       3	 T%(5)
+6	Partial total tab      3	 T%(6)
+7	Partial tot dollar tab 3	 T%(7)
+8	Final total tab	       3	 T%(8)
+9	Final tot dollar tab   3	 T%(9)
+10	Date tab	       3	 T%(10)
+11	Page number tab	       3	 T%(11)
+12	Comp Name in Use Tag   3	 T%(12)
+13	Lowest Bal Sht Acct #  10	 T(13)
+14	Highest Bal Sht Acct # 10	 T(14)
+15	Low Cost of Gds Acct # 10	 T(15)
+16	Hi Cost of Gds Acct #  10	 T(16)
+
+
+GENERAL LEDGER FORMATS		         GLF
+
+
+Item #	Description	       Bytes	 Expression
+
+1	Dollar formats	       20	 L$
+2	Percentage formats     20	 P$
+
+
+
+
+
+
+
+
+
+
+GENERAL LEDGER HEADING FILE		 GLH (150 bytes)
+
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Ledger Acct Number     10	 N(2,2)
+3	Description	       30	 K$(3,3)
+4	First Acct Number      10	 N(2,4)
+5	Last Acct Number       10	 N(2,5)
+6	M-T-D Amount	       12	 N(2,6)
+7	Q-T-D Amount	       12	 N(2,7)
+8	Y-T-D Amount	       12	 N(2,8)
+9	M-T-D Percent	       12	 N(2,9)
+10	Q-T-D Percent	       12	 N(2,10)
+11	Y-T-D Percent	       12	 N(2,11)
+
+
+GENERAL LEDGER SUBHEADING FILE		 GLS (150 bytes)
+
+
+Item #	Description	       Bytes     Expression
+
+1	Tag	               4	 N(2,1)
+2	Ledger Acct Number     10	 N(2,2)
+3	Description	       30	 K$(3,3)
+4	First Acct Number      10	 N(2,4)
+5	Last Acct Number       10	 N(2,5)
+6	M-T-D Amount	       12	 N(2,6)
+7	Q-T-D Amount	       12	 N(2,7)
+8	Y-T-D Amount	       12	 N(2,8)
+9	M-T-D Percent	       12	 N(2,9)
+10	Q-T-D Percent	       12	 N(2,10)
+11	Y-T-D Percent	       12	 N(2,11)
+
+
+
+
+
+
+PAYROLL CUTOFF AMOUNTS		         EPC
+
+
+Item #	Description	       Bytes     Expression
+
+1	FICA Cutoff	       12	 C(1)
+2	FICA Percent	       12	 C(2)
+3	SDI Cutoff	       12	 C(3)
+4	SDI Percent	       12	 C(4)
+5	FUTA Cutoff	       12	 C(5)
+6	FUTA Percent	       12	 C(6)
+7	SUTA Cutoff	       12	 C(7)
+8	SUTA Percent	       12	 C(8)
+
+Settings
+FICA	29,700	.0665
+SDI	11,400	.01
+FUTA	 6,000	.007
+SUTA	 6,000	?
+
+
+.pa
+GENERAL LEDGER FILE		         GL (138 bytes)
+
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Ledger Acct Number     10	 N(2,2)
+3	Description	       30	 K$(3,3)
+4	Month to date amt      12	 N(2,4)
+5	Quarter to date amt    12	 N(2,5)
+6	Year to date amt       12	 N(2,6)
+7	Prev m to date	       12	 N(2,7)
+8	Prev q to date	       12	 N(2,8)
+9	Prev y to date	       12	 N(2,9)
+10	Budgeted amt	       12	 N(2,10)
+
+
+GENERAL JOURNAL		                 GLJO (250 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               8	 N(2,1)
+2	Major Acct #	       10	 N(2,2)
+3	Date	               8	 K$(3,3)
+4	To record	       24	 K$(3,4)
+5	Remarks	               24	 K$(3,5)
+6	Not used	       1	 K$(3,6)
+7	Major Amt	       12	 N(2,7)
+8	#1 Acct #	       10	 N(2,8)
+9	#1 Amount	       12	 N(2,9)
+10	#2 Acct #	       10	 N(2,10)
+11	#2 Amount	       12	 N(2,11)
+12	#3 Acct #	       10	 N(2,12)
+13	#3 Amount	       12	 N(2,13)
+14	#4 Acct #	       10	 N(2,14)
+15	#4 Amount	       12	 N(2,15)
+16	#5 Acct #	       10	 N(2,16)
+17	#5 Amount	       12	 N(2,17)
+18	#6 Acct #	       10	 N(2,18)
+19	#6 Amount	       12	 N(2,19)
+CHECK DISBURSEMENTS		         GLCD (250 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Check #	               8	 N(2,1)
+2	Bank Acct #	       10	 N(2,2)
+3	Date	               8	 K$(3,3)
+4	In favor of	       24	 K$(3,4)
+5	Remarks	               24	 K$(3,5)
+6	Print Check(Y/N)       1	 K$(3,6)
+7	Amount of check	       12	 N(2,7)
+8	#1 Acct #	       10	 N(2,8)
+9	#1 Amount	       12	 N(2,9)
+10	#2 Acct #	       10	 N(2,10)
+11	#2 Amount	       12	 N(2,11)
+12	#3 Acct #	       10	 N(2,12)
+13	#3 Amount	       12	 N(2,13)
+14	#4 Acct #	       10	 N(2,14)
+15	#4 Amount	       12	 N(2,15)
+16	#5 Acct #	       10	 N(2,16)
+17	#5 Amount	       12	 N(2,17)
+18	#6 Acct #	       10	 N(2,18)
+19	#6 Amount	       12	 N(2,19)
+
+
+CHECK RECEIPTS		                 GLCK (250 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Cust Tag #	       8	 N(2,1)
+2	Deposit Acct #	       10	 N(2,2)
+3	Date	               8	 K$(3,3)
+4	From	               24	 K$(3,4)
+5	For(remarks)	       24	 K$(3,5)
+6	Deposit Slip(Y/N)      1	 K$(3,6)
+7	Amount of check	       12	 N(2,7)
+8	#1 Acct #	       10	 N(2,8)
+9	#1 Amount	       12	 N(2,9)
+10	#2 Acct #	       10	 N(2,10)
+11	#2 Amount	       12	 N(2,11)
+12	#3 Acct #	       10	 N(2,12)
+13	#3 Amount	       12	 N(2,13)
+14	#4 Acct #	       10	 N(2,14)
+15	#4 Amount	       12	 N(2,15)
+16	#5 Acct #	       10	 N(2,16)
+17	#5 Amount	       12	 N(2,17)
+18	#6 Acct #	       10	 N(2,18)
+19	#6 Amount	       12	 N(2,19)
+
+
+CONSOLIDATED EMPLOYEE PAYROLL		 EP (512 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Employee #	       8	 N(2,1)
+2	Acct Number	       10	 N(2,2)
+3	Name	               24	 K$(3,3)
+4	Company	               24	 K$(3,4)
+5	Address	               24	 K$(3,5)
+6	City	               17	 K$(3,6)
+7	State	               2	 K$(3,7)
+8	Zip Code	       5	 K$(3,8)
+9	Telephone	       14	 K$(3,9)
+10	Soc Sec #	       11	 K$(3,10)
+11	Emp Date	       8	 K$(3,11)
+12	Term Date	       8	 K$(3,12)
+13	Marital Stat	       2	 K$(3,13)
+14	Hourly of salaried     1	 K$(3,14)
+15	Pay periods - W/B/S/M  1	 K$(3,15)
+16	Num of Exemptions      4	 N(2,16)
+17	Hourly Rate	       6	 N(2,17)
+18	Hours this period      6	 N(2,18)
+19	Quar to date hrs       6	 N(2,19)
+20	Year to date hrs       6	 N(2,20)
+
+Record X+1
+
+1	Gross Pay	       12	 N(0,1)
+2	Q-T-D Gross Pay	       12	 N(0,2)
+3	Y-T-D Gross Pay	       12	 N(0,3)
+4	FICA	               12	 N(0,4)
+5	Q-T-D FICA	       12	 N(0,5)
+6	Y-T-D FICA	       12	 N(0,6)
+7	Federal Tax	       12	 N(0,7)
+8	Q-T-D Federal Tax      12	 N(0,8)
+9	Y-T-D Federal Tax      12	 N(0,9)
+10	State Tax	       12	 N(0,10)
+11	Q-T-D State Tax	       12	 N(0,11)
+12	Y-T-D State Tax	       12	 N(0,12)
+13	State Disability       12	 N(0,13)
+14	Q-T-D SDI	       12	 N(0,14)
+15	Y-T-D SDI	       12	 N(0,15)
+16	Misc Deductions	       12	 N(0,16)
+17	Q-T-D Misc Ded	       12	 N(0,17)
+18	Y-T-D Misc Ded	       12	 N(0,18)
+
+
+TIME CARD RECORD		         TM (128 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Employee #	       8	 N(2,1)
+2	Acct Number	       10	 N(2,2)
+3	Name	               24	 K$(3,3)
+4	Pay period #	       4	 N(2,4)
+5	Reportable tips	       12	 N(2,5)
+6	Misc deductions	       12	 N(2,6)
+7	Regular hours	       4	 N(2,7)
+8	Time & 1/2 hours       4	 N(2,8)
+9	Double time hours      4	 N(2,9)
+10	Sick time hours	       4	 N(2,10)
+11	Holiday time hours     4	 N(2,11)
+12	Vacation hours	       4	 N(2,12)
+
+.pa
+CONSOLIDATED EMPLOYEE PAYROLL		 CEP
+
+Item #	Description	       Bytes	 Expression
+
+16	Num of Exemptions      4	 N
+17	Hourly Rate	       6	 R
+18	Hours this period      6	 H1
+19	Quar to date hrs       6	 H2
+20	Year to date hrs       6	 H3
+
+Record X+1
+
+1	Gross pay	       12	 E0
+2	Q-T-D Gross pay	       12	 E1
+3	Y-T-D Gross pay	       12	 E2
+4	FICA	               12	 F1
+5	Q-T-D FICA	       12	 F2
+6	Y-T-D FICA	       12	 F3
+7	Federal Tax	       12	 E3
+8	Q-T-D Federal Tax      12	 E4
+9	Y-T-D Federal Tax      12	 E5
+10	State Tax	       12	 E6
+11	Q-T-D State Tax	       12	 E7
+12	Y-T-D State Tax	       12	 E8
+13	State Disability       12	 S1
+14	Q-T-D SDI	       12	 S2
+15	Y-T-D SDI	       12	 S3
+16	Misc Deductions	       12	 M1
+17	Q-T-D Misc Ded	       12	 M2
+18	Y-T-D Misc Ded	       12	 M3
+
+.pa
+Hourly payroll is calculated on full hours worked.
+
+For salaried employees, actual hours worked is carried
+but payroll is calculated on number of hours in the 
+payroll period.
+
+WEEKLY=W      52 periods/year    7 days   40 hours
+BIWEEKLY=B    26 periods/year   14 days   80 hours
+SEMIMON=S     24 periods/year   15.2 days 86.66667 hours
+MONTHLY=M     12 periods/year   30.4 days 173.33333 hours
+
+
+FEDERAL DEPOSIT RECORD		         EDEP (64 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Quarter(1,2,3 or 4)    1	 N(2,1)
+2	Month(1,2,3)	       1	 N(2,2)
+3	Period(1,2,3 or 4)     1	 N(2,3)
+4	Tax liability	       12	 N(2,4)
+5	Amt of deposit	       12	 N(2,5)
+6	Check #	               8	 K$(2,6)
+7	Date of deposit	       8	 K$(2,7)
+.pa
+CUSTOMER RECEIVABLES FILE		 CR (384 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Acct Number	       10	 N(2,2)
+3	Name (attention)       24	 K$(3,3)
+4	Company	               24	 K$(3,4)
+5	Address	               24	 K$(3,5)
+6	City	               17	 K$(3,6)
+7	State	               2	 K$(3,7)
+8	Zip Code	       5	 K$(3,8)
+9	Phone	               14	 K$(3,9)
+
+Shipping
+
+10	Name (attention)	24	K$(3,10)
+11	Company	               24	 K$(3,11)
+12	Address	               24	 K$(3,12)
+13	City	               17	 K$(3,13)
+14	State	               2	 K$(3,14)
+15	Zip Code	       5	 K$(3,15)
+16	Phone	               14	 K$(3,16)
+17	Date of last pmnt      8	 K$(3,17)
+
+Record X+1
+
+1	Amt of last pmnt       12	 N(2,3)
+2	Total y to date	       12	 N(2,4)
+3	Current charges	       12	 N(2,5)
+4	30-60 days	       12	 N(2,6)
+5	61-90 days	       12	 N(2,7)
+6	Over 90 days	       12	 N(2,8)
+
+
+.pa
+INVOICE REGISTER		         IR (384 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               8	 N(2,1)
+2	A/R Acct #	       10	 N(2,2)
+3	Invoice #	       10	 N(2,3)
+4	Salesman	       24        K$(3,4)
+5	Cust. Order #	       24	 K$(3,5)
+6	Shipping date	       8	 K$(3,6)
+7	Carrier (via)	       8	 K$(3,7)
+8	FOB Point	       10	 K$(3,8)
+9	Terms	               10	 K$(3,9)
+10	Tax Code	       1	 K$(3,10)
+11	Post,invoice,register  4	 K$(3,11)
+12	Customer Tag #	       4	 N(2,12)
+13	Shipping Chgs	       12	 N(2,13)
+
+Record X+1
+
+1 - 10	Finished Goods Tag     4	 G(1) - G(10)
+1 - 10	Quantity	       10	 Q(1) - Q(10)
+
+Calculate total invoice amount
+Calculate sales tax
+
+Questions:
+1. Do you want a picture of finished invoice
+2. Do you want order pick slips
+3. Shall we backorder low of out-of-stock items
+
+
+.pa
+VENDOR PAYABLES FILE		         VP (384 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Acct Number	       10	 N(2,2)
+3	Name (attention)       24	 K$(3,3)
+4	Company	               24	 K$(3,4)
+5	Address	               24	 K$(3,5)
+6	City	               17	 K$(3,6)
+7	State	               2	 K$(3,7)
+8	Zip Code	       5	 K$(3,8)
+9	Phone	               14	 K$(3,9)
+
+Shipping
+
+10	Name (attention)       24	 K$(3,10)
+11	Company	               24	 K$(3,11)
+12	Address	               24	 K$(3,12)
+13	City	               17	 K$(3,13)
+14	State	               2	 K$(3,14)
+15	Zip Code	       5	 K$(3,15)
+16	Phone	               14	 K$(3,16)
+17	Date of last pmnt      8	 K$(3,17)
+
+Record X+1
+
+1	Amt of last pmnt       12	 N(2,3)
+2	Total y to date	       12	 N(2,4)
+3	Current charges	       12	 N(2,5)
+4	30-60 days	       12	 N(2,6)
+5	61-90 days	       12	 N(2,7)
+6	Over 90 days	       12	 N(2,8)
+
+
+.pa
+PURCHASE ORDER REGISTER		         PO (384 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               8	 N(2,1)
+2	A/P Acct #	       10	 N(2,2)
+3	Purchase order #       10	 N(2,3)
+4	Buyer	               24	 K$(3,4)
+5	Our Order #	       24	 K$(3,5)
+6	Required date	       8	 K$(3,6)
+7	Carrier (via)	       8	 K$(3,7)
+8	FOB Point	       10	 K$(3,8)
+9	Terms	               10	 K$(3,9)
+10	Tax Code	       1	 K$(3,10)
+11	Post,invoice,register  4	 K$(3,11)
+12	Vendor Tag #	       4	 N(2,12)
+13	Shipping chgs	       12	 N(2,13)
+
+Record X+1
+
+1 - 10	Finished Goods Tag     4	 G(1) - G(10)
+1 - 10	Quantity	       10	 Q(1) - Q(10)
+.pa
+FINISHED GOODS INVENTORY		 FG (256 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Acct Number	       10	 N(2,2)
+3	Item #	               7	 K$(3,3)
+4	Part #	               12	 K$(3,4)
+5	Description	       24	 K$(3,5)
+6	Location(shelf,bin)    24	 K$(3,6)
+7	Date of last issue     8	 K$(3,7)
+8	Date of last receipt   8	 K$(3,8)
+9	Vendor Code	       10	 K$(3,9)
+10	Vendor Tag #	       4	 N(2,10)
+11	Unit Cost	       12	 N(2,11)
+12	Selling Price	       12	 N(2,12)
+13	Quan on hand	       8	 N(2,13)
+14	Quan on order	       8	 N(2,14)
+15	Quan issued m-t-d      10	 N(2,15)
+16	Quan issued q-t-d      10	 N(2,16)
+17	Quan issued y-t-d      10	 N(2,17)
+18	Min quan (stock)       10	 N(2,18)
+19	Max quan (stock)       10	 N(2,19)
+
+Calculate average cost
+Calculate reorder quantity
+
+
+.pa
+RAW GOODS INVENTORY		         RG (256 bytes)
+
+Item #	Description	       Bytes     Expression
+
+1	Tag	               4	 N(2,1)
+2	Acct Number	       10	 N(2,2)
+3	Item #	               7	 K$(3,3)
+4	Part #	               12	 K$(3,4)
+5	Description	       24	 K$(3,5)
+6	Location(shelf,bin)    24	 K$(3,6)
+7	Date of last issue     8	 K$(3,7)
+8	Date of last receipt   8	 K$(3,8)
+9	Vendor Code	       10	 K$(3,9)
+10	Vendor Tag #	       4	 N(2,10)
+11	Unit Cost	       12	 N(2,11)
+12	Selling Price	       12	 N(2,12)
+13	Quan on hand	       8	 N(2,13)
+14	Quan on order	       8	 N(2,14)
+15	Quan issued m-t-d      10	 N(2,15)
+16	Quan issued q-t-d      10	 N(2,16)
+17	Quan issued y-t-d      10	 N(2,17)
+18	Min quan (stock)       10	 N(2,18)
+19	Max quan (stock)       10	 N(2,19)
+
+
+Calculate average cost
+Calculate reorder quantity
+.pa
+MAILING LIST FILE		         MA (150 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Ref Number	       10	 N(2,2)
+3	Name	               24	 K$(3,3)
+4	Company	               24	 K$(3,4)
+5	Address	               24	 K$(3,5)
+6	City	               17	 K$(3,6)
+7	State	               2	 K$(3,7)
+8	Zip Code	       5	 K$(3,8)
+9	Telephone	       14	 K$(3,9)
+.pa
+CAPITAL GOODS INVENTORY		         CG (256 bytes)
+
+Item #	Description	       Bytes	 Expression
+
+1	Tag	               4	 N(2,1)
+2	Fixed Asset Acct #     10	 N(2,2)
+3	Depreciation Acct #    10	 N(2,3)
+4	Description	       24	 K$(3,4)
+5	Location	       24	 K$(3,5)
+6	New or Used	       1	 K$(3,6)
+7	Date acquired	       8	 K$(3,7)
+8	Depreciation method    2	 K$(3,8)
+9	Cost or Basis	       12	 N(2,9)  D1
+10	Depreciable basis      12	 N(2,10) D2
+11	Prior years dep.       12	 N(2,11) D3
+12	Useful life	       4	 N(2,12) D4
+13	Remaining life	       4	 N(2,13) D5
+14	Month to date dep.     12	 N(2,14) D6
+15	Quarter to date dep.   12	 N(2,15) D7
+16	Year to date dep.      12	 N(2,16) D8
+17	Salvage value	       12	 N(2,17) D9
+

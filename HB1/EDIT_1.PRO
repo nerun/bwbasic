@@ -1,0 +1,1 @@
+BWB.EDITOR$="nano"

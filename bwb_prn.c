@@ -1,6 +1,6 @@
 /***************************************************************
   
-   bwb_prn.c       Print and Error-Handling Commands
+        bwb_prn.c       Print and Error-Handling Commands
                         for Bywater BASIC Interpreter
   
                         Copyright (c) 1993, Ted A. Campbell
@@ -32,55 +32,191 @@
 /*                                                               */
 /* Version 3.00 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.10 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
 
 
 
 #include "bwbasic.h"
 
+/*
+We try to allow as many legacy PRINT USING formats as reasonable.
+Many legacy PRINT USING formats are incompatible with one another.
+For example:
+1) some use '%' for strings, others use '%' for numbers, others consider '%' as a lieral.
+2) some count a leading or traling signs in the width, while others do not.
+3) when a value requires more digits than the assigned width:
+   a) some truncate the displayed value to the width, 
+   b) some expand the width, 
+   c) some print a number of '%' or '*', and 
+   d) some halt processing.
+There is no perfect solution that will work for all possible dialects.
+*/
 
-/* ECMA-55, Section 14.4 */
-#define ZONEWIDTH          ( SIGNIFICANT_DIGITS + EXPONENT_DIGITS + 6 )
+
+#define PrintUsingNumberDigit    My->CurrentVersion->UsingDigit   /* Digit placeholder, usually '#' */
+#define PrintUsingNumberComma    My->CurrentVersion->UsingComma   /* Comma, such as thousands, usually ',' */
+#define PrintUsingNumberPeriod   My->CurrentVersion->UsingPeriod  /* Period, such as dollars and cents, usually '.' */
+#define PrintUsingNumberPlus     My->CurrentVersion->UsingPlus    /* Plus  sign, positive value, usually '+' */
+#define PrintUsingNumberMinus    My->CurrentVersion->UsingMinus   /* Minus sign, negative value, usually '-' */
+#define PrintUsingNumberExponent My->CurrentVersion->UsingExrad   /* Exponential format, usually '^' */
+#define PrintUsingNumberDollar   My->CurrentVersion->UsingDollar  /* Currency symbol, usually '$' */
+#define PrintUsingNumberFiller   My->CurrentVersion->UsingFiller  /* Print filler, such as checks, usually '*' */
+#define PrintUsingLiteral        My->CurrentVersion->UsingLiteral /* The next char is a literal, usually '_' */
+#define PrintUsingStringFirst    My->CurrentVersion->UsingFirst   /* The first character of the string, usually '!' */
+#define PrintUsingStringAll      My->CurrentVersion->UsingAll     /* Print the entire string, usually '&' */
+#define PrintUsingStringLength   My->CurrentVersion->UsingLength  /* Print a substring, usually '%' */
+
+
+
 
 
 /* Prototypes for functions visible only to this file */
-static BasicFileNumberType FileNumber = CONSOLE_FILE_NUMBER;   /* console = 0, printer
-                         * = 0xFF, OTHERWISE #
-                         * file-number */
 
-struct prn_fmt
+
+static int get_prnfmt(char *buffer, int *position, VariantType *e);
+static int xputc(char c);
+static int xxputc(char c);
+static int xxxputc(char c);
+static int bwb_xprint(LineType * l);
+static int prn_xxprintf(char *buffer);
+
+
+int is_empty_filename( char * Buffer )
 {
-   int             type;   /* STRING, NUMBER, SINGLE, or NUMBER */
-   int             exponential;  /* TRUE = use exponential notation */
-   int             right_justified; /* TRUE = right justified
-                   * else left justified */
-   int             width;  /* width of main section */
-   int             precision; /* width after decimal point */
-   int             commas; /* use commas every three steps */
-   int             sign;   /* prefix sign to number */
-   int             money;  /* prefix money sign to number */
-   int             fill;   /* ASCII value for fill character, normally '
-             * ' */
-   int             minus;  /* postfix minus sign to number */
-};
+   while( *Buffer == ' ' )
+   {
+      Buffer++;
+   }
+   if( *Buffer == BasicNulChar )
+   {
+      return TRUE;
+   }
+   return FALSE;
+}
 
-static struct prn_fmt *
-get_prnfmt(char *buffer, int *position);
-static int
-xputc(char c);
-static int
-xxputc(char c);
-static int
-xxxputc(char c);
-static int
-bwb_xprint(struct bwb_line * l);
-static int
-prn_xxprintf(char *buffer);
-static int      prn_getcol();
-static int
-prn_setcol(int NewValue);
-static int      prn_getwidth();
 
+FileType * find_file_by_name( char * FileName )
+{
+   FileType * F;
+
+   if( is_empty_filename( FileName ) )
+   {
+      /* the rules for Console and Printer vary by command */
+      return NULL;
+   }
+   /* search the list of OPEN files */
+   for( F = My->file_head; F != NULL; F = F->next )
+   {
+      if( F->mode != DEVMODE_CLOSED )
+      {
+         if( bwb_stricmp( F->filename, FileName ) == 0 )
+         {
+            /* FOUND */
+            return F;
+         }
+      }
+   }
+   /* NOT FOUND */
+   return NULL;
+}
+
+
+FileType * find_file_by_number( int FileNumber )
+{
+   FileType * F;
+   /* handle MAGIC file numbers */
+   if( FileNumber <= 0 )
+   {
+      /* the rules for Console and Printer vary by command */
+      return NULL;
+   }
+   /* search the list of OPEN files */
+   for( F = My->file_head; F != NULL; F = F->next )
+   {
+      if( F->mode != DEVMODE_CLOSED )
+      {
+         if( F->FileNumber == FileNumber )
+         {
+            /* FOUND */
+            return F;
+         }
+      }
+   }
+   /* NOT FOUND */
+   return NULL;
+}
+
+
+FileType * file_new( void )
+{
+   /* search for an empty slot.  If not found, add a new slot. */
+   FileType * F;
+   
+   for( F = My->file_head; F != NULL; F = F->next )
+   {
+      if( F->mode == DEVMODE_CLOSED )
+      {
+         /* FOUND */
+         return F;
+      }
+   }
+   /* NOT FOUND */
+   F = calloc( 1, sizeof( FileType ) );
+   F->next = My->file_head;
+   My->file_head = F;
+   return F;
+}
+
+
+void file_clear( FileType * F )
+{
+   /* clean up a file slot that is no longer needed */
+
+#if NEW_VIRTUAL
+   clear_virtual_by_file( F->FileNumber );
+#endif /* NEW_VIRTUAL */
+   F->FileNumber = 0;
+   F->mode = DEVMODE_CLOSED;   /* DEVMODE_ item */
+   F->width = 0;  /* width for OUTPUT and APPEND; reclen for RANDOM; not used for INPUT or BINARY */
+   F->col = 0; /* current column for OUTPUT and APPEND */
+   F->row = 0; /* current row for OUTPUT and APPEND */
+   F->EOF_LineNumber = 0; /* CBASIC-II: IF END # filenumber THEN linenumber */
+   F->delimit = BasicNulChar; /* DELIMIT for READ and WRITE */
+   F->filename[0] = BasicNulChar;  /* filename */
+   if( F->cfp != NULL )
+   {
+      fclose( F->cfp ); /* F->cfp != NULL */
+      F->cfp = NULL;
+   }
+   if( F->buffer != NULL ) /* pointer to character buffer for RANDOM */
+   {
+      free( F->buffer );
+      F->buffer = NULL;
+   }
+
+}
+
+int file_next_number( void )
+{
+   int        FileNumber;
+   FileType * F;
+   FileNumber = 0;
+   for (F = My->file_head; F != NULL; F = F->next)
+   {
+      if (F->mode != DEVMODE_CLOSED)
+      {
+         if( F->FileNumber > FileNumber )
+         {
+            FileNumber = F->FileNumber;
+         }
+      }
+   }
+   /* 'FileNumber' is the highest FileNumber that is currently open */
+   FileNumber++;
+   return FileNumber;
+}         
 
 
 
@@ -98,18 +234,25 @@ bwx_PRINT(char c)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   return fputc(c, stdout);
-
+   /* send character to console */
+   return fputc(c, My->SYSOUT->cfp);
 }
 
+int
+bwx_LPRINT(char c)
+{
+   bwx_DEBUG(__FUNCTION__);
 
+   /* send character to printer */
+   return fputc(c, My->SYSPRN->cfp);
+}
 
 int
 prn_lprintf(char *buffer)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   while (*buffer != '\0')
+   while (*buffer != BasicNulChar)
    {
       bwx_LPRINT(*buffer);
       buffer++;
@@ -123,16 +266,17 @@ prn_xprintf(char *buffer)
    /* Catch-22: an error has occurred before the devicce table is loaded */
    int             n;
    bwx_DEBUG(__FUNCTION__);
-
-   n = bwx_CONSOLE_WIDTH();
+   
+   
+   n = My->SYSOUT->width;
 
    if (n > 0)
    {
-      int             i;
+      int i;
       i = 0;
       while (*buffer)
       {
-         bwx_PRINT(*buffer);
+         fputc(*buffer, My->SYSOUT->cfp);
          buffer++;
          if (*buffer == '\n')
          {
@@ -141,7 +285,7 @@ prn_xprintf(char *buffer)
          i++;
          if (i >= n)
          {
-            bwx_PRINT('\n');
+            fputc('\n', My->SYSOUT->cfp);
             i = 0;
          }
       }
@@ -151,15 +295,15 @@ prn_xprintf(char *buffer)
       /* raw */
       while (*buffer)
       {
-         bwx_PRINT(*buffer);
+         fputc(*buffer, My->SYSOUT->cfp);
          buffer++;
       }
    }
+   fflush(My->SYSOUT->cfp);
    return 0;
 }
 
-static void
-CleanNumericString(char *prnbuf, int RemoveDot)
+static void CleanNumericString(char *prnbuf, int RemoveDot)
 {
    /* remove trailing zeroes */
    char           *E;
@@ -167,10 +311,10 @@ CleanNumericString(char *prnbuf, int RemoveDot)
 
    bwx_DEBUG(__FUNCTION__);
 
-   E = strchr(prnbuf, 'E');
+   E = bwb_strchr(prnbuf, 'E');
    if (E == NULL)
    {
-      E = strchr(prnbuf, 'e');
+      E = bwb_strchr(prnbuf, 'e');
    }
    if (E)
    {
@@ -179,7 +323,7 @@ CleanNumericString(char *prnbuf, int RemoveDot)
       char           *F;
       char           *G;
       F = E;
-      while (isalpha(*F))
+      while (bwb_isalpha(*F))
       {
          F++;
       }
@@ -196,15 +340,15 @@ CleanNumericString(char *prnbuf, int RemoveDot)
       }
       if (G > F)
       {
-         strcpy(F, G);
+         bwb_strcpy(F, G);
       }
       G = NULL;   /* no longer valid */
-      *E = '\0';  /* for strlen()  */
+      *E = BasicNulChar;  /* for bwb_strlen()  */
    }
-   D = strchr(prnbuf, '.');
+   D = bwb_strchr(prnbuf, '.');
    if (D)
    {
-      int             N = strlen(D);
+      int             N = bwb_strlen(D);
       if (N > 1)
       {
          int             M;
@@ -249,9 +393,8 @@ CleanNumericString(char *prnbuf, int RemoveDot)
             N++;
             /* if INTEGER, then N == 0, else N > 0 */
             M++;
-            /* if SCIENTIFIC, then  *M == 'E' else *M ==
-             * '\0' */
-            strcpy(&(D[N]), &(D[M]));
+            /* if SCIENTIFIC, then  *M == 'E' else *M == BasicNulChar */
+            bwb_strcpy(&(D[N]), &(D[M]));
          }
       }
    }
@@ -265,18 +408,17 @@ CleanNumericString(char *prnbuf, int RemoveDot)
    {
       /* _0.### POSITIVE FRACTION ==> _.### */
       /* -0.### NEGATIVE FRACTION ==> -.### */
-      strcpy(&(prnbuf[1]), &(prnbuf[2]));
+      bwb_strcpy(&(prnbuf[1]), &(prnbuf[2]));
    }
    if (prnbuf[1] == '.' && prnbuf[2] == 'E')
    {
       /* _.E POSITIVE ZERO ==> _0 */
       /* -.E NEGATIVE ZERO ==> _0 */
-      strcpy(prnbuf, " 0");
+      bwb_strcpy(prnbuf, " 0");
    }
 }
 
-static int
-SignificantDigits(char *Buffer)
+static int SignificantDigits(char *Buffer)
 {
    int             NumDigits;
    char           *P;
@@ -289,12 +431,12 @@ SignificantDigits(char *Buffer)
    P = Buffer;
    while (*P)
    {
-      if (isalpha(*P))
+      if (bwb_isalpha(*P))
       {
          /* 'E', 'e', and so on. */
          break;
       }
-      if (isdigit(*P))
+      if (bwb_isdigit(*P))
       {
          NumDigits++;
       }
@@ -306,18 +448,31 @@ SignificantDigits(char *Buffer)
 void
 BasicNumerc(BasicNumberType Input, char *Output)
 {
+   /*
+   ********************************************************************************
+   
+   This is essentially sprintf( Output, "%g", Input ), 
+   except the rules for selecting between "%e", "%f", and "%d" are different.
+
+   The C rules depend upon the value of the exponent.
+   The BASIC rules depend upon the number of significant digits.
+
+   The results of this routine have been verified by the NBS2 test suite, so   
+   THINK VERY CAREFULLY BEFORE MAKING ANY CHANGES TO THIS ROUTINE.   
+   
+   ********************************************************************************
+   */
 
    char           *E;
 
    bwx_DEBUG(__FUNCTION__);
 
-   /* * print in scientific form first, * to determine exponent and *
-    * significant digits */
+   /* print in scientific form first, to determine exponent and significant digits */
    sprintf(Output, "% 1.*E", SIGNIFICANT_DIGITS - 1, Input);
-   E = strchr(Output, 'E');
+   E = bwb_strchr(Output, 'E');
    if (E == NULL)
    {
-      E = strchr(Output, 'e');
+      E = bwb_strchr(Output, 'e');
    }
    if (E)
    {
@@ -328,25 +483,15 @@ BasicNumerc(BasicNumberType Input, char *Output)
       int             zz;
       char           *F;   /* pointer to the exponent's value */
       F = E;
-      while (isalpha(*F))
+      while (bwb_isalpha(*F))
       {
          F++;
       }
       Exponent = atoi(F);
       CleanNumericString(Output, 0);
       NumDigits = SignificantDigits(Output);
-      /* DisplayDigits = min(NumDigits,SIGNIFICANT_DIGITS) */
-      DisplayDigits = NumDigits;
-      if (DisplayDigits > SIGNIFICANT_DIGITS)
-      {
-         DisplayDigits = SIGNIFICANT_DIGITS;
-      }
-      /* zz = max(Exponent,DisplayDigits - Exponent - 2) */
-      zz = DisplayDigits - Exponent - 2;
-      if (zz < Exponent)
-      {
-         zz = Exponent;
-      }
+      DisplayDigits = MIN( NumDigits, SIGNIFICANT_DIGITS );
+      zz = MAX(Exponent,DisplayDigits - Exponent - 2);
       if (zz >= SIGNIFICANT_DIGITS)
       {
          /* SCIENTIFIC */
@@ -375,6 +520,7 @@ BasicNumerc(BasicNumberType Input, char *Output)
          {
             M = 0;
          }
+         
          sprintf(Output, "%# *.*f", N, M, Input);
       }
       CleanNumericString(Output, 0);
@@ -388,12 +534,11 @@ BasicNumerc(BasicNumberType Input, char *Output)
 
 
 
-struct bwb_line *
-bwb_LPRINT(struct bwb_line * l)
+LineType *
+bwb_LPRINT(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
-
-   FileNumber = LPRINT_FILE_NUMBER;
+   My->CurrentFile = My->SYSPRN;
    bwb_xprint(l);
    return bwb_zline(l);
 }
@@ -410,165 +555,258 @@ bwb_LPRINT(struct bwb_line * l)
   
 ***************************************************************/
 
-struct bwb_line *
-bwb_QUEST(struct bwb_line * l)
+LineType *
+bwb_QUEST(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
    return bwb_PRINT(l);
 }
 
-struct bwb_line *
-bwb_PRINT(struct bwb_line * l)
+static int bwb_print_at(LineType * l)
 {
-   static int      pos;
-   static char    *s_buffer;  /* small, temporary buffer */
-   static int      init = FALSE;
+   int             position;
+   int             r;
+   int             c;
+   
 
-   bwx_DEBUG(__FUNCTION__);
+   position = 0;
+   r = 0;
+   c = 0;
 
-
-   /* initialize buffers if necessary */
-
-   if (init == FALSE)
+   if( line_read_integer_expression(l, &position) == FALSE )
    {
-      init = TRUE;
-
-      /* Revised to CALLOC pass-thru call by JBV */
-      if ((s_buffer = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_print")) == NULL)
-      {
-         bwb_error("in bwb_print(): failed to get memory for s_buffer");
-         return bwb_zline(l);
-      }
+      WARN_SYNTAX_ERROR;
+      return FALSE;
    }
-   FileNumber = CONSOLE_FILE_NUMBER;
+   
 
-
-   adv_ws(l->buffer, &(l->position));
-
-   if (l->buffer[l->position] == '@')
+   if ( line_skip_comma(l))
    {
-      /* PRINT @ position, ... */
-      struct exp_ese *v;
-      int             pos;
-      int             position;
-      int             r;
-      int             c;
-
-      position = 0;
-      r = 0;
-      c = 0;
-
-      ++(l->position);
-      adv_ws(l->buffer, &(l->position));
-      adv_element(l->buffer, &(l->position), s_buffer);
-      pos = 0;
-      v = bwb_exp(s_buffer, FALSE, &pos);
-      if (ERROR_PENDING)
-      {
-         return bwb_zline(l);
-      }
-      adv_ws(l->buffer, &(l->position));
-      if (l->buffer[l->position] == ',')
-      {
-         ++(l->position);
-      }
-      else
-      {
-         bwb_error("in bwb_print(): no comma after @n");
-         return bwb_zline(l);
-      }
-
-      position = exp_getival(v);
-      if (position < 0 || position > 80 * 24 - 1)
-      {
-         bwb_error("in bwb_input(): Requested position is out of range.");
-         return bwb_zline(l);
-      }
-      r = position / prn_getwidth();
-      c = position - r * prn_getwidth();
-      r++;
-      c++;
-
-
-      switch (OptionTerminalType)
-      {
-      case C_OPTION_TERMINAL_NONE:
-         break;
-      case C_OPTION_TERMINAL_ADM_3A:
-         fprintf(stdout, "%c=%c%c", 27, r + 32, c + 32);
-         break;
-      case C_OPTION_TERMINAL_ANSI:
-         fprintf(stdout, "%c[%d;%dH", 27, r, c);
-         break;
-      default:
-         sprintf(bwb_ebuf, "%s IS NOT IMPLEMENTED ON THIS PLATFORM", "PRINT @");
-         bwb_error(bwb_ebuf);
-         break;
-      }
-
+      /* OK */
    }
    else
-   if (l->buffer[l->position] == BasicFileNumberPrefix)
    {
-      /* PRINT # file, ... */
-      struct exp_ese *v;
-      int             UserFileNumber;
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+   }
+
+   if( position < 0 )
+   {
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+   }
+   if( My->CurrentFile->width <= 0 )
+   {
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+   }
+   if( My->SCREEN_ROWS <= 0 )
+   {
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+   }
+   r = position / My->CurrentFile->width;
+   c = position - r * My->CurrentFile->width;
+   while( r >= My->SCREEN_ROWS )
+   {
+      r -= My->SCREEN_ROWS;
+   }
+   r++;
+   c++;
+
+   switch (My->OptionTerminalType)
+   {
+   case C_OPTION_TERMINAL_NONE:
+      break;
+   case C_OPTION_TERMINAL_ADM:
+      fprintf(My->CurrentFile->cfp, "%c=%c%c", 27, r + 32, c + 32);
+      break;
+   case C_OPTION_TERMINAL_ANSI:
+      fprintf(My->CurrentFile->cfp, "%c[%d;%dH", 27, r, c);
+      break;
+   default:
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+      /* break; */
+   }      
+   My->CurrentFile->row = r;
+   My->CurrentFile->col = c;
+   return TRUE;
+}
+
+static int bwb_print_num(LineType * l)
+{
+   int             UserFileNumber;
 
 
-      ++(l->position);
-      adv_ws(l->buffer, &(l->position));
-      adv_element(l->buffer, &(l->position), s_buffer);
-      pos = 0;
-      v = bwb_exp(s_buffer, FALSE, &pos);
-      if (ERROR_PENDING)
+   if( line_read_integer_expression(l, &UserFileNumber) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+   }
+
+   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+   {
+      /* 
+      CBASIC-II: SERIAL & RANDOM file writes
+      PRINT # file_number                 ; expression [, expression] ' SERIAL write
+      PRINT # file_number , record_number ; expression [, expression] ' RANDOM write
+      */
+
+      if( UserFileNumber <= 0 )
       {
-         return bwb_zline(l);
+         WARN_BAD_FILE_NUMBER;
+         return FALSE;
       }
-      adv_ws(l->buffer, &(l->position));
-      if (l->buffer[l->position] == ',')
+      /* normal file */
+      My->CurrentFile = find_file_by_number( UserFileNumber );
+      if( My->CurrentFile == NULL )
       {
-         ++(l->position);
-      }
-      else
-      {
-         bwb_error("in bwb_print(): no comma after #n");
-         return bwb_zline(l);
+         WARN_BAD_FILE_NUMBER;
+         return FALSE;
       }
 
-      UserFileNumber = exp_getival(v);
-      /* check the requested device number */
-      if (UserFileNumber < 0)
+
+      if( line_skip_char( l, ',' ) )
       {
-         /* PRINTER, CASSETTE, etc.  These are all sent to
-          * bwx_LPRINT */
-         FileNumber = LPRINT_FILE_NUMBER;
-      }
-      else
-      if (UserFileNumber > BasicFileNumberMax)
-      {
-         bwb_error("in bwb_input(): Requested device number is out of range.");
-         return bwb_zline(l);
-      }
-      else
-      {
-         FileNumber = (BasicFileNumberType) UserFileNumber;
-         if ((dev_table[FileNumber].mode & DEVMODE_WRITE) == 0)
+         /* 
+         PRINT # file_number , record_number ; expression [, expression] ' RANDOM write
+         */
+         /* get the RecordNumber */
+         int RecordNumber;
+         
+         if( (My->CurrentFile->mode & DEVMODE_RANDOM) == 0 )
          {
-            bwb_error("in bwb_print(): Requested device is not open for writing");
-            return bwb_zline(l);
+            WARN_BAD_FILE_MODE;
+            return FALSE;
+         }
+         if( My->CurrentFile->width <= 0 )
+         {
+            WARN_FIELD_OVERFLOW;
+            return FALSE;
+         }
+         if( line_read_integer_expression( l, &RecordNumber ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return FALSE;
+         }
+         if( RecordNumber <= 0 )
+         {
+            WARN_BAD_RECORD_NUMBER;
+            return FALSE;
+         }
+         RecordNumber--; /* BASIC to C */
+         /* if( TRUE ) */
+         {
+            long offset;
+            offset = RecordNumber;
+            offset *= My->CurrentFile->width;
+            fseek( My->CurrentFile->cfp, offset, SEEK_SET );
          }
       }
+      if( line_is_eol( l ) )
+      {
+         /* PRINT # filenum          */
+         /* PRINT # filenum , recnum */
+      }
+      else
+      if( line_skip_char( l, ';' ) )
+      {
+         /* PRINT # filenum          ; */
+         /* PRINT # filenum , recnum ; */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return FALSE;
+      }
+      return TRUE;
+   }
+   /* 
+   SERIAL file writes:
+   PRINT # file_number   
+   PRINT # file_number [, expression]
+   */
+   if( UserFileNumber < 0 )
+   {
+      My->CurrentFile = My->SYSPRN;
+   }
+   else
+   if( UserFileNumber == 0 )
+   {
+      My->CurrentFile = My->SYSOUT;
+   }
+   else
+   {
+      /* normal file */
+      My->CurrentFile = find_file_by_number( UserFileNumber );
+   }
+   if( My->CurrentFile == NULL )
+   {
+      WARN_BAD_FILE_NUMBER;
+      return FALSE;
+   }
+   if( ( My->CurrentFile->mode & DEVMODE_WRITE ) == 0 )
+   {
+      WARN_BAD_FILE_NUMBER;
+      return FALSE;
+   }
+   if( line_is_eol( l ) )
+   {
+      /* PRINT # 2 */
+   }
+   else
+   if( line_skip_comma( l ) )
+   {
+      /* PRINT # 2 , ... */
+   }
+   else
+   {
+      WARN_SYNTAX_ERROR;
+      return FALSE;
+   }
+   return TRUE;
+}
 
+LineType *
+bwb_PRINT(LineType * l)
+{
+   bwx_DEBUG(__FUNCTION__);
 
+   My->CurrentFile = My->SYSOUT;
+   line_skip_spaces(l);
+   if ( line_skip_char(l,'@'))
+   {
+      /* PRINT @ position, ... */
+      if( bwb_print_at(l) == FALSE )
+      {
+         return bwb_zline(l);
+      }
+   }
+   else
+   if ( line_skip_word( l, "AT")  )
+   {
+      /* PRINT AT position, ... */
+      if( bwb_print_at(l) == FALSE )
+      {
+         return bwb_zline(l);
+      }
+   }
+   else
+   if ( line_skip_char(l,BasicFileNumberPrefix))
+   {
+      /* PRINT # file, ... */
+      if( bwb_print_num(l) == FALSE )
+      {
+         return bwb_zline(l);
+      }
    }
    bwb_xprint(l);
-
-
-   if (FileNumber == CONSOLE_FILE_NUMBER)
+   if( My->CurrentFile == My->SYSOUT )
    {
       /* FOR I = 1 TO 1000: PRINT "."; : NEXT I : PRINT */
-      fflush(stdout);
+      fflush(My->SYSOUT->cfp);
    }
    return bwb_zline(l);
 }
@@ -582,392 +820,252 @@ bwb_PRINT(struct bwb_line * l)
          output device.
   
 ***************************************************************/
-/* static unsigned char FileNumber has been assigned */
-static int
-bwb_xprint(struct bwb_line * l)
+
+static int buff_read_using( char * buffer, int * position, char * format_string )
 {
-   struct exp_ese *e;
-   int             loop;
-   static int      p;
-   static int      fs_pos;
-   struct prn_fmt *format;
-   static char    *format_string;
-   static char    *output_string;
-   static char    *element;
-   static char    *prnbuf;
-   static int      init = FALSE;
-   register int    i, j;   /* JBV */
-   int             dig_pos, dec_pos;   /* JBV */
-   char            tbuf[BasicStringLengthMax + 1]; /* JBV */
-   int             OutputCR;
-
-   bwx_DEBUG(__FUNCTION__);
-
-   /* initialize buffers if necessary */
-
-   if (init == FALSE)
+   int p;
+   
+   p = *position;
+   
+   buff_skip_spaces( buffer, &p );
+   if( buff_skip_word( buffer, &p, "USING" ) )
    {
-      init = TRUE;
-
-      /* Revised to CALLOC pass-thru call by JBV */
-      if ((format_string = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_xprint")) == NULL)
+      buff_skip_spaces( buffer, &p );
+      if( bwb_isdigit( buffer[p] ) )
       {
-         bwb_error("in bwb_xprint(): failed to get memory for format_string");
-         return FALSE;
-      }
-      /* Revised to CALLOC pass-thru call by JBV */
-      if ((output_string = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_xprint")) == NULL)
-      {
-         bwb_error("in bwb_xprint(): failed to get memory for output_string");
-         return FALSE;
-      }
-      /* Revised to CALLOC pass-thru call by JBV */
-      if ((element = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_xprint")) == NULL)
-      {
-         bwb_error("in bwb_xprint(): failed to get memory for element buffer");
-         return FALSE;
-      }
-      /* Revised to CALLOC pass-thru call by JBV */
-      if ((prnbuf = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_xprint")) == NULL)
-      {
-         bwb_error("in bwb_xprint(): failed to get memory for prnbuf");
-         return FALSE;
-      }
-   }
-   /* Detect USING Here */
+          /* PRINT USING ### */
+          int LineNumber;
+          LineType *x = NULL;
+          char *C;
+          char *F;
 
-   fs_pos = -1;
-
-   /* get "USING" in format_string */
-
-   p = l->position;
-   adv_element(l->buffer, &p, format_string);
-
-
-   /* check to be sure */
-
-   if (strcasecmp(format_string, "USING") == 0)
-   {
-      l->position = p;
-      adv_ws(l->buffer, &(l->position));
-
-      /* now get the format string in format_string */
-
-      e = bwb_exp(l->buffer, FALSE, &(l->position));
-      if (ERROR_PENDING)
-      {
-         return FALSE;
-      }
-      if (e->type == STRING)
-      {
-
-         /* copy the format string to buffer */
-
-         str_btoc(format_string, exp_getsval(e));
-
-         /* look for ';' after format string */
-
-         fs_pos = 0;
-         adv_ws(l->buffer, &(l->position));
-         if (l->buffer[l->position] == ';')
-         {
-            ++l->position;
-            adv_ws(l->buffer, &(l->position));
-         }
-         else
-         {
-            bwb_error("Failed to find ; after format string in PRINT USING");
-            return FALSE;
-         }
-
-
+           if( buff_read_line_number(buffer, &p, &LineNumber) == FALSE )
+            {
+               WARN_SYNTAX_ERROR;
+               return FALSE;
+            }
+           /* check for target label */
+           x = find_line_number( LineNumber, TRUE );
+           if (x == NULL)
+           {
+               WARN_UNDEFINED_LINE;
+               return FALSE;
+           }
+           /* line exists */
+           if( x->cmdnum != C_IMAGE )
+           {
+               WARN_UNDEFINED_LINE;
+               return FALSE;
+           }
+           /* line contains IMAGE command */
+          C = x->buffer;
+          C += x->Startpos;
+          F = format_string;
+          /* look for leading quote in IMAGE "..." */
+          while( *C == ' ' )
+          {
+             C++;
+          }
+          if( *C == BasicQuoteChar )
+          {
+             /* QUOTED */
+              /* skip leading quote */
+              C++;
+              while( *C != BasicQuoteChar && *C != BasicNulChar )
+              {
+                  /* copy format string, but not the trailing quote */
+                  *F = *C;
+                  C++;
+                  F++;
+              }
+              /* skip trailing quote */
+          }
+          else
+          {
+             /* UNQUOTED */
+              while( *C != BasicNulChar )
+              {
+                  /* copy format string verbatim */
+                  *F = *C;
+                  C++;
+                  F++;
+              }
+          }
+          /* terminate format string */
+          *F = BasicNulChar;
+          
+          buff_skip_spaces(buffer, &p);
+          if ( buff_skip_comma(buffer, &p ) == FALSE)
+          {
+             WARN_SYNTAX_ERROR;
+             return FALSE;
+          }
+          buff_skip_spaces(buffer, &p);
       }
       else
       {
-         bwb_error("Failed to find format string after PRINT USING");
-         return FALSE;
+         {
+            char * Value = NULL;
+            
+            if( buff_read_string_expression( buffer, &p, &Value ) == FALSE )
+            {
+               WARN_SYNTAX_ERROR; /* HERE-Here-here BUG? */
+               return FALSE;
+            }
+            if( Value == NULL )
+            {
+               WARN_SYNTAX_ERROR;
+               return FALSE;
+            }
+            bwb_strcpy( format_string, Value );
+            free( Value );
+         }
+         buff_skip_spaces(buffer, &p);
+         if ( buff_skip_comma(buffer, &p) == FALSE)
+         {
+            WARN_SYNTAX_ERROR;
+            return FALSE;
+         }
+         buff_skip_spaces(buffer, &p);
       }
+      *position = p;
+      return TRUE;
    }
+   return FALSE;
+}
+
+static int bwb_xprint(LineType * l)
+{
+   int Success = FALSE;
+   VariantType e;       /* no leaks */
+   VariantType *E = &e; /* no leaks */
+   static int      fs_pos;
+   int             OutputCR;
+   char    format_string[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+   CLEAR_VARIANT( E );
+
+
+   /* Detect USING Here */
+
+   format_string[0] = BasicNulChar;
+   fs_pos = 0;
+
+   /* get "USING" in format_string */
+   if( buff_read_using( l->buffer, &(l->position), format_string ) == TRUE )
+   {
+       fs_pos = 0;
+   }
+   
    /* if no arguments, simply print CR and return */
 
-   adv_ws(l->buffer, &(l->position));
-   switch (l->buffer[l->position])
-   {
-   case '\0':
-      xputc('\n');
-      return TRUE;
-   default:
-      break;
-   }
 
    /* LOOP THROUGH PRINT ELEMENTS */
 
    OutputCR = TRUE;
 
-   loop = TRUE;
-   while (loop == TRUE)
-   {
-
-      /* 1980 PRINT  , , ,"A" */
-      adv_ws(l->buffer, &(l->position));
-      switch (l->buffer[l->position])
-      {
-      case '\0':  /* end of buffer */
-         loop = FALSE;
-         break;
-      case ',':   /* tab over */
-         /* Tab only if there's no format specification! (JBV) */
-         /* putchar('+'); */
-         if ((fs_pos == -1) || (strlen(element) == 0))
-         {
-            xputc('\t');
-         }
-         ++l->position;
-         OutputCR = FALSE;
-         continue;   /* while( loop == TRUE ) */
-         break;
-      case ';':   /* concatenate strings */
-         ++l->position;
-         OutputCR = FALSE;
-         continue;   /* while( loop == TRUE ) */
-         break;
-      default:
-         break;
-      }
-      if(l->buffer[l->position] == OptionCommentChar)
-      {
-         /* PRINT ' comment */
-         loop = FALSE;
-      }
-      if (loop == FALSE)
-      {
-         break;   /* while( loop == TRUE ) */
-      }
-      OutputCR = TRUE;
-
-
-      /* resolve the string */
-
-      e = bwb_exp(l->buffer, FALSE, &(l->position));
-      if (ERROR_PENDING)
-      {
-         return FALSE;
-      }
-      /* an OP_NULL probably indicates a terminating ';', but this
-       * will be detected later, so we can ignore it for now */
-
-      if (e->operation != OP_NULL)
-      {
-         str_btoc(element, exp_getsval(e));
-      }
-      else
-      {
-         element[0] = '\0';
-      }
-
-
-      /* print with format if there is one */
-
-      if ((fs_pos > -1) && (strlen(element) > 0))
-      {
-
-         format = get_prnfmt(format_string, &fs_pos);
-         if (fs_pos < 0)
-         {
-            /* wrap around */
-            fs_pos = 0;
-            format = get_prnfmt(format_string, &fs_pos);
-         }
-         switch (format->type)
-         {
-         case STRING:
-#if 0
-            if (e->type != STRING)
-            {
-               bwb_error("Type mismatch in PRINT USING");
-               return FALSE;
-            }
-#endif
-            if (format->width == -1)   /* JBV */
-               sprintf(output_string, "%s", element);
-            else
-               sprintf(output_string, "%.*s", format->width, element);
-
-
-            prn_xxprintf(output_string);  /* do not expand TAB or
-                         * SPC */
-            break;
-
-         case NUMBER:
-            if (e->type == STRING)
-            {
-               bwb_error("Type mismatch in PRINT USING");
-               return FALSE;
-            }
-            if (format->exponential == TRUE)
-            {
-               /*------------------------------------------------------*/
-               /* NOTE: Width and fill have no
-                * effect on C exponential */
-               /* format (JBV)                                         */
-               /*------------------------------------------------------*/
-               if (format->sign == TRUE)  /* Added by JBV */
-                  sprintf(output_string, "%+e", exp_getnval(e));
-               else
-                  sprintf(output_string, "%e", exp_getnval(e));
-            }
-            else
-            {
-               /*---------------------------------------------------*/
-               /* NOTE: Minus, commas, and money are
-                * only valid for */
-               /* floating point format (JBV)                       */
-               /*---------------------------------------------------*/
-               if (format->sign == TRUE)  /* Added by JBV */
-                  sprintf(output_string, "%+*.*f",
-                     format->width, format->precision, exp_getnval(e));
-               else
-               if (format->minus == TRUE) /* Added by JBV */
-               {
-                  sprintf(output_string, "%*.*f",
-                     format->width, format->precision, exp_getnval(e));
-                  for (i = 0; i < strlen(output_string); ++i)
-                  {
-                     if (output_string[i] != ' ')
-                     {
-                        if (output_string[i] == '-')
-                        {
-                           output_string[i] = ' ';
-                           strcat(output_string, "-");
-                        }
-                        else
-                           strcat(output_string, " ");
-                        break;
-                     }
-                  }
-               }
-               else
-                  sprintf(output_string, "%*.*f",
-                     format->width, format->precision, exp_getnval(e));
-
-               if (format->commas == TRUE)   /* Added by JBV */
-               {
-                  dig_pos = -1;
-                  dec_pos = -1;
-                  for (i = 0; i < strlen(output_string); ++i)
-                  {
-                     if ((isdigit(output_string[i]) != 0)
-                      && (dig_pos == -1))
-                        dig_pos = i;
-                     if ((output_string[i] == '.')
-                      && (dec_pos == -1))
-                        dec_pos = i;
-                     if ((dig_pos != -1) && (dec_pos != -1))
-                        break;
-                  }
-                  if (dec_pos == -1)
-                     dec_pos = strlen(output_string);
-                  j = 0;
-                  for (i = 0; i < strlen(output_string); ++i)
-                  {
-                     if (((dec_pos - i) % 3 == 0)
-                         && (i > dig_pos) && (i < dec_pos))
-                     {
-                        tbuf[j] = ',';
-                        ++j;
-                        tbuf[j] = '\0';
-                     }
-                     tbuf[j] = output_string[i];
-                     ++j;
-                     tbuf[j] = '\0';
-                  }
-                  strcpy(output_string,
-                         &tbuf[strlen(tbuf) - strlen(output_string)]);
-               }
-               if (format->money == TRUE) /* Added by JBV */
-               {
-                  for (i = 0; i < strlen(output_string); ++i)
-                  {
-                     if (output_string[i] != ' ')
-                     {
-                        if (i > 0)
-                        {
-                           if (isdigit(output_string[i]) == 0)
-                           {
-                              output_string[i - 1]
-                                 = output_string[i];
-                              output_string[i] = '$';
-                           }
-                           else
-                              output_string[i - 1] = '$';
-                        }
-                        break;
-                     }
-                  }
-               }
-            }
-
-            if (format->fill == '*')   /* Added by JBV */
-               for (i = 0; i < strlen(output_string); ++i)
-               {
-                  if (output_string[i] != ' ')
-                     break;
-                  output_string[i] = '*';
-               }
-
-
-            prn_xxprintf(output_string);  /* do not expand TAB or
-                         * SPC */
-            break;
-
-         default:
-            sprintf(bwb_ebuf, "in bwb_xprint(): get_prnfmt() returns unknown type <%d>",
-               format->type);
-            bwb_error(bwb_ebuf);
-            return FALSE;
-            break;
-         }
-
-
-      }
-      /* not a format string: use defaults */
-
-      else
-      if (strlen(element) > 0)
-      {
-
-
-         switch (e->type)
-         {
-         case STRING:
-            prn_iprintf(element);
-            break;
-         default:
-            /* [space]number[space]    POSITIVE or ZERO
-             * [minus]number[space]   NEGATIVE */
-            BasicNumerc(exp_getnval(e), prnbuf);
-            prn_iprintf(prnbuf);
-            xputc(' ');
-            break;
-         }
-      }
-      /* 1980 PRINT  , , ,"A" */
-
-   }        /* end of loop through print elements */
-
-
    /* 1980 PRINT  , , ,"A" */
-   adv_ws(l->buffer, &(l->position));
+   line_skip_spaces(l);
+   while( line_is_eol(l) == FALSE )
+   {
+      /* 1980 PRINT  , , ,"A" */
+      if ( line_skip_char( l, ',' /* comma-specific */ ) )
+      {
+         /* tab over */
+         OutputCR = FALSE;
+         if( format_string[0] == BasicNulChar )
+         {
+            /* Tab only if there's no format specification! (JBV) */
 
+            if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && My->CurrentFile->FileNumber > 0 )
+            {
+               /* CBASIC-II: files use commas between values */
+               xputc(',');
+            }
+            else
+            {
+               xputc('\t');
+            }
+         }
+         if( buff_read_using( l->buffer, &(l->position), format_string ) == TRUE )
+         {
+             fs_pos = 0;
+            OutputCR = TRUE;
+         }
+      }
+      else
+      if ( line_skip_char( l, ';' /* semicolon-specific */ ) )
+      {
+         /* concatenate strings */
+         OutputCR = FALSE;
+         if( buff_read_using( l->buffer, &(l->position), format_string ) == TRUE )
+         {
+             fs_pos = 0;
+            OutputCR = TRUE;
+         }
+         if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && My->CurrentFile->FileNumber > 0 )
+         {
+            /* CBASIC-II: files cannot use semicolon */
+            WARN_SYNTAX_ERROR;
+            goto EXIT;
+         }
+      }
+      else
+      {
+         /* resolve the string */
+         OutputCR = TRUE;
+         if( line_read_expression( l, E ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            goto EXIT;
+         }
+         if( bwb_Warning_Pending() /* Keep This */ )
+         {
+            /* 
+            this might look odd... 
+            but we want to abort printing on the first warning.
+            The expression list could include a function with side-effects,
+            so any warning should immediately halt further evaluation.
+            */
+            goto EXIT;
+         }
+         if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && My->CurrentFile->FileNumber > 0 )
+         {
+            /* CBASIC-II: files have quoted strings */
+            if( E->TypeChar == BasicStringSuffix )
+            {
+               xputc('\"');
+            }
+         }
+         if( get_prnfmt(format_string, &fs_pos, E ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            goto EXIT;
+         }
+         if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && My->CurrentFile->FileNumber > 0 )
+         {
+            /* CBASIC-II: files have quoted strings */
+            if( E->TypeChar == BasicStringSuffix )
+            {
+               xputc('\"');
+            }
+         }
+         RELEASE( E );
+      }
+      line_skip_spaces(l);
+   }        /* end of loop through print elements */
 
    if (OutputCR == TRUE)
    {
       /* did not end with ',' or ';' */
       xputc('\n');
    }
-   return TRUE;
-
-}           /* end of function bwb_xprint() */
+   Success = TRUE;
+EXIT:
+   RELEASE( E );
+   return Success;   
+}
 
 
 /***************************************************************
@@ -979,180 +1077,758 @@ bwb_xprint(struct bwb_line * l)
          to the format.
   
 ***************************************************************/
-
-static struct prn_fmt *
-get_prnfmt(char *buffer, int *position)
+static int num_prnfmt(char *buffer, int *position, VariantType *e)
 {
-   static struct prn_fmt retstruct;
-   int             loop;
+   /*
+   Format a NUMBER.
+   'buffer' points to the beginning of a PRINT USING format string, such as "###.##".
+   'position' is the current offset in 'buffer'.
+   'e' is the current expression to print.
+   */
+   int  width     =   0;
+   int  precision =   0;
+   int  exponent  =   0;
+   char HeadChar  = ' ';
+   char FillChar  = ' ';
+   char CurrChar  = ' ';
+   char ComaChar  = ' ';
+   char TailChar  = ' ';
+   int  p;
+   char tbuf[BasicStringLengthMax + 1];
+   
+   p = *position;
+
+   while( IS_CHAR(buffer[p], PrintUsingNumberPlus) || IS_CHAR( buffer[p], PrintUsingNumberMinus ) )
+   {
+       HeadChar = buffer[p];
+       width++;
+       p++;
+   }
+   while( IS_CHAR(buffer[p], PrintUsingNumberFiller) || IS_CHAR(buffer[p], PrintUsingNumberDollar ) )
+   {
+      if( IS_CHAR( buffer[p], PrintUsingNumberFiller ) )
+      {
+         FillChar = PrintUsingNumberFiller;
+      }
+      else
+      if( IS_CHAR( buffer[p], PrintUsingNumberDollar ) )
+      {
+         CurrChar = PrintUsingNumberDollar;
+      }
+      width++;
+      p++;
+   }
+   while( IS_CHAR(buffer[p], PrintUsingNumberDigit) || IS_CHAR(buffer[p], PrintUsingNumberComma ) )
+   {
+      if( IS_CHAR( buffer[p], PrintUsingNumberComma ) )
+      {
+         ComaChar = PrintUsingNumberComma;
+      }
+      width++;
+      p++;
+   }
+   if( IS_CHAR( buffer[p], PrintUsingNumberPeriod ) )
+   {
+      while( IS_CHAR( buffer[p], PrintUsingNumberPeriod ) )
+      {
+         width++;
+         p++;
+      }
+      while( IS_CHAR( buffer[p], PrintUsingNumberDigit ) )
+      {
+         precision++;
+         width++;
+         p++;
+      }
+   }
+   while( IS_CHAR( buffer[p], PrintUsingNumberExponent ) )
+   {
+      exponent++;
+      precision++;
+      width++;
+      p++;
+   }
+   while( IS_CHAR( buffer[p], PrintUsingNumberPlus ) || IS_CHAR( buffer[p], PrintUsingNumberMinus ) )
+   {
+      TailChar = buffer[p];
+      width++;
+      p++;
+   }
+   /* format the number */
+
+
+   /* displaying both a Heading and a Trailing sign is NOT supported */
+   if( TailChar == ' ' )
+   {
+      /* do nothing */
+   }
+   else
+   if( IS_CHAR( TailChar, PrintUsingNumberPlus ) || IS_CHAR( TailChar, PrintUsingNumberMinus ) )
+   {
+      /* force the sign to be printed, so we can move it */
+      HeadChar = TailChar;
+   }
+   else
+   {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+   }
+
+
+   if( HeadChar == ' ' )
+   {
+      /* only display a '-' sign */
+      if( exponent > 0 )
+      {
+         sprintf(tbuf, "%*.*e", width, precision, e->Number);
+      }
+      else
+      {
+         sprintf(tbuf, "%*.*f", width, precision, e->Number);
+      }
+   }
+   else
+   if( IS_CHAR( HeadChar, PrintUsingNumberPlus ) || IS_CHAR( HeadChar, PrintUsingNumberMinus ) )
+   {
+      /* force a leading sign '+' or '-' */
+      if( exponent > 0 )
+      {
+         sprintf(tbuf, "%+*.*e", width, precision, e->Number);
+      }
+      else
+      {
+         sprintf(tbuf, "%+*.*f", width, precision, e->Number);
+      }
+   }
+   else
+   {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+   }
+   
+   if( TailChar == ' ' )
+   {
+      /* do nothing */
+   }
+   else
+   if( IS_CHAR( TailChar, PrintUsingNumberPlus ) || IS_CHAR( TailChar, PrintUsingNumberMinus ) )
+   {
+      /* move sign '+' or '-' to end */
+      int i;
+      int n;
+
+      n = bwb_strlen(tbuf);
+
+      for (i = 0; i < n; i++)
+      {
+         if( tbuf[i] != ' ' )
+         {
+            if( IS_CHAR( tbuf[i], PrintUsingNumberPlus ) )
+            {
+               tbuf[i] = ' ';
+               if( IS_CHAR( TailChar, PrintUsingNumberPlus ) )
+               {
+                  /* TailChar of '+' does print a '+' */
+                  bwb_strcat(tbuf,"+");
+               }
+               else
+               if( IS_CHAR( TailChar, PrintUsingNumberMinus ) )
+               {
+                  /* TailChar of '-' does NOT print a '+' */
+                  bwb_strcat(tbuf," ");
+               }
+            }
+            else
+            if( IS_CHAR( tbuf[i], PrintUsingNumberMinus ) )
+            {
+               tbuf[i] = ' ';
+               bwb_strcat(tbuf,"-");
+            }
+            break;
+         }
+      }
+      if( tbuf[0] == ' ' )
+      {
+         n = bwb_strlen(tbuf); 
+         /* n > 0 */
+         for( i = 1; i < n; i++ )
+         {
+            tbuf[i-1] = tbuf[i];
+         }
+         tbuf[n-1] = BasicNulChar;
+      }
+   }
+   else
+   {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+   }
+
+
+   if( CurrChar == ' ' )
+   {
+      /* do nothing */
+   }
+   else
+   if( IS_CHAR( CurrChar, PrintUsingNumberDollar ) )
+   {
+      int i;
+      int n;
+
+      n = bwb_strlen(tbuf);
+
+      for (i = 0; i < n; i++)
+      {
+         if (tbuf[i] != ' ')
+         {
+            if (i > 0)
+            {
+               if (bwb_isdigit(tbuf[i]))
+               {
+                  tbuf[i - 1] = CurrChar;
+               }
+               else
+               {
+                  /* sign char */
+                  tbuf[i - 1] = tbuf[i];
+                  tbuf[i] = CurrChar;
+               }
+            }
+            break;
+         }
+      }
+   }
+   else
+   {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+   }
+
+   if( FillChar == ' ' )
+   {
+      /* do nothing */
+   }
+   else
+   if( IS_CHAR( FillChar, PrintUsingNumberFiller ) )
+   {
+      int i;
+      int n;
+
+      n = bwb_strlen(tbuf);
+
+      for (i = 0; i < n; i++)
+      {
+         if (tbuf[i] != ' ')
+         {
+            break;
+         }
+         tbuf[i] = PrintUsingNumberFiller;
+      }
+   }
+   else
+   {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+   }
+
+   if( ComaChar == ' ' )
+   {
+      prn_xxprintf(tbuf);
+   }
+   else
+   if( IS_CHAR( ComaChar, PrintUsingNumberComma ) )
+   {
+      int  dig_pos = -1;
+      int  dec_pos = -1;
+      int  i;
+      int  n;
+      int  commas;
+
+      n = bwb_strlen(tbuf);
+
+      for (i = 0; i < n; i++)
+      {
+        if ((bwb_isdigit(tbuf[i]) != 0) && (dig_pos == -1))
+        {
+           dig_pos = i;
+        }
+        if ((tbuf[i] == PrintUsingNumberPeriod) && (dec_pos == -1))
+        {
+           dec_pos = i;
+        }
+        if ((dig_pos != -1) && (dec_pos != -1))
+        {
+           break;
+        }
+      }
+      if (dig_pos == -1)
+      {
+         dec_pos = n;
+      }
+      if (dec_pos == -1)
+      {
+         dec_pos = n;
+      }
+      /* count the number of commas */
+      commas = 0;
+      for (i = 0; i < n; ++i)
+      {
+         if (((dec_pos - i) % 3 == 0) && (i > dig_pos) && (i < dec_pos))
+         {
+            commas++;
+         }
+      }
+      /* now, actually print */
+      for( i = 0; i < n; i++ )
+      {
+         if( i < commas && IS_CHAR( tbuf[i], FillChar ) )
+         {
+            /* 
+            Ignore the same number of leading spaces as there are commas.
+            While not perfect for all possible cases, 
+            it is usually good enough for practical purposes.
+            */
+         }
+         else
+         {
+            if (((dec_pos - i) % 3 == 0) && (i > dig_pos) && (i < dec_pos))
+            {
+              xxputc(PrintUsingNumberComma);
+            }
+            xxputc(tbuf[i]);
+         }
+      }
+   }
+   else
+   {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+   }
+   *position = p;
+   return TRUE;
+}
+
+static int str_prnfmt(char *buffer, int *position, VariantType *e)
+{
+   /*
+   Format a STRING.
+   'buffer' points to the beginning of a PRINT USING format string, such as "###.##".
+   'position' is the current offset in 'buffer'.
+   'e' is the current expression to print.
+   */
+   int p;
+   char tbuf[BasicStringLengthMax + 1];
+   
+   p = *position;
+   
+   if( e->TypeChar == BasicStringSuffix )
+   {
+      bwb_strcpy( tbuf, e->Buffer );
+   }
+   else
+   {
+      BasicNumerc( e->Number, tbuf );
+   }
+   
+   if( IS_CHAR( buffer[ p ], PrintUsingStringFirst ) )
+   {
+      /* print first character only */
+      int i = 0;
+
+      if( tbuf[i] == BasicNulChar )
+      {
+         xxputc(' ');
+      }
+      else
+      {
+         xxputc(tbuf[i]);
+         i++;
+      }
+      p++;
+   }
+   else
+   if( IS_CHAR( buffer[ p ], PrintUsingStringAll ) )
+   {
+      /* print entire string */
+      p++;
+      prn_xxprintf(tbuf);
+   }
+   else
+   if( IS_CHAR( buffer[ p ], PrintUsingStringLength ) )
+   {
+      /* print N characters or spaces */
+      int i = 0;
+
+      if( tbuf[i] == BasicNulChar )
+      {
+         xxputc(' ');
+      }
+      else
+      {
+         xxputc(tbuf[i]);
+         i++;
+      }
+      p++;
+
+      while( buffer[p] != BasicNulChar && buffer[p] != PrintUsingStringLength )
+      {
+         if( tbuf[i] == BasicNulChar )
+         {
+            xxputc(' ');
+         }
+         else
+         {
+            xxputc(tbuf[i]);
+            i++;
+         }
+         p++;
+      }
+      if( buffer[p] == PrintUsingStringLength )
+      {
+         if( tbuf[i] == BasicNulChar )
+         {
+            xxputc(' ');
+         }
+         else
+         {
+            xxputc(tbuf[i]);
+            i++;
+         }
+         p++;
+      }
+   }
+   *position = p;
+   return TRUE;
+}
+
+static int is_magic_string( char * buffer )
+{
+   /* 
+   for the character string pointed to 'buffer':
+   return TRUE if it is a MagicString sequence,
+   return FALSE otherwise.
+   */
+   char *P;
+
+   /* "!" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingStringFirst ) )
+   {
+      return TRUE;
+   }
+
+   /* "&" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingStringAll ) )
+   {
+      return TRUE;
+   }
+
+   /* "%...%" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingStringLength ) )
+   {
+      return TRUE;
+   }
+
+   return FALSE;
+}
+
+static int is_magic_number( char * buffer )
+{
+   /* 
+   for the character string pointed to 'buffer':
+   return TRUE if it is a MagicNumber sequence,
+   return FALSE otherwise.
+   */
+   char *P;
+
+   /* "+**" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberPlus ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberFiller ) )
+      {
+         P++;
+         if( IS_CHAR( *P, PrintUsingNumberFiller ) )
+         {
+            /* "+**" */
+            return TRUE;
+         }
+      }
+   }
+
+   /* "+$$" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberPlus ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberDollar ) )
+      {
+         P++;
+         if( IS_CHAR( *P, PrintUsingNumberDollar ) )
+         {
+            /* "+$$" */
+            return TRUE;
+         }
+      }
+   }
+
+   /* "+#" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberPlus ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberDigit ) )
+      {
+         /* "+#" */
+         return TRUE;
+      }
+   }
+
+   /* "-**" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberMinus ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberFiller ) )
+      {
+         P++;
+         if( IS_CHAR( *P, PrintUsingNumberFiller ) )
+         {
+            /* "-**" */
+            return TRUE;
+         }
+      }
+   }
+
+   /* "-$$" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberMinus ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberDollar ) )
+      {
+         P++;
+         if( IS_CHAR( *P, PrintUsingNumberDollar ) )
+         {
+            /* "-$$" */
+            return TRUE;
+         }
+      }
+   }
+
+   /* "-#" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberMinus ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberDigit ) )
+      {
+         /* "-#" */
+         return TRUE;
+      }
+   }
+
+   /* "**" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberFiller ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberFiller ) )
+      {
+         /* "**" */
+         return TRUE;
+      }
+   }
+   
+   /* "$$" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberDollar ) )
+   {
+      P++;
+      if( IS_CHAR( *P, PrintUsingNumberDollar ) )
+      {
+         /* "$$" */
+         return TRUE;
+      }
+   }
+
+   /* "#" */
+   P = buffer;
+   if( IS_CHAR( *P, PrintUsingNumberDigit ) )
+   {
+      /* "#" */
+      return TRUE;
+   }
+
+   return FALSE;
+}
+
+static int get_prnfmt(char *buffer, int *position, VariantType *e)
+{
+   /*
+   Format an EXPRESSION.
+   'buffer' points to the beginning of a PRINT USING format string, such as "###.##".
+   'position' is the current offset in 'buffer'.
+   'e' is the current expression to print.
+   */
+   
+
+
+   int p;
+   int  IsLoop = TRUE;
+   int  IsUsed = FALSE;
 
    bwx_DEBUG(__FUNCTION__);
 
-   /* set some defaults */
 
-   retstruct.precision = 0;
-   retstruct.type = FALSE;
-   retstruct.exponential = FALSE;
-   retstruct.right_justified = FALSE;
-   retstruct.commas = FALSE;
-   retstruct.sign = FALSE;
-   retstruct.money = FALSE;
-   retstruct.fill = ' ';
-   retstruct.minus = FALSE;
-   retstruct.width = 0;
-
-   /* check for negative position */
-   if (*position < 0)
+   p = *position;
+   if( p < 0 )
    {
-      return &retstruct;
+      p = 0;
    }
-   /* advance past whitespace */
-
-   /* adv_ws( buffer, position ); *//* Don't think we want this (JBV) */
-
-   /* check first character: a lost can be decided right here */
-
-
-   loop = TRUE;
-   while (loop == TRUE)
+   else
+   if( p > 0 )
    {
-
-
-      switch (buffer[*position])
+      if( buffer[p] == BasicNulChar )
       {
-      case ' ':   /* end of this format segment */
-         xxputc(buffer[*position]); /* Gotta output it (JBV) */
-         ++(*position); /* JBV */
-         if (retstruct.type != FALSE)
+         p = 0;
+      }
+   }
+   while( IsLoop == TRUE )
+   {
+      if( buffer[p] == BasicNulChar )
+      {
+         IsLoop = FALSE;
+      }
+      else
+      {
+         int IsLiteral = TRUE;
+         
+         
+         if( IsLiteral == TRUE )
          {
-            loop = FALSE;  /* JBV */
-         }
-         break;
-      case '\0':  /* end of format string */
-         *position = -1;
-         return &retstruct;
-      case '_':   /* print next character as literal */
-         ++(*position);
-         xxputc(buffer[*position]); /* Not xputc, no tabs
-                      * (JBV) */
-         ++(*position);
-         break;
-      case '!':
-         retstruct.type = STRING;
-         retstruct.width = 1;
-         ++(*position); /* JBV */
-         return &retstruct;
-      case '&':   /* JBV */
-         retstruct.type = STRING;
-         retstruct.width = -1;
-         ++(*position);
-         return &retstruct;
-      case '\\':
-         retstruct.type = STRING;
-         ++retstruct.width;
-         ++(*position);
-         for (; buffer[*position] == ' '; ++(*position))
-         {
-            ++retstruct.width;
-         }
-         if (buffer[*position] == '\\')
-         {
-            ++retstruct.width;
-            ++(*position);
-         }
-         return &retstruct;
-      case '%':
-         retstruct.type = STRING;
-         ++retstruct.width;
-         ++(*position);
-         for (; buffer[*position] == ' '; ++(*position))
-         {
-            ++retstruct.width;
-         }
-         if (buffer[*position] == '%')
-         {
-            ++retstruct.width;
-            ++(*position);
-         }
-         return &retstruct;
-      case '$':
-         ++retstruct.width;   /* JBV */
-         ++(*position);
-         retstruct.money = TRUE;
-         if (buffer[*position] == '$')
-         {
-            ++retstruct.width;   /* JBV */
-            ++(*position);
-         }
-         break;
-      case '*':
-         ++retstruct.width;   /* JBV */
-         ++(*position);
-         retstruct.fill = '*';
-         if (buffer[*position] == '*')
-         {
-            ++retstruct.width;   /* JBV */
-            ++(*position);
-         }
-         break;
-      case '+':
-         ++(*position);
-         retstruct.sign = TRUE;
-         break;
-      case '#':
-         retstruct.type = NUMBER;   /* for now */
-         /* ++( *position ); *//* Removed by JBV */
-         /* The initial condition shouldn't be retstruct.width
-          * = 1 (JBV) */
-         for (; buffer[*position] == '#'; ++(*position))
-         {
-            ++retstruct.width;
-         }
-         if (buffer[*position] == ',')
-         {
-            retstruct.commas = TRUE;
-            ++retstruct.width;   /* JBV */
-            ++(*position); /* JBV */
-         }
-         if (buffer[*position] == '.')
-         {
-            retstruct.type = NUMBER;
-            ++retstruct.width;
-            ++(*position);
-            for (retstruct.precision = 0; buffer[*position] == '#'; ++(*position))
+            char * S;
+
+            S = buffer;
+            S += p;
+
+            if( is_magic_string( S ) )
             {
-               ++retstruct.precision;
-               ++retstruct.width;
+               /* MagicString Value */
+               if( IsUsed == TRUE )
+               {
+                  IsLoop = FALSE;
+               }
+               else
+               if( e->TypeChar == BasicStringSuffix )
+               {
+                  str_prnfmt( buffer, &p, e );
+                  IsUsed = TRUE;
+               }
+               else
+               {
+                  IsLoop = FALSE;
+               }
+               IsLiteral = FALSE;
             }
          }
-         if (buffer[*position] == '-')
+         if( IsLiteral == TRUE )
          {
-            retstruct.minus = TRUE;
-            ++(*position);
-         }
-         return &retstruct;
+            char * S;
 
-      case '^':
-         retstruct.type = NUMBER;
-         retstruct.exponential = TRUE;
-         for (retstruct.width = 1; buffer[*position] == '^'; ++(*position))
+            S = buffer;
+            S += p;
+
+            if( is_magic_number( S ) )
+            {
+               /* MagicNumber Value */
+               if( IsUsed == TRUE )
+               {
+                  IsLoop = FALSE;
+               }
+               else
+               if( e->TypeChar == BasicStringSuffix )
+               {
+                  IsLoop = FALSE;
+               }
+               else
+               {
+                  num_prnfmt( buffer, &p, e );
+                  IsUsed = TRUE;
+               }
+               IsLiteral = FALSE;
+            }
+         }
+         if( IsLiteral == TRUE )
          {
-            ++retstruct.width;
+            if( PrintUsingLiteral != BasicNulChar && buffer[p] == PrintUsingLiteral )
+            {
+               /* print next character as literal */
+               p++;
+               if( buffer[p] == BasicNulChar )
+               {
+                 /* PRINT USING "_" */
+                 xxputc(' ');
+               }
+               else
+               {
+                 xxputc(buffer[p]);
+                 p++;
+               }
+            }
+            else
+            {
+                 xxputc(buffer[p]);
+                 p++;
+            }
          }
-         return &retstruct;
-
-      default: /* JBV */
-         xxputc(buffer[*position]); /* Gotta output it (JBV) */
-         ++(*position);
-         break;
-
+         
       }
-   }        /* end of loop */
+   }
 
-   puts("5");
-   return &retstruct;
+   if( IsUsed == FALSE )
+   {
+
+      if( e->TypeChar == BasicStringSuffix )
+      {
+         /* PRINT USING "";A$    */
+         /* PRINT USING "ABC";A$ */
+         prn_iprintf(e->Buffer);
+      }
+      else
+      {
+         /* PRINT USING "";X     */
+         /* PRINT USING "ABC";X  */
+         /* [space]number[space]   POSITIVE or ZERO
+          * [minus]number[space]   NEGATIVE */
+         char tbuf[ 32 ];
+
+         BasicNumerc(e->Number, tbuf);
+
+         if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && My->CurrentFile->FileNumber > 0 )
+         {
+            /* CBASIC-II: numbers in files do NOT have leading or trailing spaces */
+            char * P;
+            P = tbuf;
+            while( *P == ' ' )
+            {
+               P++;
+            }
+            prn_iprintf( P );
+         }
+         else
+         {
+            prn_iprintf(tbuf);
+            xputc(' ');
+         }
+      }
+   }
+   *position = p;
+   return TRUE;
 }
-
 
 /***************************************************************
   
@@ -1171,7 +1847,7 @@ prn_iprintf(char *buffer)
 
    bwx_DEBUG(__FUNCTION__);
 
-   if (prn_getwidth() == 0)
+   if (My->CurrentFile->width == 0)
    {
       /* ignore when WIDTH == 0 -- BINARY output */
       while (*buffer)
@@ -1182,8 +1858,8 @@ prn_iprintf(char *buffer)
       return 0;
    }
    /* check to see if width will be exceeded */
-   n = prn_getcol() + strlen(buffer) - 1;
-   if (n > prn_getwidth())
+   n = My->CurrentFile->col + bwb_strlen(buffer) - 1;
+   if (n > My->CurrentFile->width)
    {
       xputc('\n');
    }
@@ -1207,14 +1883,13 @@ prn_iprintf(char *buffer)
   
 ***************************************************************/
 
-static int
-prn_xxprintf(char *buffer)
+static int prn_xxprintf(char *buffer)
 {
    int             n;
 
    bwx_DEBUG(__FUNCTION__);
 
-   if (prn_getwidth() == 0)
+   if (My->CurrentFile->width == 0)
    {
       /* ignore when WIDTH == 0 -- BINARY output */
       while (*buffer)
@@ -1225,8 +1900,8 @@ prn_xxprintf(char *buffer)
       return 0;
    }
    /* check to see if width will be exceeded */
-   n = prn_getcol() + strlen(buffer) - 1;
-   if (n > prn_getwidth())
+   n = My->CurrentFile->col + bwb_strlen(buffer) - 1;
+   if (n > My->CurrentFile->width)
    {
       xxputc('\n');
    }
@@ -1249,14 +1924,13 @@ prn_xxprintf(char *buffer)
   
 ***************************************************************/
 
-static int
-xputc(char c)
+static int xputc(char c)
 {
    static char     CHR_pending = FALSE;
 
    bwx_DEBUG(__FUNCTION__);
 
-   if (prn_getwidth() == 0)
+   if (My->CurrentFile->width == 0)
    {
       /* ignore when WIDTH == 0 -- BINARY output */
       xxxputc(c);
@@ -1278,12 +1952,12 @@ xputc(char c)
    if (CHR_pending == PRN_TAB)
    {
       /* WIDTH 80 */
-      while (c > prn_getwidth())
+      while (c > My->CurrentFile->width)
       {
          /* If n is greater than the margin m, then n is
           * reduced by an integral multiple of m so that it is
           * in the range 1 <= n <= m; */
-         c -= prn_getwidth();
+         c -= My->CurrentFile->width;
       }
       /* 190 PRINT TAB(A);"X" ' A = 0 */
       if (c == 0)
@@ -1292,11 +1966,11 @@ xputc(char c)
          c = 1;
          /* continue processing */
       }
-      if ((int) c < prn_getcol())
+      if ((int) c < My->CurrentFile->col)
       {
          xxputc('\n');
       }
-      while (prn_getcol() < (int) c)
+      while (My->CurrentFile->col < (int) c)
       {
          xxputc(' ');
       }
@@ -1314,13 +1988,13 @@ xputc(char c)
       {
          int             LastZoneColumn;
          LastZoneColumn = 1;
-         while (LastZoneColumn < prn_getwidth())
+         while (LastZoneColumn < My->CurrentFile->width)
          {
-            LastZoneColumn += ZONEWIDTH;
+            LastZoneColumn += ZONE_WIDTH;
          }
-         LastZoneColumn -= ZONEWIDTH;
+         LastZoneColumn -= ZONE_WIDTH;
 
-         if (prn_getcol() >= LastZoneColumn)
+         if (My->CurrentFile->col >= LastZoneColumn)
          {
             /* advance to a new line */
             xxputc('\n');
@@ -1328,11 +2002,11 @@ xputc(char c)
          else
          {
             /* advance to the next print zone */
-            if ((prn_getcol() % ZONEWIDTH) == 1)
+            if ((My->CurrentFile->col % ZONE_WIDTH) == 1)
             {
                xxputc(' ');
             }
-            while ((prn_getcol() % ZONEWIDTH) != 1)
+            while ((My->CurrentFile->col % ZONE_WIDTH) != 1)
             {
                xxputc(' ');
             }
@@ -1357,12 +2031,11 @@ xputc(char c)
   
 ***************************************************************/
 
-static int
-xxputc(char c)
+static int xxputc(char c)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   if (prn_getwidth() == 0)
+   if (My->CurrentFile->width == 0)
    {
       /* ignore when WIDTH == 0 -- BINARY output */
       xxxputc(c);
@@ -1373,7 +2046,7 @@ xxputc(char c)
    {
       /* REM this should print one line, not two lines WIDTH 80
        * PRINT SPACE$( 80 ) */
-      if (prn_getcol() > prn_getwidth())
+      if (My->CurrentFile->col > My->CurrentFile->width)
       {
          xxxputc('\n'); /* output LF */
       }
@@ -1394,23 +2067,17 @@ xxputc(char c)
 ***************************************************************/
 
 
-static int
-xxxputc(char c)
+static int xxxputc(char c)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   if (FileNumber == CONSOLE_FILE_NUMBER)
-   {
-      bwx_PRINT(c);
-   }
-   else
-   if (FileNumber == LPRINT_FILE_NUMBER)
+   if (My->CurrentFile == My->SYSPRN)
    {
       bwx_LPRINT(c);
-      if (c == '\n' && LPRINT_WIDTH > 0 && LPRINT_NULLS > 0)
+      if (c == '\n' && My->SYSPRN->width > 0 && My->LPRINT_NULLS > 0)
       {
          int             i;
-         for (i = 0; i < LPRINT_NULLS; i++)
+         for (i = 0; i < My->LPRINT_NULLS; i++)
          {
             bwx_LPRINT(0);
          }
@@ -1418,146 +2085,289 @@ xxxputc(char c)
    }
    else
    {
-      fputc(c, dev_table[FileNumber].cfp);
+      if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && c == '\n' )
+      {
+         if( My->CurrentFile->mode & DEVMODE_RANDOM && My->CurrentFile->width > 0 )
+         {
+            /* CBASIC-II: RANDOM files are padded on the right with spaces */
+            while( My->CurrentFile->col < My->CurrentFile->width )
+            {
+               fputc(' ', My->CurrentFile->cfp);
+               My->CurrentFile->col++;
+            }
+         }
+      }
+      fputc(c, My->CurrentFile->cfp);
    }
    /* update current column position */
-   if (prn_getwidth() == 0)
+   if (My->CurrentFile->width == 0)
    {
       /* ignore when WIDTH == 0 -- BINARY output */
-      prn_setcol(1);
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
    }
    else
    if (c == '\n')
    {
-      prn_setcol(1);
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row ++;
    }
    else
    {
-      prn_setcol(prn_getcol() + 1);
+      My->CurrentFile->col ++;
    }
    return 0;
 }
 
-/***************************************************************
-  
-        FUNCTION:       prn_getcol()
-  
-   DESCRIPTION:    This function returns a pointer to an
-         integer containing the current PRINT
-         column for a specified file or device.
-  
-***************************************************************/
 
-static
-int
-prn_getcol()
+void 
+ResetConsoleColumn( void )
 {
-
    bwx_DEBUG(__FUNCTION__);
 
-   if (FileNumber == LPRINT_FILE_NUMBER)
-   {
-      return LPRINT_COLUMN;
-   }
-   return dev_table[FileNumber].col;
-
+   My->SYSOUT->col = 1;
 }
 
-static int
-prn_setcol(int NewValue)
+
+LineType *
+bwb_PUT(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
-   if (FileNumber == LPRINT_FILE_NUMBER)
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
    {
-      LPRINT_COLUMN = NewValue;
-      return 0;
-   }
-   dev_table[FileNumber].col = NewValue;
-   return 0;
+      /* PUT filename$ , value [, ...] */
+      VariantType e;       /* no leaks */
+      VariantType *E = &e; /* no leaks */
 
-}
-
-int
-ResetConsoleColumn()
-{
-   bwx_DEBUG(__FUNCTION__);
-
-   dev_table[CONSOLE_FILE_NUMBER].col = 1;   /* reset column */
-   return 0;
-}
-
-/***************************************************************
-  
-        FUNCTION:       prn_getwidth()
-  
-   DESCRIPTION:    This function returns the PRINT width for
-         a specified file or output device.
-  
-***************************************************************/
-
-static
-int
-prn_getwidth()
-{
-   bwx_DEBUG(__FUNCTION__);
-
-   if (FileNumber == LPRINT_FILE_NUMBER)
-   {
-      return LPRINT_WIDTH;
-   }
-   return dev_table[FileNumber].width;
-
-}
-
-/***************************************************************
-  
-        FUNCTION:       prn_precision()
-  
-   DESCRIPTION:    This function returns the level of precision
-         required for a specified numerical value.
-  
-***************************************************************/
-
-int
-prn_precision(struct bwb_variable * v)
-{
-   int             max_precision = 6;
-   BasicNumberType nval, d;
-   int             r;
-
-   bwx_DEBUG(__FUNCTION__);
-
-   /* check for numeric value */
-
-   if (v->type == NUMBER)
-   {
-      max_precision = 12;
-   }
-   /* get the value in nval */
-
-   nval = fabs(var_getnval(v));
-
-   /* cycle through until precision is found */
-
-   d = 1;
-   for (r = 0; r < max_precision; ++r)
-   {
-
-
-      if (fmod(nval, d) < 0.0000001)   /* JBV */
+      CLEAR_VARIANT( E );
+      line_skip_spaces(l);
+      if( line_read_expression( l, E ) == FALSE )
       {
-         return r;
+         goto EXIT;
       }
-      d /= 10;
+      if( E->TypeChar == BasicStringSuffix )
+      {
+         /* STRING */
+         /* PUT filename$ ... */
+         if( is_empty_filename( E->Buffer ) )
+         {
+            /* "PUT # 0" is an error */
+            WARN_BAD_FILE_NUMBER;
+            goto EXIT;
+         }
+         My->CurrentFile = find_file_by_name( E->Buffer );
+         if( My->CurrentFile == NULL )
+         {
+            /* implicitly OPEN for writing */
+            My->CurrentFile = file_new();
+            My->CurrentFile->cfp = fopen(E->Buffer, "w");
+            if( My->CurrentFile->cfp == NULL )
+            {
+               /* bad file name */
+               WARN_BAD_FILE_NUMBER;
+               goto EXIT;
+            }
+            My->CurrentFile->FileNumber = file_next_number();
+            My->CurrentFile->mode = DEVMODE_OUTPUT;
+            My->CurrentFile->width = 0;
+            /* WIDTH == RECLEN */
+            My->CurrentFile->col = 1;
+            My->CurrentFile->row = 1;
+            My->CurrentFile->delimit = ',';
+            My->CurrentFile->buffer = NULL;
+            bwb_strcpy(My->CurrentFile->filename, E->Buffer);
+         }
+      }
+      else
+      {
+         /* NUMBER -- file must already be OPEN */
+         /* PUT filenumber ... */
+         if( E->Number < 0 )
+         {
+            /* "PUT # -1" is an error */
+            WARN_BAD_FILE_NUMBER;
+            goto EXIT;
+         }
+         if( E->Number == 0 )
+         {
+            /* "PUT # 0" is an error */
+            WARN_BAD_FILE_NUMBER;
+            goto EXIT;
+         }
+         /* normal file */
+         My->CurrentFile = find_file_by_number( (int) bwb_rint( E->Number ) );
+         if( My->CurrentFile == NULL )
+         {
+            /* file not OPEN */
+            WARN_BAD_FILE_NUMBER;
+            goto EXIT;
+         }
+      }  
+      RELEASE( E );  
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         goto EXIT;
+      }
+      if (( My->CurrentFile->mode & DEVMODE_WRITE) == 0)
+      {
+         WARN_BAD_FILE_NUMBER;
+         goto EXIT;
+      }
+      if( line_is_eol(l) )
+      {
+         /* PUT F$ */
+         /* PUT #1 */
+         xputc('\n');
+         goto EXIT;
+      }
+      else
+      if (line_skip_comma(l))
+      {
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         goto EXIT;
+      }
+   
+      /* loop through elements */
+   
+      while( ! line_is_eol(l) )
+      {
+         while (line_skip_comma(l))
+         {
+            /* PUT F$, ,,,A,,,B,,, */
+            /* PUT #1, ,,,A,,,B,,, */
+            xputc( My->CurrentFile->delimit );
+         }
+   
+         if ( ! line_is_eol(l) )
+         {
+            /* print this item */
+
+            /* get the next element */
+            line_skip_spaces(l);
+            if( line_read_expression( l, E ) == FALSE )
+            {
+               goto EXIT;
+            }
+            if( E->TypeChar == BasicStringSuffix )
+            {
+               /* STRING */
+               xputc(BasicQuoteChar);
+               prn_iprintf(E->Buffer);
+               xputc(BasicQuoteChar);
+            }
+            else
+            {
+               /* NUMBER */
+               char tbuf[ 32 ];
+               BasicNumerc(E->Number, tbuf);
+               prn_iprintf(tbuf);
+            }  
+            RELEASE( E );   
+         }
+      }
+      /* print LF */
+      xputc('\n');
+      /* OK */
+EXIT:
+      RELEASE( E );
+      return bwb_zline(l);
    }
-
-   /* return */
-
-   return r;
-
+   else
+   if( My->CurrentVersion->OptionVersionBitmask & ( D71 ) )
+   {
+      /* PUT # file_number [ , RECORD record_number ] */
+      int file_number = 0;
+      if( line_skip_char( l, BasicFileNumberPrefix ) == FALSE )
+      {
+         /* OPTIONAL */
+      }
+      if( line_read_integer_expression( l, &file_number ) == FALSE )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline( l );
+      }
+      if( file_number < 1 )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline( l );
+      }
+      My->CurrentFile = find_file_by_number( file_number );
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline( l );
+      }
+      if( My->CurrentFile->mode != DEVMODE_RANDOM )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline( l );
+      }
+      if( My->CurrentFile->width <= 0 )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline( l );
+      }
+      if( line_is_eol( l ) )
+      {
+         /* PUT # file_number */
+      }
+      else
+      {
+         /* PUT # file_number , RECORD record_number */
+         int record_number = 0;
+         long offset = 0;
+         if( line_skip_comma( l ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline( l );
+         }
+         if( line_skip_word( l, "RECORD" ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline( l );
+         }
+         if( line_read_integer_expression( l, &record_number ) == FALSE )
+         {
+            WARN_BAD_RECORD_NUMBER;
+            return bwb_zline( l );
+         }
+         if( record_number <= 0 )
+         {
+            WARN_BAD_RECORD_NUMBER;
+            return bwb_zline( l );
+         }
+         record_number--; /* BASIC to C */
+         offset = record_number;
+         offset *= My->CurrentFile->width;
+         if (fseek(My->CurrentFile->cfp, offset, SEEK_SET) != 0)
+         {
+            WARN_BAD_RECORD_NUMBER;
+            return bwb_zline( l );
+         }
+      }
+      field_put( My->CurrentFile );
+      /* if( TRUE ) */
+      {
+         int i;
+         for (i = 0; i < My->CurrentFile->width; i++)
+         {
+            char c;
+            c = My->CurrentFile->buffer[i];
+            fputc(c, My->CurrentFile->cfp);
+         }
+      }
+      /* OK */
+      return bwb_zline( l );
+   }
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
 }
-
 
 
 /***************************************************************
@@ -1571,169 +2381,546 @@ prn_precision(struct bwb_variable * v)
   
 ***************************************************************/
 
-struct bwb_line *
-bwb_WRITE(struct bwb_line * l)
+
+LineType *
+bwb_WRITE(LineType * l)
 {
-   static int      pos;
-   static char    *s_buffer;  /* small, temporary buffer */
-   static int      init = FALSE;
-   int             loop;
-#if 0
-   struct bwb_variable nvar;
-#endif
-   char           *tbuf;
+   int OutputCR;
+   VariantType x;       /* no leaks */
+   VariantType *X = &x; /* no leaks */
+
+   bwx_DEBUG(__FUNCTION__);
+   CLEAR_VARIANT( X );     
+   My->CurrentFile = My->SYSOUT;
+   if ( line_skip_char( l, BasicFileNumberPrefix ) )
+   {
+      int             UserFileNumber;
+
+      if( line_read_integer_expression(l, &UserFileNumber) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+
+      /* check the requested device number */
+      if( UserFileNumber < 0 )
+      {
+         My->CurrentFile = My->SYSPRN;
+      }
+      else
+      if( UserFileNumber == 0 )
+      {
+         My->CurrentFile = My->SYSOUT;
+      }
+      else
+      {
+         /* normal file */
+         My->CurrentFile = find_file_by_number( UserFileNumber );
+      }
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if (( My->CurrentFile->mode & DEVMODE_WRITE) == 0)
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( line_is_eol(l) )
+      {
+         /* WRITE #1 */
+         xputc('\n');
+         return bwb_zline(l);
+      }
+      else
+      if (line_skip_comma(l))
+      {
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+
+
+   /* loop through elements */
+   OutputCR = TRUE;
+   line_skip_spaces( l );
+   while( line_is_eol(l) == FALSE )
+   {
+      if( line_skip_comma(l) )
+      {
+         /* WRITE     ,,,A,,,B,,, */
+         /* WRITE #1, ,,,A,,,B,,, */
+         OutputCR = FALSE;
+         xputc( My->CurrentFile->delimit );
+      }
+      else
+      {
+         /* print the expression */
+         OutputCR = TRUE;
+         if( line_read_expression( l, X ) == FALSE )
+         {
+            goto EXIT;
+         }
+         if( bwb_Warning_Pending() /* Keep This */ )
+         {
+            /* 
+            this might look odd... 
+            but we want to abort printing on the first error.
+            The expression list could include a function with side-effects,
+            so any kind of error should immediately halt further evaluation.
+            */
+            goto EXIT;
+         }
+         if( X->TypeChar == BasicStringSuffix )
+         {
+            /* STRING */
+            xputc(BasicQuoteChar);
+            prn_iprintf(X->Buffer);
+            xputc(BasicQuoteChar);
+         }
+         else
+         {
+            /* NUMBER */
+            char tbuf[ 32 ];
+            BasicNumerc(X->Number, tbuf);
+            prn_iprintf(tbuf);
+         }  
+         RELEASE( X );   
+      }
+      line_skip_spaces( l );
+   }
+   /* print LF */
+   if( OutputCR == TRUE )
+   {
+      xputc('\n');
+   }
+EXIT:
+   RELEASE( X );      
+   return bwb_zline(l);
+}
+
+static LineType * file_write_matrix( LineType * l, char delimit )
+{
+   /* MAT PRINT arrayname [;|,] */
+   /* Array must be 1, 2 or 3 dimensions */
+   /* Array may be either NUMBER or STRING */
+   VariableType *v;
+   char            ItemSeperator[2];
 
    bwx_DEBUG(__FUNCTION__);
 
-   /* initialize buffers if necessary */
-
-   if (init == FALSE)
+   /* get the variable name */
+   line_skip_spaces(l);
+   while( bwb_isalpha( l->buffer[l->position] ) )
    {
-      init = TRUE;
+      /* get matrix name */
+       if((v = line_read_matrix( l )) == NULL)
+       {
+          WARN_SUBSCRIPT_OUT_OF_RANGE;
+          return bwb_zline(l);
+       }
 
-      /* Revised to CALLOC pass-thru call by JBV */
-      if ((s_buffer = CALLOC(BasicStringLengthMax + 1, sizeof(char), "bwb_write")) == NULL)
-      {
-         bwb_error("in bwb_writw(): failed to get memory for s_buffer");
-         return bwb_zline(l);
-      }
+       /* variable MUST be an array of 1, 2 or 3 dimensions */
+       if (v->dimensions < 1)
+       {
+          WARN_SUBSCRIPT_OUT_OF_RANGE;
+          return bwb_zline(l);
+       }
+       if(v->dimensions > 3)
+       {
+          WARN_SUBSCRIPT_OUT_OF_RANGE;
+          return bwb_zline(l);
+       }
+
+
+       /* 
+       This may look odd, but MAT PRINT is special.
+       The variable seperator AFTER the variable determines how 
+       the variable's values are printed.
+       The number of dimension determines:
+       a) the meaning of comma (,) and semicolon (;)
+       b) the default of row-by-row or col-by-col
+       */
+       /* default the item seperator based upon variable's dimensions */
+       ItemSeperator[0] = BasicNulChar;
+       ItemSeperator[1] = BasicNulChar;
+       switch( v->dimensions )
+       {
+       case 1:
+           /* by default, a one dimension array is printed row-by-row */
+           ItemSeperator[0] = '\n';
+           break;
+       case 2:
+           /* by default, a two dimension array is printed col-by-col */
+           ItemSeperator[0] = delimit;
+           break;
+       case 3:
+           /* by default, a three dimension array is printed col-by-col */
+           ItemSeperator[0] = delimit;
+           break;
+       }
+       /* allow user to assign the item seperator */
+       if( line_skip_char(l, ',' /* comma-specific */ ))
+       {
+           /* force printing col-by-col */
+           ItemSeperator[0] = delimit;
+       }
+       else
+       if( line_skip_char(l, ';' /* semicolon-specific */ ))
+       {
+           /* force concatenating the columns */
+           ItemSeperator[0] = BasicNulChar;
+       }
+       /* print array */
+       switch( v->dimensions )
+       {
+       case 1:
+           {
+               /*
+               OPTION BASE 0
+               DIM A(5)
+               ...
+               MAT PRINT A 
+               ...
+               FOR I = 0 TO 5
+                 PRINT A(I)
+               NEXT I
+               ...
+               */
+               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
+               {
+                  char tbuf[BasicStringLengthMax + 1];
+                  
+                   if( ItemSeperator[0] != BasicNulChar && v->array_pos[0] > v->LBOUND[0] )
+                   {
+                       prn_iprintf(ItemSeperator);
+                   }
+                  /* if( TRUE ) */
+                  {
+                     VariantType variant;
+                     if( var_get( v, &variant) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }
+                     if( variant.TypeChar == '$' )
+                     {
+                        bwb_strcpy( tbuf, variant.Buffer );
+                     }
+                     else
+                     {
+                        BasicNumerc( variant.Number, tbuf );
+                     }
+                  }
+                   prn_iprintf(tbuf);
+               }
+               prn_iprintf("\n");
+           }
+           break;
+       case 2:
+           {
+               /*
+               OPTION BASE 0
+               DIM B(2,3)
+               ...
+               MAT PRINT B 
+               ...
+               FOR I = 0 TO 2
+                   FOR J = 0 TO 3
+                       PRINT B(I,J),
+                   NEXT J
+                   PRINT
+               NEXT I
+               ...
+               */
+               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
+               {
+               for( v->array_pos[1] = v->LBOUND[1]; v->array_pos[1] <= v->UBOUND[1]; v->array_pos[1]++ )
+               {
+                  char tbuf[BasicStringLengthMax + 1];
+
+                   if( ItemSeperator[0] != BasicNulChar && v->array_pos[1] > v->LBOUND[1] )
+                   {
+                       prn_iprintf(ItemSeperator);
+                   }
+                  /* if( TRUE ) */
+                  {
+                     VariantType variant;
+                     if( var_get( v, &variant) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }
+                     if( variant.TypeChar == '$' )
+                     {
+                        bwb_strcpy( tbuf, variant.Buffer );
+                     }
+                     else
+                     {
+                        BasicNumerc( variant.Number, tbuf );
+                     }
+                  }
+                   prn_iprintf(tbuf);
+               }
+               prn_iprintf("\n");
+               }
+           }
+           break;
+       case 3:
+           {
+               /*
+               OPTION BASE 0
+               DIM C(2,3,4)
+               ...
+               MAT PRINT C 
+               ...
+               FOR I = 0 TO 2
+                   FOR J = 0 TO 3
+                       FOR K = 0 TO 4
+                           PRINT C(I,J,K),
+                       NEXT K
+                       PRINT
+                   NEXT J
+                   PRINT
+               NEXT I
+               ...
+               */
+               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
+               {
+               for( v->array_pos[1] = v->LBOUND[1]; v->array_pos[1] <= v->UBOUND[1]; v->array_pos[1]++ )
+               {
+               for( v->array_pos[2] = v->LBOUND[2]; v->array_pos[2] <= v->UBOUND[2]; v->array_pos[2]++ )
+               {
+                  char tbuf[BasicStringLengthMax + 1];
+
+                   if( ItemSeperator[0] != BasicNulChar && v->array_pos[2] > v->LBOUND[2] )
+                   {
+                       prn_iprintf(ItemSeperator);
+                   }
+                  /* if( TRUE ) */
+                  {
+                     VariantType variant;
+                     if( var_get( v, &variant) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }
+                     if( variant.TypeChar == '$' )
+                     {
+                        bwb_strcpy( tbuf, variant.Buffer );
+                     }
+                     else
+                     {
+                        BasicNumerc( variant.Number, tbuf );
+                     }
+                  }
+                   prn_iprintf(tbuf);
+               }
+               prn_iprintf("\n");
+               }
+               prn_iprintf("\n");
+               }
+           }
+           break;
+       }
+       /* skip spaces */
+       line_skip_spaces(l);
+       /* process the next variable, if any  */
    }
-   FileNumber = CONSOLE_FILE_NUMBER;
-
-
-
-
-   adv_ws(l->buffer, &(l->position));
-
-   if (l->buffer[l->position] == BasicFileNumberPrefix)
-   {
-      struct exp_ese *v;
-      int             UserFileNumber;
-
-
-
-      ++(l->position);
-      adv_ws(l->buffer, &(l->position));
-      adv_element(l->buffer, &(l->position), s_buffer);
-      pos = 0;
-      v = bwb_exp(s_buffer, FALSE, &pos);
-      if (ERROR_PENDING)
-      {
-         return bwb_zline(l);
-      }
-      adv_ws(l->buffer, &(l->position));
-      if (l->buffer[l->position] == ',')
-      {
-         ++(l->position);
-      }
-      else
-      {
-         bwb_error("in bwb_write(): no comma after #n");
-         return bwb_zline(l);
-      }
-
-      UserFileNumber = exp_getival(v);
-      /* check the requested device number */
-      if (UserFileNumber < 0)
-      {
-         /* * PRINTER, CASSETTE, etc.  * These are all sent to *
-          * bwx_LPRINT */
-         FileNumber = LPRINT_FILE_NUMBER;
-      }
-      else
-      if (UserFileNumber > BasicFileNumberMax)
-      {
-         bwb_error("in bwb_write(): Requested device number is out of range.");
-         return bwb_zline(l);
-      }
-      else
-      {
-         FileNumber = (BasicFileNumberType) UserFileNumber;
-         if ((dev_table[FileNumber].mode & DEVMODE_WRITE) == 0)
-         {
-            bwb_error("in bwb_write(): Requested device is not open for writing");
-            return bwb_zline(l);
-         }
-      }
-
-
-
-
-
-   }
-   tbuf = s_buffer;
-
-   /* be sure there is an element to print */
-
-   adv_ws(l->buffer, &(l->position));
-   loop = TRUE;
-   switch (l->buffer[l->position])
-   {
-   case '\0':
-      loop = FALSE;
-      break;
-   }
-
-   /* loop through elements */
-
-   while (loop == TRUE)
-   {
-      struct exp_ese *e;
-
-      /* get the next element */
-
-      e = bwb_exp(l->buffer, FALSE, &(l->position));
-      if (ERROR_PENDING)
-      {
-         return bwb_zline(l);
-      }
-      /* perform type-specific output */
-
-      switch (e->type)
-      {
-      case STRING:
-         xputc('\"');
-         str_btoc(tbuf, exp_getsval(e));
-         prn_iprintf(tbuf);
-         xputc('\"');
-         break;
-      default:
-#if 0
-         *var_findnval(&nvar, nvar.array_pos) =
-            exp_getnval(e);
-         sprintf(tbuf, " %.*f", prn_precision(&nvar),
-            var_getnval(&nvar));
-#endif
-         BasicNumerc(exp_getnval(e), tbuf);
-         prn_iprintf(tbuf);
-         break;
-      }     /* end of case for type-specific output */
-
-      /* seek a comma at end of element */
-
-      adv_ws(l->buffer, &(l->position));
-      if (l->buffer[l->position] == ',')
-      {
-         xputc(',');
-         ++(l->position);
-      }
-      /* no comma: end the loop */
-
-      else
-      {
-         loop = FALSE;
-      }
-
-   }        /* end of loop through elements */
-
-   /* print LF */
-
-   xputc('\n');
-
-   /* return */
-
    return bwb_zline(l);
 }
+
+
+static LineType * bwb_mat_dump(LineType * l, int IsWrite )
+{
+   /* MAT PRINT arrayname [;|,] */
+   /* Array must be 1, 2 or 3 dimensions */
+   /* Array may be either NUMBER or STRING */
+   char delimit;
+
+   bwx_DEBUG(__FUNCTION__);
+
+   My->CurrentFile = My->SYSOUT;
+   if ( line_skip_char( l, BasicFileNumberPrefix ) )
+   {
+      int             UserFileNumber;
+
+      if( line_read_integer_expression(l, &UserFileNumber) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+
+      /* check the requested device number */
+      if( UserFileNumber < 0 )
+      {
+         My->CurrentFile = My->SYSPRN;
+      }
+      else
+      if( UserFileNumber == 0 )
+      {
+         My->CurrentFile = My->SYSOUT;
+      }
+      else
+      {
+         /* normal file */
+         My->CurrentFile = find_file_by_number( UserFileNumber );
+      }
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if ((My->CurrentFile->mode & DEVMODE_WRITE) == 0)
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if (line_skip_comma(l))
+      {
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+
+   if( IsWrite )
+   {
+      /* MAT WRITE */
+      delimit = My->CurrentFile->delimit;
+   }
+   else
+   {
+      /* MAT PRINT */
+      delimit = '\t'; 
+   }
+   return file_write_matrix( l, delimit );
+}
+
+
+LineType *
+bwb_MAT_PUT(LineType * l)
+{
+   /* MAT PUT filename$ , matrix [, ...] */
+
+   VariantType x;       /* no leaks */
+   VariantType *X = &x; /* no leaks */
+
+   bwx_DEBUG(__FUNCTION__);
+   CLEAR_VARIANT( X );
+
+   My->CurrentFile = My->SYSOUT;
+
+   line_skip_spaces(l);
+   if( line_read_expression( l, X ) == FALSE )
+   {
+      goto EXIT;
+   }
+   if( X->TypeChar == BasicStringSuffix )
+   {
+      /* STRING */
+      /* MAT PUT filename$ ... */
+      if( is_empty_filename( X->Buffer ) )
+      {
+         /* "MAT PUT # 0" is an error */
+         WARN_BAD_FILE_NUMBER;
+         goto EXIT;
+      }
+      My->CurrentFile = find_file_by_name( X->Buffer );
+      if( My->CurrentFile == NULL )
+      {
+         /* implicitly OPEN for writing */
+         My->CurrentFile = file_new();
+         My->CurrentFile->cfp = fopen( X->Buffer, "w" );
+         if( My->CurrentFile->cfp == NULL )
+         {
+            /* bad file name */
+            WARN_BAD_FILE_NUMBER;
+            goto EXIT;
+         }
+         My->CurrentFile->FileNumber = file_next_number();
+         My->CurrentFile->mode = DEVMODE_OUTPUT;
+         My->CurrentFile->width = 0;
+         /* WIDTH == RECLEN */
+         My->CurrentFile->col = 1;
+         My->CurrentFile->row = 1;
+         My->CurrentFile->delimit = ',';
+         My->CurrentFile->buffer = NULL;
+         bwb_strcpy( My->CurrentFile->filename, X->Buffer );
+      }
+   }
+   else
+   {
+      /* NUMBER -- file must already be OPEN */
+      /* PUT filenumber ... */
+      if( X->Number < 0 )
+      {
+         /* "MAT PUT # -1" is an error */
+         WARN_BAD_FILE_NUMBER;
+         goto EXIT;
+      }
+      if( X->Number == 0 )
+      {
+         /* "MAT PUT # 0" is an error */
+         WARN_BAD_FILE_NUMBER;
+         goto EXIT;
+      }
+      /* normal file */
+      My->CurrentFile = find_file_by_number( (int) bwb_rint( X->Number ) );
+      if( My->CurrentFile == NULL )
+      {
+         /* file not OPEN */
+         WARN_BAD_FILE_NUMBER;
+         goto EXIT;
+      }
+   }  
+   RELEASE( X );  
+   if( My->CurrentFile == NULL )
+   {
+      WARN_BAD_FILE_NUMBER;
+      goto EXIT;
+   }
+   if (( My->CurrentFile->mode & DEVMODE_WRITE) == 0)
+   {
+      WARN_BAD_FILE_NUMBER;
+      goto EXIT;
+   }
+   if ( line_skip_comma(l) )
+   {
+      /* OK */
+   }
+   else
+   {
+      WARN_SYNTAX_ERROR;
+      goto EXIT;
+   }
+   return file_write_matrix( l, My->CurrentFile->delimit );
+EXIT:
+   RELEASE( X );  
+   return bwb_zline(l);
+}
+
+
+LineType *
+bwb_MAT_WRITE(LineType * l)
+{
+   return bwb_mat_dump( l, TRUE );
+}
+
+LineType *
+bwb_MAT_PRINT(LineType * l)
+{
+   return bwb_mat_dump( l, FALSE );
+}
+
 
 
 /*  EOF  */

@@ -1,0 +1,50 @@
+         TIME USE ANALYSIS                                                      
+                                                                                
+TO USE THIS PROGRAM THE SUBJECT MUST KEEP A CAREFUL                             
+LOG OF HOW HE SPENDS HIS TIME FOR A WEEK, OR POSSIBLY                           
+SOME OTHER PERIOD. EACH CATEGORY OF ACTIVITY IS GIVEN A                         
+CODE, E.G. LUNCH MIGHT BE A 1. THE CODES ARE SUCCESSIVE                         
+INTEGERS BEGINNING WITH 1.                                                      
+                                                                                
+WHEN THE DESIRED AMOUNT OF DATA IS AVAILABLE THEN                               
+FOR EACH ACTIVITY AND TIME PERIOD THE USER ENTERS THE CODE                      
+AND NUMBER OF MINUTES PERFORMING THE ACTIVITY.                                  
+                                                                                
+THE FINAL PRINTOUT IS A SUMMARY OF THE PROPORTION OF                            
+TIME SPENT ON EACH ACTIVITY                                                     
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+ENTER THE NUMBER OF DIFFERENT ACTIVITY CATEGORIES? 3                            
+                                                                                
+CATEGORY 1 DESCRIPTION(<=10 CHARACTERS)? ABC                                    
+CATEGORY 2 DESCRIPTION(<=10 CHARACTERS)? MNO                                    
+CATEGORY 3 DESCRIPTION(<=10 CHARACTERS)? XYZ                                    
+                                                                                
+ 1   ABC        2   MNO        3   XYZ                                          
+IS CATEGORY PRINTOUT ON LINE PRINTER DESIRED(Y/N)? Y                            
+PRESS ENTER WHEN LINE PRINTER READY?                                            
+TIME USE INPUT NEXT. FOR EACH ITEM ENTER CODE AND                               
+NUMBER OF MINUTES PERFORMING THE ACTIVITY AT THIS                               
+TIME. ENTER 0,0 TO END AND -1,0 TO DISPLAY CATEGORIES                           
+300 ENTRIES MAY BE MADE                                                         
+THERE ARE  3  CATEGORIES.                                                       
+                                                                                
+ENTRY 1 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? ABC,12                    
+*** Type Mismatch ***                                                           
+*** Retry INPUT ***                                                             
+ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 1,12                              
+ENTRY 2 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 1,17                      
+ENTRY 3 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 2,22                      
+ENTRY 4 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 2,33                      
+ENTRY 5 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 3,31                      
+ENTRY 6 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 3,39                      
+ENTRY 7 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? -1,0                      
+ 1   ABC        2   MNO        3   XYZ                                          
+ENTRY 7 ENTER CATEGORY #,TIME(0,0 END   -1,0 DISPLAY? 0,0                       
+IS LINE PRINTER OUTPUT AVAILABLE(Y/N)? Y                                        
+PRESS ENTER WHEN LINE PRINTER READY?                                            
+CAT #    DESCRIPTION   TIME(MIN)   # OCCUR   AVG.TIME  % TOTAL                  
+   1     ABC               29.0        2        14.5     18.83                  
+   2     MNO               55.0        2        27.5     35.71                  
+   3     XYZ               70.0        2        35.0     45.45                  
+                                                                                

@@ -1,0 +1,5 @@
+OPTION VERSION ECMA-55
+option enable function "TRON"
+option enable command  "MAINTAINER"
+maintainer debug on
+TRON

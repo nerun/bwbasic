@@ -1,0 +1,37 @@
+.pl 66
+                           APPENDIX H
+
+    It is possible to increase the size of a file.  Each file has 
+an associated SIZE file created with it and maintained throughout 
+its  life.  For  the  GL file (for example) this file  is  called 
+GLSIZE.
+
+    When examined using any CPM Editor this file will be found to 
+contain  two  numbers separated by a comma such  as  38,100.  The 
+first number is the NEXT AVAILABLE RECORD.  The second number  is 
+the TOTAL RECORDS.
+
+    The following steps will allow the file size to be increased.
+
+1.  Use  any  CPM  Editor to enter the xxSIZE file as  you  would 
+    enter any document file.
+
+2.  Change  the number AFTER the comma to the new file  size  you 
+    desire.
+
+3.  Exit from the editor and erase any .BAK file.
+
+4.  Immediately  start the system and proceed with the  necessary 
+    menu  calls  to  the General Ledger Entry  program  (in  this 
+    example) or whatever file you are changing.
+
+5.  Immediately  do  a BACK-UP AND SORT  operation.  The  numbers 
+    shown  in the menu before the BACK-UP AND SORT operation will 
+    be the new numbers you have entered but the actual data  file 
+    WILL  NOT have been increased in size to accomodate the extra 
+    records.  Running the BACK-UP AND SORT operation is the  ONLY 
+    way to physically increase the size of the data file.
+
+    Obviously  it is better to create a file with ample space  to 
+begin with but Murphy's Law DOES prevail.
+          

@@ -32,690 +32,1492 @@
 /*                                                               */
 /* Version 3.00 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.10 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
+
 
 
 #include "bwbasic.h"
 
 
 
-static int
-xl_line(FILE * file, struct bwb_line * l);
+static int xl_line(FILE * file, LineType * l);
+static void bwb_new( void );
+static void ProcessEscapeChars(const char *Input, char *Output);
+static VariableType * find_variable_by_type( char * name, int dimensions, char vartype );
 
 
-static int
-                LastLineNumber = -1;
+/* 
+--------------------------------------------------------------------------------------------
+                               REM
+--------------------------------------------------------------------------------------------
+*/
 
-
-/***************************************************************
-  
-   FUNCTION:       bwb_rem()
-  
-   DESCRIPTION:    This C function implements the BASIC rem
-         (REMark) command, ignoring the remainder
-         of the line.
-  
-***************************************************************/
-
-struct bwb_line *
-bwb_REM(struct bwb_line * l)
+LineType *
+bwb_REM( LineType * L )
 {
+   /* 
+   SYNTAX:     REM comment
+   */
+   /*
+   This line holds BASIC comments.
+   */
    bwx_DEBUG(__FUNCTION__);
-
-   adv_eos(l->buffer, &(l->position));
-   return bwb_zline(l);
+   line_skip_eol( L );
+   return bwb_zline( L );
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_let()
-  
-   DESCRIPTION:    This C function implements the BASIC
-         LET assignment command, even if LET
-         is implied and not explicit.
-  
+/* 
+--------------------------------------------------------------------------------------------
+                               IMAGE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_IMAGE( LineType * L )
+{
+   /* 
+   SYNTAX:     IMAGE print-using-format
+   */
+   bwx_DEBUG(__FUNCTION__);
+   line_skip_eol( L );
+   return bwb_zline( L );
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               LET
+--------------------------------------------------------------------------------------------
+*/
+
+
+LineType *
+bwb_LET( LineType * L )
+{
+   /*
    SYNTAX:     LET variable = expression
-  
-***************************************************************/
+   */
+   VariableType *v;
+   VariantType   x;      /* no leaks */
+   VariantType * X = &x; /* no leaks */
+   CLEAR_VARIANT( X );
 
-struct bwb_line *
-bwb_LET(struct bwb_line * l)
-{
    bwx_DEBUG(__FUNCTION__);
-
-
-   /* Call the expression interpreter to evaluate the assignment */
-
-   bwb_exp(l->buffer, TRUE, &(l->position));
-   if (ERROR_PENDING)
+      
+   /* read the list of variables */
+   do
    {
-      return bwb_zline(l);
-   }
-   return bwb_zline(l);
-
-}
-
-/***************************************************************
-  
-        FUNCTION:       bwb_go
-  
-        DESCRIPTION: This C function implements the BASIC
-         GO command, branching appropriately to
-         GOTO or GOSUB.
-  
-***************************************************************/
-
-struct bwb_line *
-bwb_GO(struct bwb_line * l)
-{
-   bwx_DEBUG(__FUNCTION__);
-
-   bwb_error(err_syntax);
-
-   return bwb_zline(l);
-
-}
-
-/***************************************************************
-  
-        FUNCTION:       bwb_goto
-  
-        DESCRIPTION: This C function implements the BASIC
-         GOTO command.
-  
-      SYNTAX:     GOTO line | label
-  
-***************************************************************/
-
-
-struct bwb_line *
-bwb_GOTO(struct bwb_line * l)
-{
-   struct bwb_line *x;
-   char            tbuf[BasicStringLengthMax + 1];
-
-   bwx_DEBUG(__FUNCTION__);
-
-   adv_ws(l->buffer, &(l->position));
-   adv_element(l->buffer, &(l->position), tbuf);
-
-   /* check for target label */
-   x = find_label(tbuf);
-   if (x != NULL)
-   {
-      x->position = 0;
-      return x;
-   }
-   return bwb_zline(l);
-}
-
-/***************************************************************
-  
-        FUNCTION:       bwb_gosub()
-  
-   DESCRIPTION:    This function implements the BASIC GOSUB
-         command.
-  
-      SYNTAX:     GOSUB line | label
-  
-***************************************************************/
-
-struct bwb_line *
-bwb_GOSUB(struct bwb_line * l)
-{
-   struct bwb_line *x;
-   char            tbuf[BasicStringLengthMax + 1];
-
-   bwx_DEBUG(__FUNCTION__);
-
-   adv_ws(l->buffer, &(l->position));
-   adv_element(l->buffer, &(l->position), tbuf);
-
-   x = find_label(tbuf);
-   if (x != NULL)
-   {
-      bwb_zline(l);
-
-      bwb_incexec();
-      /* set the new position to x and return x */
-      x->position = 0;
-      bwb_setexec(x, 0, EXEC_GOSUB);
-
-      return x;
-   }
-   return bwb_zline(l);
-
-}
-
-/***************************************************************
-  
-        FUNCTION:       bwb_return()
-  
-   DESCRIPTION:    This function implements the BASIC RETURN
-         command.
-  
-      SYNTAX:     RETURN
-  
-***************************************************************/
-
-struct bwb_line *
-bwb_RETURN(struct bwb_line * l)
-{
-
-   bwx_DEBUG(__FUNCTION__);
-
-   while (CURTASK excs[CURTASK exsc].code != EXEC_GOSUB)
-   {
-      bwb_decexec();
-      if (CURTASK excs[CURTASK exsc].code == EXEC_NORM)  /* End of the line? */
+      if( (v = line_read_scalar( L )) == NULL )
       {
-         bwb_error(err_retnogosub);
+         WARN_VARIABLE_NOT_DECLARED;
+         goto EXIT;
       }
    }
+   while( line_skip_comma( L ) );
+
+   /* skip the equal sign */
+   if( line_skip_char( L, '=' ) )
+   {
+      /* OK */
+   }
+   else
+   if( line_skip_word( L, "EQ" ) )
+   {
+      /* OK */
+   }
+   else
+   if( line_skip_word( L, ".EQ." ) )
+   {
+      /* OK */
+   }
+   else
+   {
+      WARN_SYNTAX_ERROR;
+      goto EXIT;
+   }
+
+   /* evaluate the expression */
+   if( line_read_expression( L, X ) )
+   {
+      /* save the value */
+      if( line_is_eol( L ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         goto EXIT;
+      }
+      L->position = L->Startpos;
+
+      /* for each variable, assign the value */
+      do
+      {
+         /* read a variable */
+         if( (v = line_read_scalar( L )) == NULL )
+         {
+            WARN_VARIABLE_NOT_DECLARED;
+            goto EXIT;
+         }
+         if( var_set( v, X ) == FALSE )
+         {
+            WARN_TYPE_MISMATCH;
+            goto EXIT;
+         }
+         RELEASE( X );
+      }
+      while( line_skip_comma( L ) ); 
+      line_skip_eol( L );
+   }
+   else
+   {
+      WARN_SYNTAX_ERROR;
+   }
+EXIT:   
+   RELEASE( X );
+   return bwb_zline( L );
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               GO
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_GO( LineType * L )
+{
+   bwx_DEBUG(__FUNCTION__);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+LineType *
+bwb_THEN( LineType * L )
+{
+   bwx_DEBUG(__FUNCTION__);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+LineType *
+bwb_TO( LineType * L )
+{
+   bwx_DEBUG(__FUNCTION__);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+LineType *
+bwb_STEP( LineType * L )
+{
+   bwx_DEBUG(__FUNCTION__);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+LineType *
+bwb_OF( LineType * L )
+{
+   bwx_DEBUG(__FUNCTION__);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+LineType *
+bwb_AS( LineType * L )
+{
+   bwx_DEBUG(__FUNCTION__);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               AUTO
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_AUTO( LineType * L )
+{
+   /*
+   SYNTAX:     AUTO
+   SYNTAX:     AUTO start
+   SYNTAX:     AUTO start , increment
+   */
+   bwx_DEBUG(__FUNCTION__);
+
+   My->AutomaticLineNumber = 0;
+   My->AutomaticLineIncrement = 0;
+   
+   if( line_is_eol( L ) )
+   {
+      /* AUTO                   */
+      My->AutomaticLineNumber = 10;
+      My->AutomaticLineIncrement = 10;
+      return bwb_zline( L );
+   }
+   if( line_read_line_number( L, &My->AutomaticLineNumber ) )
+   {
+      /* AUTO ### ... */
+      if( My->AutomaticLineNumber < BasicLineNumberMin || My->AutomaticLineNumber > BasicLineNumberMax )
+      {
+         WARN_UNDEFINED_LINE;
+         return bwb_zline( L );
+      }
+      if( line_is_eol( L ) )
+      {
+         /* AUTO start             */
+         My->AutomaticLineIncrement = 10;
+         return bwb_zline( L );
+      }
+      else
+      if( line_skip_comma( L ) )
+      {
+         /* AUTO ### ,  ... */
+         if( line_read_line_number( L, &My->AutomaticLineIncrement ) )
+         {
+            /* AUTO start , increment */
+            if( My->AutomaticLineIncrement < BasicLineNumberMin || My->AutomaticLineIncrement > BasicLineNumberMax )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline( L );
+            }
+            return bwb_zline( L );
+         }
+      }
+   }
+   My->AutomaticLineNumber = 0;
+   My->AutomaticLineIncrement = 0;
+   WARN_SYNTAX_ERROR;
+   return bwb_zline( L );
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               BREAK
+--------------------------------------------------------------------------------------------
+*/
+
+
+LineType *
+bwb_BREAK(LineType * l)
+{
+   /*
+   SYNTAX:     BREAK
+   SYNTAX:     BREAK line [,...]
+   SYNTAX:     BREAK line - line
+   */
+   bwx_DEBUG(__FUNCTION__);
+
+   if( line_is_eol( l ) )
+   {
+      /* BREAK */
+      /* remove all line breaks */
+      LineType *x;
+      for (x = My->bwb_start.next; x != &My->bwb_end; x = x->next) 
+      {
+          x->LineFlags &= ~LINE_BREAK;
+      }
+      return bwb_zline(l);
+   }
+   else
+   {
+      do
+      {
+         int head;
+         int tail;
+         
+         if( line_read_line_sequence(l, &head, &tail) )
+         {
+            /* BREAK 's' - 'e' */
+            LineType *x;
+            if( head < BasicLineNumberMin || head > BasicLineNumberMax )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            if( tail < BasicLineNumberMin || tail > BasicLineNumberMax )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            if( head > tail )
+            {
+               WARN_SYNTAX_ERROR;
+               return bwb_zline(l);
+            }
+            /* valid range */
+            /* now go through and list appropriate lines */
+            for (x = My->bwb_start.next; x != &My->bwb_end; x = x->next)
+            {
+               if ( head <= x->number && x->number <= tail)
+               {
+                  if( x->LineFlags & LINE_NUMBERED )
+                  {
+                     x->LineFlags |= LINE_BREAK;
+                  }
+               }
+            }
+         }
+         else
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+      }
+      while( line_skip_comma( l ) );
+   }
+   return bwb_zline(l);
+}
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               DSP
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_DSP(LineType * l)
+{
+   /*
+   SYNTAX:     DSP
+   SYNTAX:     DSP variablename [,...]
+   */
+   VariableType *v;
+   bwx_DEBUG(__FUNCTION__);
+
+
+   if( line_is_eol( l ) )
+   {
+      /* DSP */
+      /* remove all variable displays */
+      for (v = My->var_head; v != NULL; v = v->next)
+      {
+         v->VariableFlags &= ~VARIABLE_DISPLAY; /* bwb_DSP() */
+      }
+      return bwb_zline(l);
+   }
+   /* DSP variablename [,...] */
+   do
+   {
+      char varname[BasicNameLengthMax + 1];
+      
+      if( line_read_varname( l, varname )  )
+      {
+         /* mark the variable */
+         for (v = My->var_head; v != NULL; v = v->next)
+         {
+            if (bwb_stricmp(v->name, varname) == 0)
+            {
+               v->VariableFlags |= VARIABLE_DISPLAY; /* bwb_DSP() */
+            }
+         }
+      }
+   }
+   while( line_skip_comma( l ) );
+   return bwb_zline(l);
+}
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               GOTO
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_GO_TO(LineType * l)
+{
+   return bwb_GOTO( l );
+}
+
+LineType *
+bwb_GOTO(LineType * l)
+{
+   /*
+   SYNTAX:     GOTO line                     ' standard GOTO
+   SYNTAX:     GOTO expression               ' calculated GOTO
+   SYNTAX:     GOTO expression OF line,...   ' indexed GOTO, same as ON expression GOTO line,...
+   */
+   int Value = 0;
+   int LineNumber = 0;
+   LineType *x;
+   bwx_DEBUG(__FUNCTION__);
+   
+   if( line_is_eol( l ) )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( line_read_integer_expression( l, &Value ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+
+   if( line_is_eol( l ) )
+   {
+      /* GOTO linenumber */
+      /* 'Value' is the line number */
+      LineNumber = Value;
+   }
+   else
+   if( line_skip_word( l, "OF" ) )
+   {
+      /* GOTO expression OF line, ... */
+      /* 'Value' is an index into a list of line numbers */
+      if( line_read_index_item( l, Value, &LineNumber ) )
+      {
+         /* found 'LineNumber' */
+      }
+      else
+      if( My->CurrentVersion->OptionFlags & (OPTION_BUGS_ON) /* GOTO X OF ... */ )
+      {
+         /* silently fall-thru to the following line */
+         line_skip_eol(l);
+         return bwb_zline(l);
+      }
+      else
+      {
+         /* ERROR */
+         WARN_UNDEFINED_LINE;
+         return bwb_zline(l);
+      }
+   }
+   else
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
+   {
+      /* GOTO line [,...] ON expression */
+      while( line_skip_comma( l ) )
+      {
+         if( line_read_integer_expression( l, &Value ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+      }
+      if( line_skip_word( l, "ON" ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_integer_expression( l, &Value ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      /* 'Value' is an index into a list of line numbers */
+      l->position = l->Startpos;
+      if( line_read_index_item( l, Value, &LineNumber ) )
+      {
+         /* found 'LineNumber' */
+      }
+      else
+      {
+         /* silently fall-thru to the following line */
+         line_skip_eol(l);
+         return bwb_zline(l);
+      }
+      line_skip_eol(l);
+   }
+   else
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+
+   if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+   {
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
+   /* valid range */
+
+   x = NULL;
+#if THE_PRICE_IS_RIGHT
+   if( l->OtherLine != NULL )
+   {
+      /* look in the cache */   
+      if( l->OtherLine->number == LineNumber )
+      {
+         x = l->OtherLine; /* found in cache */
+      }
+   }
+#endif /* THE_PRICE_IS_RIGHT */
+   if( x == NULL )
+   {
+      x = find_line_number( LineNumber, TRUE ); /* not found in the cache */
+   }
+   if (x != NULL)
+   {
+      /* FOUND */
+      line_skip_eol(l);
+      x->position = 0;
+#if THE_PRICE_IS_RIGHT
+      l->OtherLine = x; /* save in cache */
+#endif /* THE_PRICE_IS_RIGHT */
+      return x;
+   }
+   /* NOT FOUND */
+   WARN_UNDEFINED_LINE;
+   return bwb_zline(l);
+}
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               GOSUB
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_GO_SUB(LineType * l)
+{
+   return bwb_GOSUB( l );
+}
+
+LineType *
+bwb_GOSUB(LineType * l)
+{
+   /*
+   SYNTAX:     GOSUB line                     ' standard GOSUB
+   SYNTAX:     GOSUB expression               ' calculated GOSUB
+   SYNTAX:     GOSUB expression OF line,...   ' indexed GOSUB, same as ON expression GOSUB line,...
+   */
+   int Value = 0;
+   int LineNumber = 0;
+   LineType *x = NULL;
+   bwx_DEBUG(__FUNCTION__);
+   
+   if( line_is_eol( l ) )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( line_read_integer_expression( l, &Value ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+
+   if( line_is_eol( l ) )
+   {
+      /* GOSUB linenumber */
+      /* 'Value' is the line number */
+      LineNumber = Value;
+   }
+   else
+   if( line_skip_word( l, "OF" ) )
+   {
+      /* GOSUB linenumber [,...] OF expression */
+      /* 'Value' is an index into a list of line numbers */
+      if( line_read_index_item( l, Value, &LineNumber ) )
+      {
+         /* found 'LineNumber' */
+      }
+      else
+      if( My->CurrentVersion->OptionFlags & (OPTION_BUGS_ON) /* GOSUB X OF ... */ )
+      {
+         /* silently fall-thru to the following line */
+         line_skip_eol(l);
+         return bwb_zline(l);
+      }
+      else
+      {
+         /* ERROR */
+         WARN_UNDEFINED_LINE;
+         return bwb_zline(l);
+      }
+   }
+   else
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
+   {
+      /* GOSUB line [,...] ON expression */
+      while( line_skip_comma( l ) )
+      {
+         if( line_read_integer_expression( l, &Value ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+      }
+      if( line_skip_word( l, "ON" ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_integer_expression( l, &Value ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      /* 'Value' is an index into a list of line numbers */
+      l->position = l->Startpos;
+      if( line_read_index_item( l, Value, &LineNumber ) )
+      {
+         /* found 'LineNumber' */
+      }
+      else
+      {
+         /* silently fall-thru to the following line */
+         line_skip_eol(l);
+         return bwb_zline(l);
+      }
+      line_skip_eol(l);
+   }
+   else
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+
+   if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+   {
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
+   /* valid range */
+
+   x = NULL;
+#if THE_PRICE_IS_RIGHT
+   if( l->OtherLine != NULL )
+   {
+      /* look in the cache */   
+      if( l->OtherLine->number == LineNumber )
+      {
+         x = l->OtherLine; /* found in cache */
+      }
+   }
+#endif /* THE_PRICE_IS_RIGHT */
+   if( x == NULL )
+   {
+      x = find_line_number( LineNumber, TRUE ); /* not found in the cache */
+   }
+   if (x != NULL)
+   {
+      /* FOUND */
+      line_skip_eol(l);
+      /* save current stack level */
+      My->stack_head->line = l;
+      /* increment exec stack */
+      if( bwb_incexec() )
+      {
+         /* set the new position to x and return x */
+         x->position = 0;
+         My->stack_head->line = x;
+         My->stack_head->code = EXEC_GOSUB;
+#if THE_PRICE_IS_RIGHT
+         l->OtherLine = x; /* save in cache */
+#endif /* THE_PRICE_IS_RIGHT */
+         return x;
+      }
+      else
+      {
+         /* ERROR */
+         WARN_OUT_OF_MEMORY;
+         return &My->bwb_end;
+      }
+   }
+   /* NOT FOUND */
+   WARN_UNDEFINED_LINE;
+   return bwb_zline(l);
+}
+
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               RETURN
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_RETURN(LineType * l)
+{
+   /*
+   SYNTAX:     RETURN
+   */
+
+   bwx_DEBUG(__FUNCTION__);
+   
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 ) )
+   {
+      /* RETURN [comment] */
+      line_skip_eol(l);
+   }
+   
+   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+   {
+      /* CBASIC-II: RETURN exits the first FUNCTION or GOSUB */
+
+      while( My->stack_head->code != EXEC_GOSUB && My->stack_head->code != EXEC_FUNCTION )
+      {
+         bwb_decexec();
+         if( My->stack_head == NULL )
+         {
+            WARN_RETURN_WITHOUT_GOSUB;
+            return bwb_zline(l);
+         }
+         if (My->stack_head->code == EXEC_NORM)  /* End of the line? */
+         {
+            WARN_RETURN_WITHOUT_GOSUB;
+            return bwb_zline(l);
+         }
+      }
+   }
+   else
+   {
+      /* RETURN exits the first GOSUB */
+
+      while (My->stack_head->code != EXEC_GOSUB)
+      {
+         bwb_decexec();
+         if( My->stack_head == NULL )
+         {
+            WARN_RETURN_WITHOUT_GOSUB;
+            return bwb_zline(l);
+         }
+         if (My->stack_head->code == EXEC_NORM)  /* End of the line? */
+         {
+            WARN_RETURN_WITHOUT_GOSUB;
+            return bwb_zline(l);
+         }
+      }
+   }
+   
 
    /* decrement the EXEC stack counter */
 
    bwb_decexec();
-
-   return CURTASK excs[CURTASK exsc].line;
-
+   return My->stack_head->line;
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_on
-  
-        DESCRIPTION:    This function implements the BASIC ON...
-                        GOTO or ON...GOSUB statements.
-  
-         It will also detect the ON ERROR... statement
-         and pass execution to bwb_onerror().
-  
-      SYNTAX:     ON variable GOTO|GOSUB line|label[,...]
-  
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               POP
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_ON(struct bwb_line * l)
+
+LineType *
+bwb_POP(LineType * l)
 {
-   struct bwb_line *x;
-   char            tbuf[BasicStringLengthMax + 1];
-   int             p;
-   struct exp_ese *rvar;
-   int             v;
-   int             loop;
-   int             num_lines;
-   int             command;
-
+   /*
+   SYNTAX:     POP
+   */
+   StackType *stack_item;
    bwx_DEBUG(__FUNCTION__);
+   stack_item = My->stack_head;
 
-   /* Check for argument */
-
-   adv_ws(l->buffer, &(l->position));
-
-   if (l->buffer[l->position] == '\0' || l->buffer[l->position] == OptionCommentChar)
+   while (stack_item->code != EXEC_GOSUB)
    {
-      bwb_error(err_incomplete);
+      stack_item = stack_item->next;
+      if( stack_item == NULL )
+      {
+         WARN_RETURN_WITHOUT_GOSUB;
+         return bwb_zline(l);
+      }
+      if (stack_item->code == EXEC_NORM)  /* End of the line? */
+      {
+         WARN_RETURN_WITHOUT_GOSUB;
+         return bwb_zline(l);
+      }
+   }
+   /* hide the GOSUB */
+   stack_item->code = EXEC_POPPED;
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               ON
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_ON(LineType * l)
+{
+   /*
+   SYNTAX:     ON expression GOTO  line,...    ' expression evaluates to an index
+   SYNTAX:     ON expression GOSUB line,...    ' expression evaluates to an index
+   */
+   int Value = 0;
+   int command = 0;
+   int LineNumber = 0;
+   LineType *x = NULL;
+   bwx_DEBUG(__FUNCTION__);
+   
+   if( line_is_eol( l ) )
+   {
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
-   /* get the variable name, numerical constant, or expression */
-
-   adv_element(l->buffer, &(l->position), tbuf);
-
-   /* evaluate the variable name or constant */
-
-   p = 0;
-   rvar = bwb_exp(tbuf, FALSE, &p);
-   if (ERROR_PENDING)
+   if( line_read_integer_expression( l, &Value ) == FALSE )
    {
+      WARN_UNDEFINED_LINE;
       return bwb_zline(l);
    }
-   v = exp_getival(rvar);
-
-
-
-   /* Get GOTO or GOSUB statements */
-
-   adv_element(l->buffer, &(l->position), tbuf);
-   if (strcasecmp(tbuf, "GO") == 0)
+   if( line_skip_word( l, "GO" ) )
    {
-      adv_ws(l->buffer, &(l->position));
-      adv_element(l->buffer, &(l->position), tbuf);
-
-      if (strcasecmp(tbuf, "TO") == 0)
+      if( line_skip_word( l, "TO" ) )
       {
          command = C_GOTO;
       }
       else
-      if (strcasecmp(tbuf, "SUB") == 0)
+      if( line_skip_word( l, "SUB" ) )
       {
          command = C_GOSUB;
       }
       else
       {
-         sprintf(bwb_ebuf, ERR_ONNOGOTO);
-         bwb_error(bwb_ebuf);
-
+         WARN_SYNTAX_ERROR;
          return bwb_zline(l);
       }
    }
    else
-   if (strcasecmp(tbuf, "GOTO") == 0)
+   if( line_skip_word( l, "GOTO" ) )
    {
       command = C_GOTO;
    }
    else
-   if (strcasecmp(tbuf, "GOSUB") == 0)
+   if( line_skip_word( l, "GOSUB" ) )
    {
       command = C_GOSUB;
    }
    else
    {
-      sprintf(bwb_ebuf, ERR_ONNOGOTO);
-      bwb_error(bwb_ebuf);
-
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
-
-   if (v < 1)
+   
+   /* 'Value' is an index into a list of line numbers */
+   if( line_read_index_item( l, Value, &LineNumber ) )
    {
-      if (OptionFlags & OPTION_BUGS_ON)
-      {
-         /* fall-thru to next line without error */
-         /* advance to end of segment */
-         adv_eos(l->buffer, &(l->position));
-      }
-      else
-      {
-         /* ERROR */
-         bwb_error(err_valoorange);
-      }
-      return bwb_zline(l);
-   }
-   num_lines = 0;
-
-   loop = TRUE;
-   while (loop == TRUE)
-   {
-
-      /* read a line|label */
-
-      inp_adv(l->buffer, &(l->position));
-      adv_element(l->buffer, &(l->position), tbuf);
-
-
-      num_lines++;
-
-      if (num_lines == v)
-      {
-         loop = FALSE;
-      }
-      /* check for end of line */
-
-      adv_ws(l->buffer, &(l->position));
-      if (l->buffer[l->position] == '\0' || l->buffer[l->position] == OptionCommentChar)
-      {
-         loop = FALSE;
-      }
-   }
-
-   /* advance to end of segment */
-
-   adv_eos(l->buffer, &(l->position));
-
-   /* Be sure value is in range */
-
-   if (v > num_lines)
-   {
-      if (OptionFlags & OPTION_BUGS_ON)
-      {
-         /* fall-thru to next line without error */
-         /* advance to end of segment */
-         adv_eos(l->buffer, &(l->position));
-      }
-      else
-      {
-         /* ERROR */
-         bwb_error(err_valoorange);
-      }
-      return bwb_zline(l);
-   }
-   x = find_label(tbuf);
-   if (x == NULL)
-   {
-      return bwb_zline(l);
-   }
-   if (command == C_GOTO)
-   {
-
-
-      x->position = 0;
-      bwb_setexec(x, 0, CURTASK excs[CURTASK exsc].code);
-
-      return x;
-
+      /* found 'LineNumber' */
    }
    else
-   if (command == C_GOSUB)
+   if( My->CurrentVersion->OptionFlags & (OPTION_BUGS_ON) /* ON X GOTO|GOSUB ... */ )
    {
-
-
-      /* save current stack level */
-
-      bwb_setexec(l, l->position, CURTASK excs[CURTASK exsc].code);
-
-      /* increment exec stack */
-
-      bwb_incexec();
-
-
-      /* set the new position to x and return x */
-      x->position = 0;
-      bwb_setexec(x, 0, EXEC_GOSUB);
-
-      return x;
+      /* silently fall-thru to the following line */
+      line_skip_eol(l);
+      return bwb_zline(l);
    }
-   sprintf(bwb_ebuf, "in bwb_on(): invalid value for command.");
-   bwb_error(bwb_ebuf);
+   else
+   {
+      /* ERROR */
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
 
+   if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+   {
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
+   /* valid range */
+   x = NULL;
+#if THE_PRICE_IS_RIGHT
+   if( l->OtherLine != NULL )
+   {
+      /* look in the cache */   
+      if( l->OtherLine->number == LineNumber )
+      {
+         x = l->OtherLine; /* found in cache */
+      }
+   }
+#endif /* THE_PRICE_IS_RIGHT */
+   if( x == NULL )
+   {
+      x = find_line_number( LineNumber, TRUE ); /* not found in the cache */
+   }
+   if (x != NULL)
+   {
+      /* FOUND */
+      if( command == C_GOTO )
+      {
+         /* ON ... GOTO ... */
+         line_skip_eol(l);
+         x->position = 0;
+#if THE_PRICE_IS_RIGHT
+         l->OtherLine = x; /* save in cache */
+#endif /* THE_PRICE_IS_RIGHT */
+         return x;
+      }
+      else
+      if( command == C_GOSUB )
+      {
+         /* ON ... GOSUB ... */
+         line_skip_eol(l);
+         /* save current stack level */
+         My->stack_head->line = l;
+         /* increment exec stack */
+         if( bwb_incexec() )
+         {
+            /* set the new position to x and return x */
+            x->position = 0;
+            My->stack_head->line = x;
+            My->stack_head->code = EXEC_GOSUB;
+#if THE_PRICE_IS_RIGHT
+            l->OtherLine = x; /* save in cache */
+#endif /* THE_PRICE_IS_RIGHT */
+            return x;
+         }
+         else
+         {
+            /* ERROR */
+            WARN_OUT_OF_MEMORY;
+            return &My->bwb_end;
+         }
+      }
+      else
+      {
+         /* ERROR */
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+   /* NOT FOUND */
+   WARN_UNDEFINED_LINE;
    return bwb_zline(l);
-
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_stop()
-  
-   DESCRIPTION:    This C function implements the BASIC
-         STOP command, interrupting program flow
-         at a specific point.
-  
-      SYNTAX:     STOP
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               PAUSE
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_STOP(struct bwb_line * l)
+LineType *
+bwb_PAUSE(LineType * l)
 {
+   /*
+   SYNTAX:     PAUSE
+   */
+   char            tbuf[BasicStringLengthMax + 1];
+   char            prompt[32];
    bwx_DEBUG(__FUNCTION__);
+   
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 ) )
+   {
+      /* PAUSE [comment] */
+      line_skip_eol(l);
+   }
+   sprintf( prompt, "PAUSE AT %d\n", l->number );
+   bwx_input( prompt, tbuf );
+   return bwb_zline(l);
+}
 
-   stopped_line = l->number;
+
+/* 
+--------------------------------------------------------------------------------------------
+                               STOP
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_STOP(LineType * l)
+{
+   /*
+   SYNTAX:     STOP
+   */
+   bwx_DEBUG(__FUNCTION__);
+   
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 ) )
+   {
+      /* STOP [comment] */
+      line_skip_eol(l);
+   }
+   My->ContinueLine = l->next;
    bwx_STOP();
-
    return bwb_END(l);
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_xend()
-  
-   DESCRIPTION:    This C function implements the BASIC
-         END command, checking for END SUB
-         or END FUNCTION, else stopping program
-         execution for a simple END command.
-  
-***************************************************************/
 
-struct bwb_line *
-bwb_END(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               END
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_END(LineType * l)
 {
-
-
-   /* a simple END statement */
+   /*
+   SYNTAX:     END
+   */
    bwx_DEBUG(__FUNCTION__);
 
-   stopped_line = l->number;
-
+   if( My->CurrentVersion->OptionVersionBitmask & ( I70 ) )
+   {
+      /* END [comment] */
+      line_skip_eol(l);
+   }
+   My->ContinueLine = l->next;
    break_handler();
-
-   return &CURTASK bwb_end;
-
-
-
+   return &My->bwb_end;
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_run()
-  
-        DESCRIPTION: This C function implements the BASIC
-         RUN command.
-  
-         Even though RUN is not a core statement,
-         the function bwb_run() is called from
-         core, so it must be present for a minimal
-         implementation.
-  
-      SYNTAX:     RUN [line]|[file-name]
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               RUN
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_RUN(struct bwb_line * l)
+static
+LineType *
+bwb_run_filename_or_linenumber( LineType * L )
 {
-   struct bwb_line *current;
+   LineType *current = NULL;
+   VariantType   x;      /* no leaks */
+   VariantType * X = &x; /* no leaks */
+   CLEAR_VARIANT( X );
 
-   bwx_DEBUG(__FUNCTION__);
-
-   /* see if there is an element */
-   current = NULL;
-
-   adv_ws(l->buffer, &(l->position));
-   if (l->buffer[l->position] == '\0' || l->buffer[l->position] == OptionCommentChar)
+   if( line_read_expression( L, X ) == FALSE )
    {
-      current = CURTASK bwb_start.next;
-      var_CLEAR();
+      WARN_SYNTAX_ERROR;
+      goto EXIT;
+   }
+   if( X->TypeChar == BasicStringSuffix )
+   {
+      /* RUN "filename" */
+      /* RUN A$ */
+      if( X->Length == 0 )
+      {
+         WARN_BAD_FILE_NAME;
+         goto EXIT;
+      }
+      /* open the file and execute it */
+      bwb_new(); /* clear memory */
+      if( bwb_fload( X->Buffer ) == FALSE )
+      {
+         WARN_BAD_FILE_NAME;
+         goto EXIT;
+      }
+      if( bwb_scan() == FALSE )
+      {
+         WARN_CANT_CONTINUE;
+         goto EXIT;
+      }
+      current = My->bwb_start.next;
    }
    else
    {
-      struct exp_ese *e;
+      /* RUN 100 */
+      /* RUN N */
+      /* execute the line */
+      int  LineNumber;
 
-      e = bwb_exp(l->buffer, FALSE, &(l->position));
-      if (ERROR_PENDING)
+
+      LineNumber = (int) bwb_rint( X->Number );
+      if( bwb_scan() == FALSE )
       {
-         return bwb_zline(l);
+         WARN_CANT_CONTINUE;
+         goto EXIT;
       }
-      if (e->type == STRING)
+      if( BasicLineNumberMin <= LineNumber &&  LineNumber <= BasicLineNumberMax )
       {
-         /* check its type: if it is a STRING, open the file
-          * and execute it */
-         FILE           *input;
-         char            tbuf[BasicStringLengthMax + 1];
-
-         bwb_NEW(l); /* clear memory */
-         str_btoc(tbuf, exp_getsval(e));  /* get string in tbuf */
-         if ((input = fopen(tbuf, "r")) == NULL)   /* open file */
-         {
-            sprintf(bwb_ebuf, err_openfile, tbuf);
-            bwb_error(bwb_ebuf);
-         }
-         bwb_fload(input); /* load program */
-         current = &CURTASK bwb_start; /* JBV */
-      }
-      else
-      {
-         /* check its type: if it is a NUMBER, execute the
-          * line */
-         int             go_lnumber;   /* line number to go to */
-         struct bwb_line *x;
-
-         go_lnumber = exp_getival(e);
-         for (x = CURTASK bwb_start.next; x != &CURTASK bwb_end; x = x->next)
-         {
-            if (x->number == go_lnumber)
-            {
-               current = x;
-            }
-         }
-         if (current == NULL)
-         {
-            sprintf(bwb_ebuf, err_lnnotfound, go_lnumber);
-            bwb_error(bwb_ebuf);
-            return &CURTASK bwb_end;
-         }
+         current = find_line_number( LineNumber, FALSE );
       }
    }
-   bwb_scan();
+EXIT:   
+   RELEASE( X );
+   return current;
+}
 
+
+LineType *
+bwb_RUN( LineType * L )
+{
+   /*
+   SYNTAX:     RUN
+   SYNTAX:     RUN filename$
+   SYNTAX:     RUN linenumber
+   */
+   LineType *current;
+
+   bwx_DEBUG(__FUNCTION__);
+
+
+   /* clear the STACK */
+   bwb_clrexec();
+   if( bwb_incexec() )
+   {
+      /* OK */
+   }
+   else
+   {
+      /* ERROR */
+      WARN_OUT_OF_MEMORY;
+      return &My->bwb_end;
+   }
+   
+
+   /* see if there is an element */
+   line_skip_spaces( L );
+   if ( line_is_eol( L ) )
+   {
+      /* RUN */
+
+      var_CLEAR();
+
+      /* if( TRUE ) */
+      {
+         int n;
+         for (n = 0; n < 26; n++)
+         {
+            My->DefaultVariableType[n] = BasicDoubleSuffix;
+         }
+      }
+      if( bwb_scan() == FALSE )
+      {
+         WARN_CANT_CONTINUE;
+         return &My->bwb_end;
+      }
+      current = My->bwb_start.next;
+   }
+   else
+   {
+      /* RUN 100 : RUN "FILENAME.BAS" */
+      current = bwb_run_filename_or_linenumber( L );
+      if (current == NULL)
+      {
+         WARN_UNDEFINED_LINE;
+         return &My->bwb_end;
+      }
+   }
    current->position = 0;
-   CURTASK         exsc = 0;
-   bwb_setexec(current, 0, EXEC_NORM);
 
+   My->stack_head->line = current;
+   My->stack_head->code = EXEC_NORM;
 
    /* RUN */
    bwb_Warning_Clear();
-   stopped_line = 0;
+   My->ContinueLine = NULL;
    SetOnError(0);
 
+   /* if( TRUE ) */
+   {
+      time_t   t;
+      struct tm *lt;
+      
+      time(&t);
+      lt = localtime(&t);
+      My->StartTime = lt->tm_hour;
+      My->StartTime *= 60;
+      My->StartTime += lt->tm_min;
+      My->StartTime *= 60;
+      My->StartTime += lt->tm_sec;
+      /* number of seconds since midnight */
+   }
 
    return current;
-
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_cont()
-  
-        DESCRIPTION: This C function implements the BASIC
-         CONT command.
-  
-      SYNTAX:     CONT
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               CONT
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_CONT(struct bwb_line * l)
+LineType *
+bwb_CONT(LineType * l)
 {
-   struct bwb_line *current, *x;
+   /*
+   SYNTAX:     CONT
+   */
+   LineType *current = NULL;
 
    bwx_DEBUG(__FUNCTION__);
 
 
    /* see if there is an element */
-
-   current = NULL;
-
-   if (stopped_line > 0)
+   if( line_is_eol( l ) )
    {
-      for (x = CURTASK bwb_start.next; (x != &CURTASK bwb_end) && (current == NULL); x = x->next)
+      /* CONT */
+      current = My->ContinueLine;
+   }
+   else
+   {
+      /* CONT 100 */
+      int LineNumber = 0 ;
+      if( line_read_line_number( l, &LineNumber ) )
       {
-         if (x->number > stopped_line)
-         {
-            current = x;
-         }
+         current = find_line_number( LineNumber, TRUE );
       }
    }
-   if (current == NULL)
+   
+
+   if (current == NULL || current == &My->bwb_end)
    {
       /* same as "RUN" */
-      current = CURTASK bwb_start.next;
+      current = My->bwb_start.next;
    }
-   bwb_scan();
+   if( bwb_scan() == FALSE )
+   {
+      WARN_CANT_CONTINUE;
+      return bwb_zline(l);
+   }
 
    current->position = 0;
-   CURTASK         exsc = 0;
-   bwb_setexec(current, 0, EXEC_NORM);
+   bwb_clrexec();
+   if( bwb_incexec() )
+   {
+      /* OK */
+   }
+   else
+   {
+      /* ERROR */
+      WARN_OUT_OF_MEMORY;
+      return &My->bwb_end;
+   }
+   
+   My->stack_head->line = current;
+   My->stack_head->code = EXEC_NORM;
 
    /* CONT */
-   stopped_line = 0;
-
-
+   My->ContinueLine = NULL;
    return current;
-
 }
 
 
-/***************************************************************
-  
-        FUNCTION:       bwb_new()
-  
-        DESCRIPTION: This C function implements the BASIC
-         NEW command.
-  
-         Even though NEW is not a core statement,
-         the function bwb_run() is called from
-         core, so it must be present for a minimal
-         implementation.
-  
-   SYNTAX:     NEW
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               NEW
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_NEW(struct bwb_line * l)
+static void bwb_new()
 {
    bwx_DEBUG(__FUNCTION__);
 
    /* clear program in memory */
-   bwb_xnew(&bwb_start);
+   bwb_xnew(&My->bwb_start);
 
    /* clear all variables */
    var_CLEAR();
+   /* if( TRUE ) */
+   {
+      int n;
+      for (n = 0; n < 26; n++)
+      {
+         My->DefaultVariableType[n] = BasicDoubleSuffix;
+      }
+   }
 
    /* NEW */
    bwb_Warning_Clear();
-   stopped_line = 0;
+   My->ContinueLine = NULL;
    SetOnError(0);
-
-
-   return bwb_zline(l);
-
 }
 
-/* End of Core Functions Section */
-
-
-/***************************************************************
-  
-        FUNCTION:       bwb_system()
-  
-   DESCRIPTION:    This C function implements the BASIC
-         SYSTEM command, exiting to the operating
-         system (or calling program).  It is also
-         called by the QUIT command, a functional
-         equivalent for SYSTEM in Bywater BASIC.
-  
-   SYNTAX:     SYSTEM
-         QUIT
-  
-***************************************************************/
-struct bwb_line *
-bwb_QUIT(struct bwb_line * l)
+LineType *
+bwb_NEW(LineType * l)
 {
+   /*
+   SYNTAX:     NEW
+   */
+   bwx_DEBUG(__FUNCTION__);
+   bwb_new();
+   if( My->CurrentVersion->OptionVersionBitmask & (D64 | G65 | G67) )
+   {
+      if( line_is_eol(l) )
+      {
+         /* NEW */
+         /* prompt for the program name */
+         bwx_input( "NEW PROBLEM NAME:", My->progfile );
+      }
+      else
+      {
+         /* NEW filename$ */
+         /* the parameter is the program name */
+
+         char * Value = NULL;
+         
+         if( line_read_string_expression( l, &Value ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( Value == NULL )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         bwb_strcpy( My->progfile, Value );
+         free( Value );
+      }
+   }
+   else
+   {
+      /* ignore any parameters */
+      line_skip_eol(l); 
+   }
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               SCRATCH
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_SCRATCH(LineType * l)
+{
+   /*
+   SYNTAX:     SCRATCH              -- same as NEW
+   SYNTAX:     SCRATCH # filenumber -- close file and re-open for output
+   */
+   bwx_DEBUG(__FUNCTION__);
+   
+   if( line_is_eol(l) )
+   {
+      /* SCRATCH */
+      bwb_new();
+      return bwb_zline(l);
+   }
+   else
+   if( line_skip_char(l, BasicFileNumberPrefix ) )
+   {
+      /* SCRATCH # X */
+      int FileNumber;
+
+      if( line_read_integer_expression( l, &FileNumber ) == FALSE )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( FileNumber < 0 )
+      {
+         /* "SCRATCH # -1" is silently ignored */
+         return bwb_zline(l);
+      }
+      if( FileNumber == 0 )
+      {
+         /* "SCRATCH # 0" is silently ignored */
+         return bwb_zline(l);
+      }
+      My->CurrentFile = find_file_by_number( FileNumber );
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( My->CurrentFile->mode != DEVMODE_CLOSED )
+      {
+         if( My->CurrentFile->cfp != NULL )
+         {
+            fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
+         }
+         if( My->CurrentFile->buffer != NULL )
+         {
+            FREE( My->CurrentFile->buffer, "bwb_SCRATCHS" );
+         }
+      }
+      My->CurrentFile->width = 0;
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
+      My->CurrentFile->delimit = ',';
+      My->CurrentFile->buffer = NULL;
+      My->CurrentFile->mode = DEVMODE_CLOSED;
+      if( bwb_strcmp( My->CurrentFile->filename, "*" ) != 0 )
+      {
+         if( (My->CurrentFile->cfp = fopen( My->CurrentFile->filename, "w" )) == NULL )
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         My->CurrentFile->mode = DEVMODE_OUTPUT;
+      }
+      /* OK */
+      return bwb_zline(l);
+   }
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
+}
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               BYE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_BYE(LineType * l)
+{
+   /*
+   SYNTAX:     BYE
+   */
    bwx_DEBUG(__FUNCTION__);
    return bwb_SYSTEM(l);
 }
 
-struct bwb_line *
-bwb_SYSTEM(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               GOODBYE
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_GOODBYE(LineType * l)
 {
+   /*
+   SYNTAX:     GOODBYE
+   */
    bwx_DEBUG(__FUNCTION__);
-
-   prn_xprintf("\n");
-   bwx_terminate();
-   return &CURTASK bwb_end;/* to make LINT happy */
-
+   return bwb_SYSTEM(l);
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_load()
-  
-        DESCRIPTION: This C function implements the BASIC
-         LOAD command.
-  
-      SYNTAX:     LOAD [file-name]
-  
-***************************************************************/
-
-struct bwb_line *
-bwb_LOAD(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               QUIT
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_QUIT(LineType * l)
 {
+   /*
+   SYNTAX:     QUIT
+   */
+   bwx_DEBUG(__FUNCTION__);
+   return bwb_SYSTEM(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               SYSTEM
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_SYSTEM(LineType * l)
+{
+   /*
+   SYNTAX:     SYSTEM
+   */
+   bwx_DEBUG(__FUNCTION__);
+   prn_xprintf("\n");
+   bwx_terminate();
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               SYSTEM
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_LOAD(LineType * l)
+{
+   /*
+   SYNTAX:     LOAD filename$
+   */
    bwx_DEBUG(__FUNCTION__);
 
    /* clear current contents */
-   bwb_NEW(l);
+   bwb_new();
 
    /* call xload function to load program in memory */
 
@@ -723,6 +1525,74 @@ bwb_LOAD(struct bwb_line * l)
 
    return bwb_zline(l);
 
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               OLD
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_OLD(LineType * l)
+{
+   /*
+   SYNTAX:     OLD filename$
+   */
+   bwx_DEBUG(__FUNCTION__);
+
+   return bwb_LOAD(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               RENAME
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_RENAME(LineType * l)
+{
+   /*
+   SYNTAX:     RENAME filename$
+   */
+   
+   bwx_DEBUG(__FUNCTION__);
+   if (line_is_eol(l))
+   {
+      /* RENAME */
+      if( My->CurrentVersion->OptionVersionBitmask & (D64 | G65 | G67) )
+      {
+         /* prompt for the program name */
+         bwx_input( "RENAME PROBLEM NAME:", My->progfile );
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+   else
+   {
+      char * Value = NULL;
+      
+      if( line_read_string_expression( l, &Value ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( Value == NULL )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      bwb_strcpy( My->progfile, Value );
+      free( Value );
+   }
+   if (My->progfile[0] == BasicNulChar)
+   {
+      WARN_BAD_FILE_NAME;
+      return bwb_zline(l);
+   }
+   return bwb_zline(l);
 }
 
 /***************************************************************
@@ -734,116 +1604,1657 @@ bwb_LOAD(struct bwb_line * l)
   
 ***************************************************************/
 
-struct bwb_line *
-bwb_xload(struct bwb_line * l)
+LineType *
+bwb_xload(LineType * l)
 {
-   FILE           *loadfile;
-
    bwx_DEBUG(__FUNCTION__);
 
    /* Get an argument for filename */
-
-   adv_ws(l->buffer, &(l->position));
-
-   if (l->buffer[l->position] == '\0' || l->buffer[l->position] == OptionCommentChar)
+   line_skip_spaces(l);
+   if (line_is_eol(l))
    {
       /* default is the last filename used by LOAD or SAVE */
+      if( My->CurrentVersion->OptionVersionBitmask & (D64 | G65 | G67) )
+      {
+         /* OLD */
+         /* prompt for the program name */
+         bwx_input( "OLD PROBLEM NAME:", My->progfile );
+      }
    }
    else
    {
-      /* Section added by JBV (bug found by DD) */
-      struct exp_ese *e;   /* JBV */
-      e = bwb_exp(l->buffer, FALSE, &(l->position));
-      if (ERROR_PENDING)
+      char * Value = NULL;
+      
+      if( line_read_string_expression( l, &Value ) == FALSE )
       {
+         WARN_SYNTAX_ERROR;
          return bwb_zline(l);
       }
-      if (e->type != STRING)
+      if( Value == NULL )
       {
-         sprintf(bwb_ebuf, "in bwb_xload(): Missing filespec");
-         bwb_error(bwb_ebuf);
+         WARN_SYNTAX_ERROR;
          return bwb_zline(l);
       }
-      str_btoc(CURTASK progfile, exp_getsval(e));  /* JBV */
+      bwb_strcpy( My->progfile, Value );
+      free( Value );
    }
-   if (strlen(CURTASK progfile) == 0)
+   if (My->progfile[0] == BasicNulChar)
    {
-      bwb_error(err_nofn); /* Added by JBV (bug found by DD) */
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
-   if ((loadfile = fopen(CURTASK progfile, "r")) == NULL)
+   if( bwb_fload( NULL /* My->progfile */ ) == FALSE )
    {
-      sprintf(bwb_ebuf, err_openfile, CURTASK progfile);
-      bwb_error(bwb_ebuf);
-
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
-   bwb_fload(loadfile);
-
-
    return bwb_zline(l);
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_save()
-  
-   DESCRIPTION:    This C function implements the BASIC
-         SAVE command.
-  
-      SYNTAX:     SAVE [file-name]
-  
-***************************************************************/
-#define CSAVE_VERSION_1 0x20150218
+/* 
+--------------------------------------------------------------------------------------------
+                               MAT
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_CSAVE_(struct bwb_line * l)
+int
+Determinant( VariableType * v )
 {
-   /* CSAVE* NumericArrayName */
-   char            tbuf[BasicStringLengthMax + 1];
-   struct bwb_variable *v;
+   /* http://easy-learn-c-language.blogspot.com/search/label/Numerical%20Methods */
+   /* Numerical Methods: Determinant of nxn matrix using C */
+
+    BasicNumberType  ** matrix;
+    BasicNumberType ratio;
+
+    int i;
+    int j;
+    int k;
+    int n;
+
+
+   My->LastDeterminant = 0; /* default */
+
+   n = v->UBOUND[0] - v->LBOUND[0] + 1;
+   
+   if( (matrix = (BasicNumberType **) calloc( n, sizeof( BasicNumberType * ) )) == NULL )
+   {
+      return FALSE;
+   }
+   for(i = 0; i < n; i++)
+   {
+      if( (matrix[i] = (BasicNumberType *)calloc( n, sizeof( BasicNumberType ) )) == NULL )
+      {
+         return FALSE;
+      }
+   }
+
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < n; j++)
+        {
+            VariantType variant;
+            v->array_pos[0] = v->LBOUND[0] + i;
+            v->array_pos[1] = v->LBOUND[1] + j;
+            if( var_get( v, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return FALSE;
+            }
+            if( variant.TypeChar == '$' )
+            {
+               WARN_TYPE_MISMATCH;
+               return FALSE;
+            }
+            matrix[i][j] = variant.Number;
+        }
+    }
+
+    /* Conversion of matrix to upper triangular */
+
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < n; j++)
+        {
+            if(j>i)
+            {
+                if( matrix[i][i] == 0 )
+                {
+                     /* - Evaluation of an expression results in division
+                      * by zero (nonfatal, the recommended recovery
+                      * procedure is to supply machine infinity with the
+                      * sign of the numerator and continue) 
+                      */
+                     if( bwb_Warning_Overflow("*** WARNING:  Divide by 0 ***") )
+                     {
+                        /* ERROR */
+                        goto Error;
+                     }
+                     /* CONTINUE */
+                     if( matrix[j][i] < 0 )
+                     {
+                        ratio = -DBL_MAX;
+                     }
+                     else
+                     {
+                        ratio = DBL_MAX;
+                     }
+                }
+                else
+                {
+                   ratio = matrix[j][i]/matrix[i][i];
+                }
+                for(k = 0; k < n; k++)
+                {
+                    matrix[j][k] -= ratio * matrix[i][k];
+                }
+            }
+        }
+    }
+    
+
+    My->LastDeterminant = 1; /* storage for determinant */
+
+    for(i = 0; i < n; i++)
+    {
+        BasicNumberType Value;           
+
+        Value = matrix[i][i];
+        My->LastDeterminant *= Value;
+    }
+
+Error:
+
+   for(i = 0; i < n; i++)
+   {
+      free( matrix[i] );
+   }
+   free( matrix );
+   
+    return TRUE;
+}
+
+int
+InvertMatrix( VariableType * vOut, VariableType * vIn )
+{
+   /* http://easy-learn-c-language.blogspot.com/search/label/Numerical%20Methods */
+   /* Numerical Methods: Inverse of nxn matrix using C */
+
+    BasicNumberType  ** matrix;
+    BasicNumberType ratio;
+
+    int i;
+    int j;
+    int k;
+    int n;
+
+
+   n = vIn->UBOUND[0] - vIn->LBOUND[0] + 1;
+   
+   if( (matrix = (BasicNumberType **) calloc( n, sizeof( BasicNumberType * ) )) == NULL )
+   {
+      return FALSE;
+   }
+   
+   for(i = 0; i < n; i++)
+   {
+      if( (matrix[i] = (BasicNumberType *)calloc( n+n, sizeof( BasicNumberType ) )) == NULL )
+      {
+         return FALSE;
+      }
+   }
+
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < n; j++)
+        {
+            VariantType variant;
+            vIn->array_pos[0] = vIn->LBOUND[0] + i;
+            vIn->array_pos[1] = vIn->LBOUND[1] + j;
+            if( var_get( vIn, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return FALSE;
+            }
+            if( variant.TypeChar == '$' )
+            {
+               WARN_TYPE_MISMATCH;
+               return FALSE;
+            }
+            matrix[i][j] = variant.Number;
+        }
+    }
+
+    for(i = 0; i < n; i++)
+    {
+        for(j = n; j < 2*n; j++)
+        {
+            if(i==(j-n))
+            {
+                matrix[i][j] = 1.0;
+            }
+            else
+            {
+                matrix[i][j] = 0.0;
+            }
+        }
+    }
+
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < n; j++)
+        {
+            if(i!=j)
+            {
+                if( matrix[i][i] == 0 )
+                {
+                     /* - Evaluation of an expression results in division
+                      * by zero (nonfatal, the recommended recovery
+                      * procedure is to supply machine infinity with the
+                      * sign of the numerator and continue) 
+                      */
+                     if( bwb_Warning_Overflow("*** WARNING:  Divide by 0 ***") )
+                     {
+                        /* ERROR */
+                        return FALSE;
+                     }
+                     /* CONTINUE */
+                     if( matrix[j][i] < 0 )
+                     {
+                        ratio = -DBL_MAX;
+                     }
+                     else
+                     {
+                        ratio = DBL_MAX;
+                     }
+                }
+                else
+                {
+                   ratio = matrix[j][i]/matrix[i][i];
+                }
+                for(k = 0; k < 2*n; k++)
+                {
+                    matrix[j][k] -= ratio * matrix[i][k];
+                }
+            }
+        }
+    }
+
+    for(i = 0; i < n; i++)
+    {
+       BasicNumberType a;
+
+        a = matrix[i][i];
+        if( a == 0 )
+        {
+            /* - Evaluation of an expression results in division
+             * by zero (nonfatal, the recommended recovery
+             * procedure is to supply machine infinity with the
+             * sign of the numerator and continue) 
+             */
+            if( bwb_Warning_Overflow("*** WARNING:  Divide by 0 ***") )
+            {
+               /* ERROR */
+               return FALSE;
+            }
+            /* CONTINUE */
+           for(j = 0; j < 2*n; j++)
+           {
+               if( matrix[i][j] < 0 )
+               {
+                  matrix[i][j] = -DBL_MAX;
+               }
+               else
+               {
+                  matrix[i][j] = DBL_MAX;
+               }
+           }
+        }
+        else
+        {
+           for(j = 0; j < 2*n; j++)
+           {
+               matrix[i][j] /= a;
+           }
+        }
+    }
+
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < n; j++)
+        {
+            VariantType variant;
+            
+            vOut->array_pos[0] = vOut->LBOUND[0] + i;
+            vOut->array_pos[1] = vOut->LBOUND[0] + j;
+            variant.TypeChar = vOut->VariableTypeChar;
+            variant.Number = matrix[i][j + n];
+            if( var_set( vOut, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return FALSE;
+            }
+        }
+    }
+
+   for(i = 0; i < n; i++)
+   {
+      free( matrix[i] );
+   }
+   free( matrix );
+
+    return TRUE;
+}
+
+static int
+line_read_matrix_redim( LineType * l, VariableType *v_A )
+{
+   /* get OPTIONAL parameters if the variable is dimensioned */
+   line_skip_spaces(l);
+   if ( line_peek_char(l,BasicLeftParenChar))
+   {
+      /* get requested size, which is <= original array size */
+      size_t array_units;
+      int    n;
+      int    n_params;  /* number of parameters */
+      int    pp[ MAX_DIMS ];
+
+      for (n = 0; n < MAX_DIMS; n++)
+      {
+         pp[n] = 0;
+      }
+      if( line_read_array_dimensions(l, &n_params, pp) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return FALSE;
+      }
+      /* update array dimensions */
+      array_units = 1;
+      for (n = 0; n < n_params; n++)
+      {
+         if( pp[n] < My->CurrentVersion->OptionBaseValue )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return FALSE;
+         }
+         array_units *= pp[n] - My->CurrentVersion->OptionBaseValue + 1;
+      }
+      if( array_units > v_A->array_units )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return FALSE;
+      }
+      v_A->dimensions = n_params;
+      for (n = 0; n < v_A->dimensions; n++)
+      {
+         v_A->LBOUND[n] = My->CurrentVersion->OptionBaseValue;
+         v_A->UBOUND[n] = pp[n];
+      }
+   }
+   return TRUE;
+}
+
+LineType *
+bwb_MAT(LineType * l)
+{
+   /*
+   SYNTAX:     MAT A = CON
+   SYNTAX:     MAT A = IDN
+   SYNTAX:     MAT A = ZER
+   SYNTAX:     MAT A = INV B
+   SYNTAX:     MAT A = TRN B
+   SYNTAX:     MAT A = (k) * B
+   SYNTAX:     MAT A = B
+   SYNTAX:     MAT A = B + C
+   SYNTAX:     MAT A = B - C
+   SYNTAX:     MAT A = B * C
+   */
+   VariableType *v_A;
+   char varname_A[BasicNameLengthMax + 1];
+   
+   bwx_DEBUG(__FUNCTION__);
+   /* just a placeholder for now. this will grow. */
+
+   if( line_read_varname(l, varname_A) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }   
+   v_A = mat_find(varname_A);
+   if( v_A == NULL)
+   {
+      WARN_VARIABLE_NOT_DECLARED;
+      return bwb_zline(l);
+   }
+   /* variable MUST be numeric */
+   if ( VAR_IS_STRING( v_A ) )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( line_read_matrix_redim( l, v_A ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( line_skip_char(l, '=') == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   /* MAT A = ... */
+   if( line_skip_word(l,"CON") )
+   {
+      /* MAT A = CON */
+      /* MAT A = CON(I) */
+      /* MAT A = CON(I,J) */
+      /* MAT A = CON(I,J,K) */
+      /* OK */
+      int i;
+      int j;
+      int k;
+
+      if( line_read_matrix_redim( l, v_A ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+
+      /* both arrays are of the same size */
+      switch( v_A->dimensions )
+      {
+      case 1:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            VariantType variant;
+            
+            variant.TypeChar = v_A->VariableTypeChar;
+            variant.Number = 1;
+            v_A->array_pos[0] = i;
+            if( var_set( v_A, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }
+         }
+         break;
+      case 2:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               VariantType variant;
+               
+               variant.TypeChar = v_A->VariableTypeChar;
+               variant.Number = 1;
+               v_A->array_pos[0] = i;
+               v_A->array_pos[1] = j;
+               if( var_set( v_A, &variant ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+            }
+         }
+         break;
+      case 3:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               for( k = v_A->LBOUND[2]; k <= v_A->UBOUND[2]; k++ )
+               {
+                  VariantType variant;
+                  
+                  variant.TypeChar = v_A->VariableTypeChar;
+                  variant.Number = 1;
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  v_A->array_pos[2] = k;
+                  if( var_set( v_A, &variant ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+         }
+         break;
+      default:
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+   else
+   if( line_skip_word(l,"IDN") )
+   {
+      /* MAT A = IDN */
+      /* MAT A = IDN(I,J) */
+      /* OK */
+      int i;
+      int j;
+
+      if( line_read_matrix_redim( l, v_A ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+
+      if( v_A->dimensions != 2 )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return bwb_zline(l);
+      }
+      if( v_A->LBOUND[0] != v_A->LBOUND[1] )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return bwb_zline(l);
+      }
+      if( v_A->UBOUND[0] != v_A->UBOUND[1] )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return bwb_zline(l);
+      }
+      /* square matrix */
+      for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+      {
+         for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+         {
+            VariantType variant;
+            
+            variant.TypeChar = v_A->VariableTypeChar;
+            if( i == j )
+            {
+               variant.Number = 1;
+            }
+            else
+            {
+               variant.Number = 0;
+            }
+            v_A->array_pos[0] = i;
+            v_A->array_pos[1] = j;
+            if( var_set( v_A, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }           
+         }
+      }
+   }
+   else
+   if( line_skip_word(l,"ZER") )
+   {
+      /* MAT A = ZER */
+      /* MAT A = ZER(I) */
+      /* MAT A = ZER(I,J) */
+      /* MAT A = ZER(I,J,K) */
+      /* OK */
+      int i;
+      int j;
+      int k;
+
+      if( line_read_matrix_redim( l, v_A ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      /* both arrays are of the same size */
+      switch( v_A->dimensions )
+      {
+      case 1:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            VariantType variant;
+            
+            variant.TypeChar = v_A->VariableTypeChar;
+            variant.Number = 0;
+            v_A->array_pos[0] = i;
+            if( var_set( v_A, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }           
+         }
+         break;
+      case 2:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               VariantType variant;
+               
+               variant.TypeChar = v_A->VariableTypeChar;
+               variant.Number = 0;
+               v_A->array_pos[0] = i;
+               v_A->array_pos[1] = j;
+               if( var_set( v_A, &variant ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+            }
+         }
+         break;
+      case 3:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               for( k = v_A->LBOUND[2]; k <= v_A->UBOUND[2]; k++ )
+               {
+                  VariantType variant;
+                  
+                  variant.TypeChar = v_A->VariableTypeChar;
+                  variant.Number = 0;
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  v_A->array_pos[2] = k;
+                  if( var_set( v_A, &variant ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+         }
+         break;
+      default:
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+   else
+   if( line_skip_word(l,"INV") )
+   {
+      /* MAT A = INV B */
+      /* MAT A = INV( B ) */
+      /* OK */
+      VariableType *v_B;
+      char varname_B[BasicNameLengthMax + 1];
+      
+      if (v_A->dimensions != 2)
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if ( v_A->LBOUND[0] != v_A->LBOUND[1] || v_A->UBOUND[0] != v_A->UBOUND[1] )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return bwb_zline(l);
+      }
+      if( line_skip_char(l,BasicLeftParenChar) == FALSE )
+      {
+         /* optional */
+      }
+      if( line_read_varname(l, varname_B) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }   
+      
+      if( (v_B = mat_find(varname_B)) == NULL)
+      {
+         WARN_VARIABLE_NOT_DECLARED;
+         return bwb_zline(l);
+      }
+      /* variable MUST be numeric */
+      if ( VAR_IS_STRING( v_B ) )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_matrix_redim( l, v_B ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_skip_char(l,BasicRightParenChar) == FALSE )
+      {
+         /* optional */
+      }
+      if (v_B->dimensions != 2)
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if ( v_B->LBOUND[0] != v_B->LBOUND[1] || v_B->UBOUND[0] != v_B->UBOUND[1] )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return bwb_zline(l);
+      }
+      if ( v_A->LBOUND[0] != v_B->LBOUND[0] || v_A->UBOUND[0] != v_B->UBOUND[0] )
+      {
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
+         return bwb_zline(l);
+      }
+      /* square matrix */
+      if( Determinant( v_B ) == FALSE )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+      if( My->LastDeterminant == 0 )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+      if( InvertMatrix( v_A, v_B ) == FALSE )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+   }
+   else
+   if( line_skip_word(l,"TRN") )
+   {
+      /* MAT A = TRN B */
+      /* MAT A = TRN( B ) */
+      /* OK */
+      int i;
+      int j;
+      VariableType *v_B;
+      char varname_B[BasicNameLengthMax + 1];
+
+      if( v_A->dimensions != 2 )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_skip_char(l,BasicLeftParenChar) == FALSE )
+      {
+         /* optional */
+      }
+      if( line_read_varname(l, varname_B) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }   
+      if( (v_B = mat_find(varname_B)) == NULL)
+      {
+         WARN_VARIABLE_NOT_DECLARED;
+         return bwb_zline(l);
+      }
+      /* variable MUST be numeric */
+      if ( VAR_IS_STRING( v_B ) )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_matrix_redim( l, v_B ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_skip_char(l,BasicRightParenChar) == FALSE )
+      {
+         /* optional */
+      }
+      if( v_B->dimensions != 2 )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      /* MxN */
+      if( v_A->LBOUND[0] != v_B->LBOUND[1] || v_A->UBOUND[0] != v_B->UBOUND[1] )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( v_A->LBOUND[1] != v_B->LBOUND[0] || v_A->UBOUND[1] != v_B->UBOUND[0] )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      /* transpose matrix */
+      for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+      {
+         for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+         {
+            VariantType variant;
+            
+            v_B->array_pos[1] = i;
+            v_B->array_pos[0] = j;
+            if( var_get( v_B, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }           
+            v_A->array_pos[0] = i;
+            v_A->array_pos[1] = j;
+            if( var_set( v_A, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }           
+         }
+      }
+   }
+   else
+   if( line_peek_char(l,BasicLeftParenChar) ) 
+   {
+      /* MAT A = (k) * B */
+      BasicNumberType Multiplier; 
+      VariableType *v_B;
+      int i;
+      int j;
+      int k;
+      char *E;
+      int p;
+      char varname_B[BasicNameLengthMax + 1];
+      char tbuf[BasicStringLengthMax + 1];
+      
+      bwb_strcpy( tbuf, &(l->buffer[l->position]));
+      E = bwb_strrchr( tbuf, '*' );
+      if( E == NULL )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      *E = BasicNulChar;
+      p = 0;
+      if( buff_read_numeric_expression(tbuf, &p, &Multiplier) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      l->position += p;
+      if( line_skip_char(l,'*') == FALSE ) 
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_varname(l, varname_B) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }   
+      
+      if( (v_B = mat_find(varname_B)) == NULL)
+      {
+         WARN_VARIABLE_NOT_DECLARED;
+         return bwb_zline(l);
+      }
+      /* variable MUST be numeric */
+      if ( VAR_IS_STRING( v_B ) )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_matrix_redim( l, v_B ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( v_A->dimensions != v_B->dimensions )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      /* both arrays are of the same size */
+      switch( v_A->dimensions )
+      {
+      case 1:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            VariantType variant;
+            
+            v_B->array_pos[0] = i;
+            if( var_get( v_B, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }           
+
+            variant.Number *= Multiplier;
+
+            v_A->array_pos[0] = i;
+            if( var_set( v_A, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }           
+         }
+         break;
+      case 2:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               VariantType variant;
+               
+               v_B->array_pos[0] = i;
+               v_B->array_pos[1] = j;
+               if( var_get( v_B, &variant ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+
+               variant.Number *= Multiplier;
+
+               v_A->array_pos[0] = i;
+               v_A->array_pos[1] = j;
+               if( var_set( v_A, &variant ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+            }
+         }
+         break;
+      case 3:
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               for( k = v_A->LBOUND[2]; k <= v_A->UBOUND[2]; k++ )
+               {
+                  VariantType variant;
+                  
+                  v_B->array_pos[0] = i;
+                  v_B->array_pos[1] = j;
+                  v_B->array_pos[2] = k;
+                  if( var_get( v_B, &variant ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  variant.Number *= Multiplier;
+
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  v_A->array_pos[2] = k;
+                  if( var_set( v_A, &variant ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+         }
+         break;
+      default:
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+   else
+   {
+      /* MAT A = B */
+      /* MAT A = B + C */
+      /* MAT A = B - C */
+      /* MAT A = B * C */
+      VariableType *v_B;
+      char varname_B[BasicNameLengthMax + 1];
+      
+      if( line_read_varname(l, varname_B) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }   
+      
+      if( (v_B = mat_find(varname_B)) == NULL)
+      {
+         WARN_VARIABLE_NOT_DECLARED;
+         return bwb_zline(l);
+      }
+      /* variable MUST be numeric */
+      if ( VAR_IS_STRING( v_B ) )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_matrix_redim( l, v_B ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_is_eol(l) )
+      {
+         /* MAT A = B */
+         /* OK */
+         int i;
+         int j;
+         int k;
+         
+         if( v_A->dimensions != v_B->dimensions )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         /* both arrays are of the same size */
+         switch( v_A->dimensions )
+         {
+         case 1:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               VariantType variant;
+               
+               v_B->array_pos[0] = i;
+               if( var_get( v_B, &variant ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+
+               v_A->array_pos[0] = i;
+               if( var_set( v_A, &variant ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+            }
+            break;
+         case 2:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+               {
+                  VariantType variant;
+                  
+                  v_B->array_pos[0] = i;
+                  v_B->array_pos[1] = j;
+                  if( var_get( v_B, &variant ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  if( var_set( v_A, &variant ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+            break;
+         case 3:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+               {
+                  for( k = v_A->LBOUND[2]; k <= v_A->UBOUND[2]; k++ )
+                  {
+                     VariantType variant;
+                     
+                     v_B->array_pos[0] = i;
+                     v_B->array_pos[1] = j;
+                     v_B->array_pos[2] = k;
+                     if( var_get( v_B, &variant ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+
+                     v_A->array_pos[0] = i;
+                     v_A->array_pos[1] = j;
+                     v_A->array_pos[2] = k;
+                     if( var_set( v_A, &variant ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+                  }
+               }
+            }
+            break;
+         default:
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+      }
+      else
+      if( line_skip_char(l,'+') ) 
+      {
+         /* MAT A = B + C */
+         /* OK */
+         int i;
+         int j;
+         int k;
+         VariableType *v_C;
+         char varname_C[BasicNameLengthMax + 1];
+         
+         if( v_A->dimensions != v_B->dimensions )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         /* both arrays are of the same size */
+
+         if( line_read_varname(l, varname_C) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }   
+         
+         if( (v_C = mat_find(varname_C)) == NULL)
+         {
+            WARN_VARIABLE_NOT_DECLARED;
+            return bwb_zline(l);
+         }
+         /* variable MUST be numeric */
+         if ( VAR_IS_STRING( v_C ) )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( line_read_matrix_redim( l, v_C ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( v_B->dimensions != v_C->dimensions )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         /* both arrays are of the same size */
+         switch( v_A->dimensions )
+         {
+         case 1:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               VariantType variant_L;
+               VariantType variant_R;
+               
+               v_B->array_pos[0] = i;
+               if( var_get( v_B, &variant_L ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+
+               v_C->array_pos[0] = i;
+               if( var_get( v_C, &variant_R ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+
+               variant_L.Number += variant_R.Number;
+
+               v_A->array_pos[0] = i;
+               if( var_set( v_A, &variant_L ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+            }
+            break;
+         case 2:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+               {
+                  VariantType variant_L;
+                  VariantType variant_R;
+                  
+                  v_B->array_pos[0] = i;
+                  v_B->array_pos[1] = j;
+                  if( var_get( v_B, &variant_L ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  v_C->array_pos[0] = i;
+                  v_C->array_pos[1] = j;
+                  if( var_get( v_C, &variant_R ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  variant_L.Number += variant_R.Number;
+
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  if( var_set( v_A, &variant_L ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+            break;
+         case 3:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+               {
+                  for( k = v_A->LBOUND[2]; k <= v_A->UBOUND[2]; k++ )
+                  {
+                     VariantType variant_L;
+                     VariantType variant_R;
+                     
+                     v_B->array_pos[0] = i;
+                     v_B->array_pos[1] = j;
+                     v_B->array_pos[2] = k;
+                     if( var_get( v_B, &variant_L ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+
+                     v_C->array_pos[0] = i;
+                     v_C->array_pos[1] = j;
+                     v_C->array_pos[2] = k;
+                     if( var_get( v_C, &variant_R ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+
+                     variant_L.Number += variant_R.Number;
+
+                     v_A->array_pos[0] = i;
+                     v_A->array_pos[1] = j;
+                     v_A->array_pos[2] = k;
+                     if( var_set( v_A, &variant_L ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+                  }
+               }
+            }
+            break;
+         default:
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+      }
+      else
+      if( line_skip_char(l,'-') ) 
+      {
+         /* MAT A = B - C */
+         /* OK */
+         int i;
+         int j;
+         int k;
+         VariableType *v_C;
+         char varname_C[BasicNameLengthMax + 1];
+         
+         if( v_A->dimensions != v_B->dimensions )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         /* both arrays are of the same size */
+         
+         if( line_read_varname(l, varname_C) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }   
+         
+         if( (v_C = mat_find(varname_C)) == NULL)
+         {
+            WARN_VARIABLE_NOT_DECLARED;
+            return bwb_zline(l);
+         }
+         /* variable MUST be numeric */
+         if ( VAR_IS_STRING( v_C ) )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( line_read_matrix_redim( l, v_C ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( v_B->dimensions != v_C->dimensions )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         /* both arrays are of the same dimension */
+         switch( v_A->dimensions )
+         {
+         case 1:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               VariantType variant_L;
+               VariantType variant_R;
+               
+               v_B->array_pos[0] = i;
+               if( var_get( v_B, &variant_L ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+
+               v_C->array_pos[0] = i;
+               if( var_get( v_C, &variant_R ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+
+               variant_L.Number -= variant_R.Number;
+
+               v_A->array_pos[0] = i;
+               if( var_set( v_A, &variant_L ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+            }
+            break;
+         case 2:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+               {
+                  VariantType variant_L;
+                  VariantType variant_R;
+                  
+                  v_B->array_pos[0] = i;
+                  v_B->array_pos[1] = j;
+                  if( var_get( v_B, &variant_L ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  v_C->array_pos[0] = i;
+                  v_C->array_pos[1] = j;
+                  if( var_get( v_C, &variant_R ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  variant_L.Number -= variant_R.Number;
+
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  if( var_set( v_A, &variant_L ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+            break;
+         case 3:
+            for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+            {
+               for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+               {
+                  for( k = v_A->LBOUND[2]; k <= v_A->UBOUND[2]; k++ )
+                  {
+                     VariantType variant_L;
+                     VariantType variant_R;
+
+                     v_B->array_pos[0] = i;
+                     v_B->array_pos[1] = j;
+                     v_B->array_pos[2] = k;
+                     if( var_get( v_B, &variant_L ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+
+                     v_C->array_pos[0] = i;
+                     v_C->array_pos[1] = j;
+                     v_C->array_pos[2] = k;
+                     if( var_get( v_C, &variant_R ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+
+                     variant_L.Number -= variant_R.Number;
+
+                     v_A->array_pos[0] = i;
+                     v_A->array_pos[1] = j;
+                     v_A->array_pos[2] = k;
+                     if( var_set( v_A, &variant_L ) == FALSE )
+                     {
+                        WARN_VARIABLE_NOT_DECLARED;
+                        return bwb_zline(l);
+                     }           
+                  }
+               }
+            }
+            break;
+         default:
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+      }
+      else
+      if( line_skip_char(l,'*') ) 
+      {
+         /* MAT A = B * C */
+         int i;
+         int j;
+         int k;
+         VariableType *v_C;
+         char varname_C[BasicNameLengthMax + 1];
+
+
+         if( v_A->dimensions != 2 )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_B->dimensions != 2 )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( line_read_varname(l, varname_C) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }   
+         if( (v_C = mat_find(varname_C)) == NULL)
+         {
+            WARN_VARIABLE_NOT_DECLARED;
+            return bwb_zline(l);
+         }
+         /* variable MUST be numeric */
+         if ( VAR_IS_STRING( v_C ) ) 
+         {
+            WARN_TYPE_MISMATCH;
+            return bwb_zline(l);
+         }
+         if( line_read_matrix_redim( l, v_C ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( v_C->dimensions != 2 )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_A->LBOUND[0] != v_B->LBOUND[0] )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_A->UBOUND[0] != v_B->UBOUND[0] )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_A->LBOUND[1] != v_C->LBOUND[1] )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_A->UBOUND[1] != v_C->UBOUND[1] )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_B->LBOUND[1] != v_C->LBOUND[0] )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         if( v_B->UBOUND[1] != v_C->UBOUND[0] )
+         {
+            WARN_SUBSCRIPT_OUT_OF_RANGE;
+            return bwb_zline(l);
+         }
+         for( i = v_A->LBOUND[0]; i <= v_A->UBOUND[0]; i++ )
+         {
+            for( j = v_A->LBOUND[1]; j <= v_A->UBOUND[1]; j++ )
+            {
+               VariantType variant_A;
+               
+               variant_A.TypeChar = v_A->VariableTypeChar;
+               variant_A.Number = 0;
+
+               v_A->array_pos[0] = i;
+               v_A->array_pos[1] = j;
+               if( var_set( v_A, &variant_A ) == FALSE )
+               {
+                  WARN_VARIABLE_NOT_DECLARED;
+                  return bwb_zline(l);
+               }           
+               for( k = v_C->LBOUND[0]; k <= v_C->UBOUND[0]; k++ )
+               {
+                  VariantType variant_B;
+                  VariantType variant_C;
+                  
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  if( var_get( v_A, &variant_A ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  v_B->array_pos[0] = i;
+                  v_B->array_pos[1] = k;
+                  if( var_get( v_B, &variant_B ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  v_C->array_pos[0] = k;
+                  v_C->array_pos[1] = j;
+                  if( var_get( v_C, &variant_C ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+
+                  variant_A.Number += variant_B.Number * variant_C.Number;
+
+                  v_A->array_pos[0] = i;
+                  v_A->array_pos[1] = j;
+                  if( var_set( v_A, &variant_A ) == FALSE )
+                  {
+                     WARN_VARIABLE_NOT_DECLARED;
+                     return bwb_zline(l);
+                  }           
+               }
+            }
+         }
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+   }
+   return bwb_zline(l);
+}
+
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               STORE
+--------------------------------------------------------------------------------------------
+*/
+
+
+LineType *
+bwb_STORE(LineType * l)
+{
+   /*
+   SYNTAX:     STORE NumericArrayName
+   */
+   bwx_DEBUG(__FUNCTION__);
+   return bwb_CSAVE8(l);
+}
+
+
+/* 
+--------------------------------------------------------------------------------------------
+                               CSAVE*
+--------------------------------------------------------------------------------------------
+*/
+
+#define CSAVE_VERSION_1 0x20150218L
+
+LineType *
+bwb_CSAVE8(LineType * l)
+{
+   /*
+   SYNTAX:     CSAVE* NumericArrayName
+   */
+   VariableType *v = NULL;
    FILE           *f;
    unsigned long   n;
-   unsigned long   t;
+   size_t          t;
+   char varname[BasicNameLengthMax + 1];
 
 
    bwx_DEBUG(__FUNCTION__);
 
-   bwb_getvarname(l->buffer, tbuf, &(l->position));
-   v = var_find(tbuf);
-   if (v == NULL)
+   if( line_read_varname(l, varname) == FALSE )
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }   
+   
+   v = mat_find(varname);
+   if( v == NULL)
+   {
+      WARN_VARIABLE_NOT_DECLARED;
       return bwb_zline(l);
    }
    /* variable MUST be numeric */
-   if (v->type == STRING)
+   if ( VAR_IS_STRING( v ) )
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* variable MUST be an array */
-   if ((v->dimensions == 1) && (v->array_sizes[0] == 1))
+   if (v->dimensions == 0)
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
-   /* * variable storage is a mess, * we bypass that tradition here. */
-   t = 1;
-   for (n = 0; n < v->dimensions; n++)
+   if( line_read_matrix_redim( l, v ) == FALSE )
    {
-      t *= v->array_sizes[n];
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
    }
+   /* variable storage is a mess, we bypass that tradition here. */
+   t = v->array_units;
    if (t <= 1)
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* open file */
    f = fopen(v->name, "w");
    if (f == NULL)
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* write version number */
@@ -854,59 +3265,90 @@ bwb_CSAVE_(struct bwb_line * l)
    /* write data */
    fwrite(v->memnum, sizeof(BasicNumberType), t, f);
    /* OK */
-   fclose(f);
+   fclose(f); /* f != NULL */
    return bwb_zline(l);
 }
 
+/* 
+--------------------------------------------------------------------------------------------
+                               RECALL
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_CLOAD_(struct bwb_line * l)
+LineType *
+bwb_RECALL(LineType * l)
 {
-   /* CLOAD* NumericArrayName */
-   char            tbuf[BasicStringLengthMax + 1];
-   struct bwb_variable *v;
+   /*
+   SYNTAX:     RECALL NumericArrayName
+   */
+   bwx_DEBUG(__FUNCTION__);
+   return bwb_CLOAD8(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               CLOAD*
+--------------------------------------------------------------------------------------------
+*/
+
+
+LineType *
+bwb_CLOAD8(LineType * l)
+{
+   /*
+   SYNTAX:     CLOAD* NumericArrayName
+   */
+   VariableType *v = NULL;
    FILE           *f;
    unsigned long   n;
-   unsigned long   t;
+   size_t          t;
+   char varname[BasicNameLengthMax + 1];
 
 
    bwx_DEBUG(__FUNCTION__);
 
-   bwb_getvarname(l->buffer, tbuf, &(l->position));
-   v = var_find(tbuf);
-   if (v == NULL)
+   if( line_read_varname(l, varname) == FALSE )
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }   
+   
+   v = mat_find(varname);
+   if( v == NULL)
+   {
+      WARN_VARIABLE_NOT_DECLARED;
       return bwb_zline(l);
    }
+
    /* variable MUST be numeric */
-   if (v->type == STRING)
+   if ( VAR_IS_STRING( v ) )
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* variable MUST be an array */
-   if ((v->dimensions == 1) && (v->array_sizes[0] == 1))
+   if (v->dimensions == 0)
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( line_read_matrix_redim( l, v ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* variable storage is a mess, we bypass that tradition here. */
-   t = 1;
-   for (n = 0; n < v->dimensions; n++)
-   {
-      t *= v->array_sizes[n];
-   }
+   t = v->array_units;
    if (t <= 1)
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* open file */
    f = fopen(v->name, "r");
    if (f == NULL)
    {
-      bwb_error(err_syntax);
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
    /* read version number */
@@ -914,8 +3356,8 @@ bwb_CLOAD_(struct bwb_line * l)
    fread(&n, sizeof(long), 1, f);
    if (n != CSAVE_VERSION_1)
    {
-      fclose(f);
-      bwb_error("Bad File");
+      fclose(f); /* f != NULL */
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
    /* read total number of elements */
@@ -923,105 +3365,176 @@ bwb_CLOAD_(struct bwb_line * l)
    fread(&n, sizeof(long), 1, f);
    if (n != t)
    {
-      fclose(f);
-      bwb_error("Size Mismatch");
+      fclose(f); /* f != NULL */
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
    /* read data */
    fread(v->memnum, sizeof(BasicNumberType), t, f);
    /* OK */
-   fclose(f);
+   fclose(f); /* f != NULL */
    return bwb_zline(l);
 }
 
+/* 
+--------------------------------------------------------------------------------------------
+                               CSAVE
+--------------------------------------------------------------------------------------------
+*/
 
-
-struct bwb_line *
-bwb_CSAVE(struct bwb_line * l)
+LineType *
+bwb_CSAVE(LineType * l)
 {
-   /* CSAVE [filename$] */
+   /*
+   SYNTAX:     CSAVE [filename$]
+   */
    bwx_DEBUG(__FUNCTION__);
    return bwb_SAVE(l);
 }
 
-struct bwb_line *
-bwb_CLOAD(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               TSAVE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_TSAVE(LineType * l)
 {
-   /* CLOAD [filename$] */
+   /*
+   SYNTAX:     TSAVE [filename$]
+   */
+   bwx_DEBUG(__FUNCTION__);
+   return bwb_SAVE(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               CLOAD
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_CLOAD(LineType * l)
+{
+   /*
+   SYNTAX:     CLOAD [filename$]
+   */
+   bwx_DEBUG(__FUNCTION__);
+   return bwb_LOAD(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               TLOAD
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_TLOAD(LineType * l)
+{
+   /*
+   SYNTAX:     TLOAD [filename$]
+   */
    bwx_DEBUG(__FUNCTION__);
    return bwb_LOAD(l);
 }
 
 
-struct bwb_line *
-bwb_SAVE(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               SAVE
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_SAVE(LineType * l)
 {
+   /*
+   SYNTAX:     SAVE [filename$]
+   */
    FILE           *outfile;
-
    bwx_DEBUG(__FUNCTION__);
 
 
    /* Get an argument for filename */
 
-   adv_ws(l->buffer, &(l->position));
-   if (l->buffer[l->position] == '\0' || l->buffer[l->position] == OptionCommentChar)
+   if (line_is_eol(l))
    {
       /* default is the last filename used by LOAD or SAVE */
    }
    else
    {
-      /* Section added by JBV (bug found by DD) */
-      struct exp_ese *e;   /* JBV */
-      e = bwb_exp(l->buffer, FALSE, &(l->position));
-      if (ERROR_PENDING)
+      char * Value = NULL;
+      
+      if( line_read_string_expression( l, &Value ) == FALSE )
       {
+         WARN_SYNTAX_ERROR;
          return bwb_zline(l);
       }
-      if (e->type != STRING)
+      if( Value == NULL )
       {
-         sprintf(bwb_ebuf, "in bwb_save(): Missing filespec");
-         bwb_error(bwb_ebuf);
+         WARN_SYNTAX_ERROR;
          return bwb_zline(l);
       }
-      str_btoc(CURTASK progfile, exp_getsval(e));  /* JBV */
+      bwb_strcpy( My->progfile, Value );
+      free( Value );
    }
-   if (strlen(CURTASK progfile) == 0)
+   if( is_empty_filename( My->progfile ) )
    {
-      bwb_error(err_nofn); /* Added by JBV (bug found by DD) */
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
-   if ((outfile = fopen(CURTASK progfile, "w")) == NULL)
+   if ((outfile = fopen(My->progfile, "w")) == NULL)
    {
-      sprintf(bwb_ebuf, err_openfile, CURTASK progfile);
-      bwb_error(bwb_ebuf);
-
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
    bwb_xlist(l, outfile);
-   fclose(outfile);
+   fclose(outfile); /* outfile != NULL */
 
 
    return bwb_zline(l);
 
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_list()
-  
-        DESCRIPTION: This C function implements the BASIC
-         LIST command.
-  
-      SYNTAX:     LIST line[-line]
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               LIST
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_LIST(struct bwb_line * l)
+LineType *
+bwb_LIST(LineType * l)
 {
+   /*
+   SYNTAX:     LIST
+   SYNTAX:     LIST line [,...]
+   SYNTAX:     LIST line - line
+   */
+   bwx_DEBUG(__FUNCTION__);
+   
+   
+   My->OptionIndentValue = 2;
+
+   bwb_xlist(l, My->SYSOUT->cfp);
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               LLIST
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_LLIST(LineType * l)
+{
+   /*
+   SYNTAX:     LLIST
+   SYNTAX:     LLIST line [,...]
+   SYNTAX:     LLIST line - line
+   */
    bwx_DEBUG(__FUNCTION__);
 
-   bwb_xlist(l, stdout);
+   bwb_xlist(l, My->SYSPRN->cfp);
    return bwb_zline(l);
 }
 
@@ -1034,170 +3547,72 @@ bwb_LIST(struct bwb_line * l)
   
 ***************************************************************/
 
-struct bwb_line *
-bwb_xlist(struct bwb_line * l, FILE * file)
+LineType *
+bwb_xlist(LineType * l, FILE * file)
 {
-   struct bwb_line *start, *end, *current;
-   BasicLineNumberType s, e;
-   int             f, r;
-
    bwx_DEBUG(__FUNCTION__);
 
-   /* Default first value */
-   start = CURTASK bwb_start.next;
-   s = BasicLineNumberMin;
-
-
-   /* Default last value */
-   end = &CURTASK bwb_end;
-   e = BasicLineNumberMax;
-
-
-   /* Parse parameters */
-   r = bwb_numseq(&(l->buffer[l->position]), &s, &e);
-/*  
-r example
-= ================
-0 LIST
-1 LIST 1000
-4 LIST     -
-5 LIST 1000-
-6 LIST     -9000
-7 LIST 1000-9000
-*/
-
-
-
-   if (r == 1)
+   if( line_is_eol( l ) )
    {
-      /* LIST 1000 */
-      e = s;
-   }
-   /* advance to the end of the segment */
-   adv_eos(l->buffer, &(l->position));
-
-
-   /* abort if either number is out of range */
-   if (s < BasicLineNumberMin || s > BasicLineNumberMax)
-   {
-      /* LIST 99999- */
-      sprintf(bwb_ebuf, err_lnnotfound, s);
-      bwb_error(bwb_ebuf);
-      return bwb_zline(l);
-   }
-   if (e < BasicLineNumberMin || e > BasicLineNumberMax)
-   {
-      /* LIST -99999 */
-      sprintf(bwb_ebuf, err_lnnotfound, e);
-      bwb_error(bwb_ebuf);
-      return bwb_zline(l);
-   }
-   if (s > e)
-   {
-      /* LIST 9999-1 */
-      sprintf(bwb_ebuf, err_lnnotfound, s);
-      bwb_error(bwb_ebuf);
-      return bwb_zline(l);
-   }
-   /* find the first line that actually exists that is >= START */
-   f = FALSE;
-   for (current = CURTASK bwb_start.next; (f == FALSE) && (current != &CURTASK bwb_end); current = current->next)
-   {
-      if (current->number >= s)
+      /* LIST */
+      LineType *x;
+      /* now go through and list appropriate lines */
+      bwb_scan();
+      My->LastLineNumber = -1;
+      for (x = My->bwb_start.next; x != &My->bwb_end; x = x->next)
       {
-         f = TRUE;
-         start = current;
+         xl_line(file, x);
       }
-   }
-   /* "start" now points at the first line that actually exists that is
-    * >= START */
-
-   if (r == 1)
-   {
-      /* LIST 999 */
-      if (s != start->number)
-      {
-         /* THE SPECIFIED LINE DOES NOT EXIST */
-         f = FALSE;
-      }
-   }
-   /* check and see if a line number was found */
-   if (f == FALSE)
-   {
-      if (l->number > 0)
-      {
-         /* this is an executing program */
-         sprintf(bwb_ebuf, err_lnnotfound, s);
-         bwb_error(bwb_ebuf);
-      }
-      return bwb_zline(l);
-   }
-   f = FALSE;
-   if (e > s)
-   {
-      /* find the last line that actually exists that is <= END */
-      for (current = start; current != &CURTASK bwb_end; current = current->next)
-      {
-         if (current->number <= e)
-         {
-            f = TRUE;
-            end = current;
-         }
-      }
+      fprintf(file, "\n");
    }
    else
    {
-      /* e == s */
-      f = TRUE;
-      end = start;
-   }
-   /* "end" now points at the last line that actually exists that is <=
-    * END */
-
-
-
-   if (r == 6 || r == 7)
-   {
-      /* LIST -999 */
-      if (e < end->number)
+      do
       {
-         /* THERE ARE NO LINES LESS THAN SPECIFIED */
-         f = FALSE;
+         int head;
+         int tail;
+         
+         if( line_read_line_sequence(l, &head, &tail) )
+         {
+            /* LIST 's' - 'e' */
+            LineType *x;
+            if( head < BasicLineNumberMin || head > BasicLineNumberMax )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            if( tail < BasicLineNumberMin || tail > BasicLineNumberMax )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            if( head > tail )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            /* valid range */
+            /* now go through and list appropriate lines */
+            bwb_scan();
+            My->LastLineNumber = -1;
+            for (x = My->bwb_start.next; x != &My->bwb_end; x = x->next)
+            {
+               if ( head <= x->number && x->number <= tail)
+               {
+                  xl_line(file, x);
+               }
+            }
+            fprintf(file, "\n");
+         }
+         else
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
       }
+      while( line_skip_comma( l ) );
    }
-   /* "end" is always after "start" */
-   end = end->next;
-   while (end->number <= e)
-   {
-      end = end->next;
-   }
-   /* * "end" now points at the first line * that actually exists that
-    * is > END */
-
-
-   /* check and see if a line number was found */
-   if (f == FALSE)
-   {
-      if (l->number > 0)
-      {
-         /* this is an executing program */
-         sprintf(bwb_ebuf, err_lnnotfound, e);
-         bwb_error(bwb_ebuf);
-      }
-      return bwb_zline(l);
-   }
-   /* now go through and list appropriate lines */
-   bwb_scan();
-   LastLineNumber = -1;
-   for (current = start; current != end; current = current->next)
-   {
-      xl_line(file, current);
-   }
-   fprintf(file, "\n");
-
    return bwb_zline(l);
-
-
 }
 
 /***************************************************************
@@ -1206,374 +3621,305 @@ r example
   
    DESCRIPTION:    This function lists a single program
          line to a specified device of file.
-         It is called by bwb_xlist();
+         It is called by bwb_xlist() and bwb_SAVE().
   
 ***************************************************************/
 
-static int
-xl_line(FILE * file, struct bwb_line * l)
+static int xl_line(FILE * file, LineType * l)
 {
+   char LineExecuted;
+   char *C; /* start of comment text */
+   char buffer[32]; /* 0...99999 */
+
    bwx_DEBUG(__FUNCTION__);
+   
+   /*
+   ** The only difference between LIST, LLIST and SAVE is:
+   ** LIST and LLIST display an '*' 
+   ** when a line has been executed
+   ** and OPTION COVERAGE ON is enabled.
+   */
 
-   if ((file == stdout) || (file == stderr))
+   LineExecuted = ' ';
+   if (My->CurrentVersion->OptionFlags & (OPTION_COVERAGE_ON) )
    {
-      char            tbuf[32];
-
-
-      if (LastLineNumber == l->number)
+      if( l->LineFlags & LINE_EXECUTED )
       {
-         strcpy(tbuf, "     :");
-      }
-      else
-      {
-         sprintf(tbuf, "%5d:", l->number);
-      }
-      prn_xprintf(tbuf);
-
-      if (OptionFlags & OPTION_COVERAGE_ON)
-      {
-#if 0
-         sprintf(tbuf, "%c:", l->Coverage);
-         prn_xprintf(tbuf);
-#endif
-         if( l->LineFlags & LINE_EXECUTED )
+         if( file == My->SYSOUT->cfp || file == My->SYSPRN->cfp )
          {
-             prn_xprintf("*");
+            /* LIST */
+            /* LLIST */
+            LineExecuted = '*';
          }
          else
          {
-             prn_xprintf(" ");
-         }
-         prn_xprintf(":");
-      }
-      if (OptionIndentValue > 0)
-      {
-         int             i;
-         for (i = 0; i < l->Indention; i++)
-         {
-            int             j;
-            for (j = 0; j < OptionIndentValue; j++)
-            {
-               prn_xprintf(" ");
-            }
+            /* SAVE */
+            /* EDIT implies SAVE */
          }
       }
-      prn_xprintf(l->buffer);
-      prn_xprintf("\n");
+   }
 
+   C = l->buffer;
+   if( l->LineFlags & LINE_NUMBERED )
+   {
+       /* explicitly numbered */
+       sprintf( buffer, "%*d", BasicLineNumberDigits , l->number);
+       /* ##### xxx */
    }
    else
    {
-
-#if 0
-      if (LastLineNumber == l->number)
+      /* implicitly numbered */
+      if (My->LastLineNumber == l->number )
       {
-         fprintf(file, "%s\n", l->buffer);
+          /* multi-statement line */
+          if( l->cmdnum == C_REM && IS_CHAR( l->buffer[0], My->CurrentVersion->OptionCommentChar) )
+          {
+             /* trailing comment */
+             sprintf( buffer, "%*s%c", BasicLineNumberDigits - 1, "", My->CurrentVersion->OptionCommentChar );
+             C++; /* skip comment char */
+             while( *C == ' ' )
+             {
+                /* skip spaces */
+                C++;
+             }
+             /* ____' xxx */
+          }
+          else
+          if( My->CurrentVersion->OptionStatementChar != BasicNulChar )
+          {
+             /* all other commands, add a colon */
+             sprintf( buffer, "%*s%c", BasicLineNumberDigits - 1, "", My->CurrentVersion->OptionStatementChar );
+             /* ____: xxx */
+          }
+          else
+          {
+             /*
+             The user is trying to list a multi-line statement 
+             in a dialect that does NOT support multi-line statements.  
+             This could occur when LOADing in one dialect and then SAVEing as another dialect, such as:
+                OPTION VERSION BASIC-80
+                LOAD "TEST1.BAS"
+                   100 REM TEST
+                   110 PRINT:PRINT:PRINT
+                OPTION VERSION MARK-I
+                EDIT
+                   100 REM TEST
+                   110 PRINT
+                       PRINT
+                       PRINT
+             The only thing we can reasonably do is put spaces for the line number,
+             since the user will have to edit the results manually anyways.
+             */
+             sprintf( buffer, "%*s", BasicLineNumberDigits , "" );
+             /* _____ xxx */
+          }
       }
       else
       {
-         fprintf(file, "%d %s\n", l->number, l->buffer);
+         /* single-statement line */
+         sprintf( buffer, "%*s", BasicLineNumberDigits, "");
+         /* _____ xxx */
       }
-#endif
-      if (LastLineNumber == l->number && OptionStatementChar != '\0' )
-      {
-          fprintf(file, "%c", OptionStatementChar);
-      }
-      else
-      if(LastLineNumber == -1 )
-      {
-          /* first line, do nothing */
-      }
-      else
-      {
-          fprintf(file, "\n");
-      }        
-      
-      if( l->LineFlags & LINE_NUMBERED )
-      {
-         fprintf(file, "%d ", l->number);
-      }
-      
-      fprintf(file, "%s", l->buffer);
    }
-   LastLineNumber = l->number;
+   
+   fprintf(file, "%s", buffer);
+   fprintf(file, "%c", LineExecuted);
+   
+   /* if( TRUE ) */
+   {
+      /* %INCLUDE */
+      int i;
+      for( i = 0; i < l->IncludeLevel; i++ )
+      {
+            fputc( ' ', file );
+      }
+   }
+   if( My->OptionIndentValue > 0 )
+   {
+      int i;
+      
+      for( i = 0; i < l->Indention; i++ )
+      {
+         int j;
+         for( j = 0; j < My->OptionIndentValue; j++ )
+         {
+            fputc( ' ', file );
+         }
+      }
+   }
+   fprintf(file, "%s\n", C);
+   
+   My->LastLineNumber = l->number;
 
    return TRUE;
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_delete()
-  
-   DESCRIPTION:    This C function implements the BASIC
-         DELETE command for interactive programming,
-         deleting a specified program line (or lines)
-         from memory.
-  
-      SYNTAX:     DELETE line[-line]
-  
-***************************************************************/
-
-
-struct bwb_line *
-bwb_DELETE(struct bwb_line * l)
-{
-   struct bwb_line *start, *end, *current, *previous, *p, *next;
-   BasicLineNumberType s, e;
-   int             f, r;
-
-   bwx_DEBUG(__FUNCTION__);
-
-
-   /* Default first value */
-   start = CURTASK bwb_start.next;
-   s = BasicLineNumberMin;
-
-
-   /* Default last value */
-   end = &CURTASK bwb_end;
-   e = BasicLineNumberMax;
-
-
-   /* Default previous value */
-   previous = p = &CURTASK bwb_start;
-
-
-   r = bwb_numseq(&(l->buffer[l->position]), &s, &e);
-/*  
-r example
-= ================
-0 DELETE
-1 DELETE 1000
-4 DELETE     -
-5 DELETE 1000-
-6 DELETE     -9000
-7 DELETE 1000-9000
+/* 
+--------------------------------------------------------------------------------------------
+                               DELETE
+--------------------------------------------------------------------------------------------
 */
 
-   if (r == 1)
-   {
-      /* DELETE 1000 */
-      e = s;
-   }
-   /* advance to the end of the segment */
-   adv_eos(l->buffer, &(l->position));
+LineType *
+bwb_DELETE(LineType * l)
+{
+   bwx_DEBUG(__FUNCTION__);
 
-
-   /* abort if either number is out of range */
-   if (s < BasicLineNumberMin || s > BasicLineNumberMax)
+   if( line_is_eol( l ) )
    {
-      /* DELETE 99999- */
-      sprintf(bwb_ebuf, err_lnnotfound, s);
-      bwb_error(bwb_ebuf);
+      /* DELETE */
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
-   if (e < BasicLineNumberMin || e > BasicLineNumberMax)
+   else
+   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
    {
-      /* DELETE -99999 */
-      sprintf(bwb_ebuf, err_lnnotfound, e);
-      bwb_error(bwb_ebuf);
-      return bwb_zline(l);
-   }
-   if (s > e)
-   {
-      /* DELETE 9999-1 */
-      sprintf(bwb_ebuf, err_lnnotfound, s);
-      bwb_error(bwb_ebuf);
-      return bwb_zline(l);
-   }
-   /* find the first line that exists that is >= START */
-   f = FALSE;
-   for (current = CURTASK bwb_start.next; (f == FALSE) && (current != &CURTASK bwb_end); current = current->next)
-   {
-      if (current->number >= s)
+      /*
+      SYNTAX:     DELETE filenum [,...]
+      */
+      do
       {
-         f = TRUE;
-         previous = p;
-         start = current;
-      }
-      p = current;
-   }
-   /* "start" now points at the first line that actually exists that is
-    * >= START */
-   /* "previous" now points at the first line that actually exists that
-    * is < START */
-
-
-   if (r == 1)
-   {
-      /* DELETE 1000 */
-      if (s != start->number)
-      {
-         /* THE SPECIFIED LINE DOES NOT EXIST */
-         f = FALSE;
-      }
-   }
-   /* check and see if a line number was found */
-   if (f == FALSE)
-   {
-      if (l->number > 0)
-      {
-         /* this is an executing program */
-         sprintf(bwb_ebuf, err_lnnotfound, s);
-         bwb_error(bwb_ebuf);
-      }
-      return bwb_zline(l);
-   }
-   f = FALSE;
-   if (e > s)
-   {
-      /* find the last line that actually exists that is <= END */
-      for (current = start; current != &CURTASK bwb_end; current = current->next)
-      {
-         if (current->number <= e)
+         int FileNumber = 0;
+         if( line_read_integer_expression( l, &FileNumber ) == FALSE )
          {
-            f = TRUE;
-            end = current;
+            WARN_BAD_FILE_NUMBER;
+            return bwb_zline(l);
          }
+         if( FileNumber <= 0 )
+         {
+            WARN_BAD_FILE_NUMBER;
+            return bwb_zline(l);
+         }
+
+         My->CurrentFile = find_file_by_number( FileNumber );
+         if( My->CurrentFile == NULL )
+         {
+            WARN_BAD_FILE_NUMBER;
+            return bwb_zline(l);
+         }
+         if( My->CurrentFile->mode == DEVMODE_CLOSED )
+         {
+            WARN_BAD_FILE_NUMBER;
+            return bwb_zline(l);
+         }
+         if( My->CurrentFile->cfp != NULL )
+         {
+            fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
+            My->CurrentFile->cfp = NULL;
+         }
+         if( My->CurrentFile->buffer != NULL )
+         {
+            FREE( My->CurrentFile->buffer, "bwb_DELETE" );
+            My->CurrentFile->buffer = NULL;
+         }
+         My->CurrentFile->width = 0;
+         My->CurrentFile->col = 1;
+         My->CurrentFile->row = 1;
+         My->CurrentFile->delimit = ',';
+         My->CurrentFile->mode = DEVMODE_CLOSED;
+         if( My->CurrentFile->filename[ 0 ] == BasicNulChar )
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         remove( My->CurrentFile->filename );
+         My->CurrentFile->filename[ 0 ] = BasicNulChar;
       }
+      while( line_skip_comma( l ) );
+      /* OK */      
+      return bwb_zline(l);
    }
    else
    {
-      /* e == s */
-      f = TRUE;
-      end = start;
-   }
-   /* "end" now points at the last line that actually exists that is <=
-    * END */
-
-
-   if (r == 6 || r == 7)
-   {
-      /* DELETE -999 */
-      /* DELETE 1-999 */
-      if (e < end->number)
+      /*
+      SYNTAX:     DELETE line [,...]
+      SYNTAX:     DELETE line - line
+      */
+      do
       {
-         /* THERE ARE NO LINES LESS THAN SPECIFIED */
-         f = FALSE;
-      }
-   }
-   /* "end" is always after "start" */
-   end = end->next;
-   while (end->number <= e)
-   {
-      end = end->next;
-   }
-   /* * "end" now points at the first line * that actually exists * that
-    * is > END */
-
-
-   /* check and see if a line number was found */
-   if (f == FALSE)
-   {
-      if (l->number > 0)
-      {
-         /* this is an executing program */
-         sprintf(bwb_ebuf, err_lnnotfound, e);
-         bwb_error(bwb_ebuf);
-      }
-      return bwb_zline(l);
-   }
-   if (l->number > 0)
-   {
-      /* This is an executing progrram. So make sure DELETE removes
-       * structured commands completely. The BASIC program must
-       * delete all of a structured command. Do not allow a
-       * dangling FOR, NEXT, and so on, since that is just a FATAL
-       * error waiting to happen. FOR - NEXT DO - LOOP WHILE - WEND
-       * UNTIL - UEND IF - END IF SELECT CASE - END SELECT */
-      s = start->number;
-      e = end->number;
-      current = start;
-      while ((current != end) && (current != &CURTASK bwb_end))
-      {
-         if (current->OtherLine != NULL)
+         int head;
+         int tail;
+         
+         if( line_read_line_sequence(l, &head, &tail) )
          {
-            /* this line is either the Top or the Bottomm
-             * of a structured command */
-            /* verify the other end of the block is also
-             * in the DELETE range */
-            int             n;
-            n = current->OtherLine->number;
-            if (n < s || n >= e)
+            /* DELETE 's' - 'e' */
+            LineType *x;
+            LineType *previous;
+            if( head < BasicLineNumberMin || head > BasicLineNumberMax )
             {
-               sprintf(bwb_ebuf,
-                  "Cannot delete at %d because %d is not included"
-                  ,current->number
-                  ,n
-                  );
-               bwb_error(bwb_ebuf);
+               WARN_UNDEFINED_LINE;
                return bwb_zline(l);
             }
+            if( tail < BasicLineNumberMin || tail > BasicLineNumberMax )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            if( head > tail )
+            {
+               WARN_UNDEFINED_LINE;
+               return bwb_zline(l);
+            }
+            /* valid range */
+            /* now go through and list appropriate lines */
+            previous = &My->bwb_start;
+            for (x = My->bwb_start.next; x != &My->bwb_end; )
+            {
+               LineType *next;
+
+
+               next = x->next;
+               if ( x->number < head )
+               {
+                  previous = x;
+               }
+               else
+               if ( head <= x->number && x->number <= tail)
+               {
+                  if (x == l)
+                  {
+                     /* 100 DELETE 100 */
+                     WARN_SYNTAX_ERROR;
+                     return bwb_zline(l);
+                  }
+                  bwb_freeline(x);
+                  previous->next = next;
+               }
+               x = next;
+            }
          }
-         current = current->next;
+         else
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
       }
+      while( line_skip_comma( l ) );
    }
-   else
-   {
-      /* The user is executing DELETE interactively,  Allow user to
-       * DELETE whatever they want. Whenever user attempts to run,
-       * bwb_scan() will find any mismatch. */
-   }
-
-
-   /* now go through and delete appropriate lines */
-   current = start;
-   while ((current != end) && (current != &CURTASK bwb_end))
-   {
-      next = current->next;
-      if (current == l)
-      {
-         l = previous;
-      }
-      if (current->OtherLine != NULL)
-      {
-         /* remove any existing structured command linkage */
-         current->OtherLine->OtherLine = NULL;
-         current->OtherLine = NULL;
-      }
-      bwb_freeline(current);
-      current = next;
-   }
-
-
-   /* previous should now be set to the line previous to the first in
-    * the omission list */
-   previous->next = current;
-
-
-   CURTASK         rescan = TRUE;   /* program needs to be scanned again */
-   bwb_scan();
-
    return bwb_zline(l);
-
-
 }
 
+#if FALSE /* keep the source to DONUM and DOUNNUM */
 
-/***************************************************************
-  
-        FUNCTION:       bwb_donum()
-  
-   DESCRIPTION:    This function implements the BASIC DO
-         NUM command, numbering all program lines
-         in memory in increments of 10 beginning
-         at 10.
-  
-   SYNTAX:     DO NUM
-  
-***************************************************************/
-#if 0
-struct bwb_line *
-bwb_donum(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               DONUM
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_donum(LineType * l)
 {
-   struct bwb_line *current;
+   /*
+   SYNTAX:     DONUM
+   */
+   LineType *current;
    register int    lnumber;
 
    bwx_DEBUG(__FUNCTION__);
 
    lnumber = 10;
-   for (current = bwb_start.next; current != &bwb_end; current = current->next)
+   for (current = My->bwb_start.next; current != &My->bwb_end; current = current->next)
    {
       current->number = lnumber;
 
@@ -1587,26 +3933,23 @@ bwb_donum(struct bwb_line * l)
    return bwb_zline(l);
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_dounnum()
-  
-   DESCRIPTION:    This function implements the BASIC DO
-         UNNUM command, removing all line numbers
-         from the program in memory.
-  
-   SYNTAX:     DO UNNUM
-  
-***************************************************************/
+/* 
+--------------------------------------------------------------------------------------------
+                               DOUNUM
+--------------------------------------------------------------------------------------------
+*/
 
-struct bwb_line *
-bwb_dounnum(struct bwb_line * l)
+LineType *
+bwb_dounnum(LineType * l)
 {
-   struct bwb_line *current;
+   /*
+   SYNTAX:     DOUNNUM
+   */
+   LineType *current;
 
    bwx_DEBUG(__FUNCTION__);
 
-   for (current = bwb_start.next; current != &bwb_end; current = current->next)
+   for (current = My->bwb_start.next; current != &My->bwb_end; current = current->next)
    {
       current->number = 0;
    }
@@ -1614,87 +3957,684 @@ bwb_dounnum(struct bwb_line * l)
    return bwb_zline(l);
 }
 
-#endif            /* 0 */
+#endif            /* FALSE */
 
 
-/***************************************************************
-  
-        FUNCTION:       bwb_chain()
-  
-        DESCRIPTION: This C function implements the BASIC
-         CHAIN command.
-  
-      SYNTAX:     CHAIN "file-name" | file-name$
-  
-***************************************************************/
 
-struct bwb_line *
-bwb_CHAIN(struct bwb_line * l)
+/* 
+--------------------------------------------------------------------------------------------
+                               FILES
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_FILES(LineType * l)
 {
+   /*
+   SYNTAX:     FILES A$ [, ...]
+   */
+   /* open a list of files in READ mode */
+   
+   do
+   {
+      int FileNumber;
+
+      FileNumber = My->LastFileNumber;
+      FileNumber++;
+      if( FileNumber < 0 )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( FileNumber == 0 )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      My->CurrentFile = find_file_by_number( FileNumber );
+      if( My->CurrentFile == NULL )
+      {
+         My->CurrentFile = file_new();
+         My->CurrentFile->FileNumber = FileNumber;
+      }
+      {
+         char * Value = NULL;
+         
+         if( line_read_string_expression( l, &Value ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( Value == NULL )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         bwb_strcpy( My->CurrentFile->filename, Value );
+         free( Value );
+      }
+      if( My->CurrentFile->mode != DEVMODE_CLOSED )
+      {
+         if( My->CurrentFile->cfp != NULL )
+         {
+            fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
+         }
+         if( My->CurrentFile->buffer != NULL )
+         {
+            FREE( My->CurrentFile->buffer, "bwb_FILES" );
+         }
+      }
+      My->CurrentFile->width = 0;
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
+      My->CurrentFile->delimit = ',';
+      My->CurrentFile->buffer = NULL;
+      My->CurrentFile->mode = DEVMODE_CLOSED;
+      if( bwb_strcmp( My->CurrentFile->filename, "*" ) != 0 )
+      {
+         if( (My->CurrentFile->cfp = fopen( My->CurrentFile->filename, "r" )) == NULL )
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         My->CurrentFile->mode = DEVMODE_INPUT;
+      }
+      My->LastFileNumber = FileNumber;
+      /* OK */
+   }
+   while( line_skip_comma( l ) );
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               FILE
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_FILE(LineType * l)
+{
+   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+   {
+      /* 
+      CBASIC-II: 
+      FILE file_name$                      ' filename$ must be a simple string scalar (no arrays)
+      FILE file_name$ ( record_length% )   ' filename$ must be a simple string scalar (no arrays)
+      -- if the file exists, 
+         then it is used, 
+         else it is created.
+      -- Does not trigger IF END #
+      */
+      do
+      {
+         int FileNumber;
+         VariableType * v;
+         char varname[BasicNameLengthMax + 1];
+   
+         if( line_read_varname( l, varname ) == FALSE )
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         if( varname[0] == BasicNulChar )
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         v = find_variable_by_type( varname, 0, BasicStringSuffix );
+         if( v == NULL )
+         {
+            WARN_VARIABLE_NOT_DECLARED;
+            return bwb_zline(l);
+         }
+         if( VAR_IS_STRING( v ) )
+         {
+            /* OK */
+         }
+         else
+         {
+            WARN_TYPE_MISMATCH;
+            return bwb_zline(l);
+         }
+   
+         FileNumber = My->LastFileNumber;
+         FileNumber++;
+         if( FileNumber < 0 )
+         {
+            WARN_BAD_FILE_NUMBER;
+            return bwb_zline(l);
+         }
+         if( FileNumber == 0 )
+         {
+            WARN_BAD_FILE_NUMBER;
+            return bwb_zline(l);
+         }
+         My->CurrentFile = find_file_by_number( FileNumber );
+         if( My->CurrentFile == NULL )
+         {
+            My->CurrentFile = file_new();
+            My->CurrentFile->FileNumber = FileNumber;
+         }
+         if( My->CurrentFile->mode != DEVMODE_CLOSED )
+         {
+            if( My->CurrentFile->cfp != NULL )
+            {
+               fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
+            }
+            if( My->CurrentFile->buffer != NULL )
+            {
+               FREE( My->CurrentFile->buffer, "bwb_FILE" );
+            }
+         }
+         My->CurrentFile->width = 0;
+         My->CurrentFile->col = 1;
+         My->CurrentFile->row = 1;
+         My->CurrentFile->delimit = ',';
+         My->CurrentFile->buffer = NULL;
+         My->CurrentFile->mode = DEVMODE_CLOSED;
+         /* OK */
+         if( line_skip_char( l, '(' ) )
+         {
+            /* RANDOM file */
+            int RecLen;
+            
+            if( line_read_integer_expression( l, &RecLen ) == FALSE )
+            {
+               WARN_FIELD_OVERFLOW;
+               return bwb_zline(l);
+            }
+            if( RecLen <= 0 )
+            {
+               WARN_FIELD_OVERFLOW;
+               return bwb_zline(l);
+            }
+            if( line_skip_char( l, ')' ) == FALSE )
+            {
+               WARN_SYNTAX_ERROR;
+               return bwb_zline(l);
+            }
+            My->CurrentFile->buffer = CALLOC(RecLen + 1 /* NUL */, 1, "bwb_FILE");
+            My->CurrentFile->width = RecLen;
+         }
+
+         /* if( TRUE ) */
+         {
+            VariantType variant;
+            if( var_get( v, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return bwb_zline(l);
+            }
+            if( variant.TypeChar == '$' )
+            {
+               bwb_strcpy( My->CurrentFile->filename, variant.Buffer );
+               RELEASE( (&variant) );
+            }
+            else
+            {
+               WARN_TYPE_MISMATCH;
+               return bwb_zline(l);
+            }
+         }
+         if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+         {
+            strupper( My->CurrentFile->filename ); /* CBASIC-II: file names are always upper case */
+         }
+         My->CurrentFile->cfp = fopen(My->CurrentFile->filename, "r+");
+         if (My->CurrentFile->cfp == NULL)
+         {
+            My->CurrentFile->cfp = fopen(My->CurrentFile->filename, "w");
+            if( My->CurrentFile->cfp != NULL )
+            {
+               fclose(My->CurrentFile->cfp); /* fp != NULL */
+               My->CurrentFile->cfp = fopen(My->CurrentFile->filename, "r+");
+            }
+         }
+         if (My->CurrentFile->cfp == NULL)
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         if( My->CurrentFile->width > 0 )
+         {
+            /* RANDOM file */
+            My->CurrentFile->mode = DEVMODE_RANDOM;
+         }
+         else
+         {
+            /* SERIAL file */
+            My->CurrentFile->mode = DEVMODE_INPUT | DEVMODE_OUTPUT;
+         }
+         /* OK */
+         My->LastFileNumber = FileNumber;
+      }
+      while( line_skip_comma( l ) );
+      /* OK */
+      return bwb_zline(l);
+   }
+   if( line_skip_char(l,BasicFileNumberPrefix) )
+   {
+      /*
+      SYNTAX:     FILE # X, A$
+      */
+      int FileNumber;
+
+      if( line_read_integer_expression( l, &FileNumber ) == FALSE )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( line_skip_comma(l) )
+      {
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( FileNumber < 0 )
+      {
+         /* "FILE # -1" is an ERROR */
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( FileNumber == 0 )
+      {
+         /* "FILE # 0" is an ERROR */
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      My->CurrentFile = find_file_by_number( FileNumber );
+      if( My->CurrentFile == NULL )
+      {
+         My->CurrentFile = file_new();
+         My->CurrentFile->FileNumber = FileNumber;
+      }
+      {
+         char * Value = NULL;
+         
+         if( line_read_string_expression( l, &Value ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( Value == NULL )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         bwb_strcpy( My->CurrentFile->filename, Value );
+         free( Value );
+      }
+      if( My->CurrentFile->mode != DEVMODE_CLOSED )
+      {
+         if( My->CurrentFile->cfp != NULL )
+         {
+            fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
+         }
+         if( My->CurrentFile->buffer != NULL )
+         {
+            FREE( My->CurrentFile->buffer, "bwb_FILE" );
+         }
+      }
+      My->CurrentFile->width = 0;
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
+      My->CurrentFile->delimit = ',';
+      My->CurrentFile->buffer = NULL;
+      My->CurrentFile->mode = DEVMODE_CLOSED;
+      if( bwb_strcmp( My->CurrentFile->filename, "*" ) != 0 )
+      {
+         if( (My->CurrentFile->cfp = fopen( My->CurrentFile->filename, "r" )) == NULL )
+         {
+            WARN_BAD_FILE_NAME;
+            return bwb_zline(l);
+         }
+         My->CurrentFile->mode = DEVMODE_INPUT;
+      }
+      /* OK */
+      return bwb_zline(l);
+   }
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               DELIMIT
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_DELIMIT(LineType * l)
+{
+   /*
+   SYNTAX:     DELIMIT # X, A$
+   */
+   if( line_skip_char(l,BasicFileNumberPrefix) )
+   {
+      /* DELIMIT # */
+      int FileNumber;
+      char delimit;
+
+      My->CurrentFile = My->SYSIN;
+
+      if( line_read_integer_expression( l, &FileNumber ) == FALSE )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( line_skip_comma(l) )
+      {
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      {
+         char * Value = NULL;
+         
+         if( line_read_string_expression( l, &Value ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( Value == NULL )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         delimit = Value[ 0 ];
+         free( Value );
+      }
+      if( FileNumber < 0 )
+      {
+         /* "DELIMIT # -1" is the printer */
+         My->SYSPRN->delimit = delimit;
+         return bwb_zline(l);
+      }
+      if( FileNumber == 0 )
+      {
+         /* "DELIMIT # 0" is the console */
+         My->SYSIN->delimit = delimit;
+         My->SYSOUT->delimit = delimit;
+         return bwb_zline(l);
+      }
+      /* normal file */
+      My->CurrentFile = find_file_by_number( FileNumber );
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      My->CurrentFile->delimit = delimit;
+      /* OK */
+      return bwb_zline(l);
+   }
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               MARGIN
+--------------------------------------------------------------------------------------------
+*/
+LineType *
+bwb_MARGIN(LineType * l)
+{
+   /*
+   SYNTAX:     MARGIN # X, Y
+   */
+   /* set width for OUTPUT  */
+   int FileNumber;
+   int Value;
+   if( line_skip_char(l,BasicFileNumberPrefix) )
+   {
+      /* MARGIN # */
+      My->CurrentFile = My->SYSIN;
+
+      if( line_read_integer_expression( l, &FileNumber ) == FALSE )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      if( line_skip_comma(l) )
+      {
+         /* OK */
+      }
+      else
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( line_read_integer_expression( l, &Value ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( FileNumber < 0 )
+      {
+         /* "MARGIN # -1" is the printer */
+         My->SYSPRN->width = Value;
+         return bwb_zline(l);
+      }
+      if( FileNumber == 0 )
+      {
+         /* "MARGIN # 0" is the console */
+         My->SYSIN->width = Value;
+         My->SYSOUT->width = Value;
+         return bwb_zline(l);
+      }
+      /* normal file */
+      My->CurrentFile = find_file_by_number( FileNumber );
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      My->CurrentFile->width = Value;
+      /* OK */
+      return bwb_zline(l);
+   }
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               USE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_USE(LineType * l)
+{
+   /*
+   SYNTAX:     USE parameter$ ' System/370
+   */
+   VariableType * v;
+   
+   if( (v = line_read_scalar( l )) == NULL )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( v->VariableTypeChar != BasicStringSuffix )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   /* OK */
+   if( My->UseParameter != NULL )
+   {
+      VariantType variant;
+
+      variant.TypeChar = BasicStringSuffix;
+      variant.Buffer = My->UseParameter;
+      variant.Length = strlen( My->UseParameter );
+      var_set( v, &variant );
+   }
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               CHAIN
+--------------------------------------------------------------------------------------------
+*/
+
+LineType *
+bwb_CHAIN(LineType * l)
+{
+   /*
+   SYNTAX:     CHAIN file-name$ [, linenumber]
+   SYNTAX:     CHAIN file-name$ [, parameter$] ' System/370
+   */
    /* based upon bwb_xload() */
-   FILE           *loadfile;
-   struct exp_ese *e;
+   int LineNumber;
+   LineType * x;
 
    bwx_DEBUG(__FUNCTION__);
 
    /* Get an argument for filename */
-
-   adv_ws(l->buffer, &(l->position));
-   if (l->buffer[l->position] == '\0' || l->buffer[l->position] == OptionCommentChar)
+   if (line_is_eol(l))
    {
-      bwb_error(err_nofn); /* Added by JBV (bug found by DD) */
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
-   /* The file-name may be any string expression */
-   e = bwb_exp(l->buffer, FALSE, &(l->position));
-   if (ERROR_PENDING)
+   else
    {
+      char * Value = NULL;
+      
+      if( line_read_string_expression( l, &Value ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( Value == NULL )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      bwb_strcpy( My->progfile, Value );
+      free( Value );
+   }
+   if (My->progfile[0] == BasicNulChar)
+   {
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
-   if (e->type != STRING)
+   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
    {
-      sprintf(bwb_ebuf, "in bwb_chain(): Missing filespec");
-      bwb_error(bwb_ebuf);
-      return bwb_zline(l);
+      strupper( My->progfile ); /* CBASIC-II: file names are always upper case */
+      if( bwb_strchr( My->progfile, '.' ) == NULL )
+      {
+         /* The ".BAS" file extension is implied */
+         bwb_strcat( My->progfile, ".BAS" );
+      }
    }
-   /* save the filename */
-   str_btoc(CURTASK progfile, exp_getsval(e));
+   /* optional linenumber */
+   LineNumber = 0;
+   if( line_skip_comma(l) )
+   {
+      if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
+      {
+         /* CHAIN filename$, parameter$ */
+         {
+            char * Value = NULL;
+            
+            if( line_read_string_expression( l, &Value ) == FALSE )
+            {
+               WARN_SYNTAX_ERROR;
+               return bwb_zline(l);
+            }
+            if( Value == NULL )
+            {
+               WARN_SYNTAX_ERROR;
+               return bwb_zline(l);
+            }
+            if( My->UseParameter != NULL )
+            {
+               free( My->UseParameter );
+            }
+            My->UseParameter = Value;
+         }
+      }
+      else
+      {
+         /* CHAIN filename$, linenumber */
+         if( line_read_integer_expression( l, &LineNumber ) == FALSE )
+         {
+            WARN_SYNTAX_ERROR;
+            return bwb_zline(l);
+         }
+         if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+         {
+            WARN_UNDEFINED_LINE;
+            return bwb_zline(l);
+         }
+      }
+   }
 
    /* deallocate all variables except common ones */
    var_delcvars();
 
    /* remove old program from memory */
-   bwb_xnew(&bwb_start);
+   bwb_xnew(&My->bwb_start);
 
-
-   /* call xload function to load new program in memory */
-
-   if ((loadfile = fopen(CURTASK progfile, "r")) == NULL)
+   /* load new program in memory */
+   if( bwb_fload( NULL /* My->progfile */ ) == FALSE )
    {
-      sprintf(bwb_ebuf, err_openfile, CURTASK progfile);
-      bwb_error(bwb_ebuf);
-
+      WARN_BAD_FILE_NAME;
       return bwb_zline(l);
    }
-   bwb_fload(loadfile);
+   x = &My->bwb_start;
+   if( LineNumber > 0 )
+   {
+      /* search for a matching line number */
+      while(x->number != LineNumber && x!= &My->bwb_end)
+      {
+         x=x->next;
+      }
+      if( x == &My->bwb_end )
+      {
+         /* NOT FOUND */
+         x = &My->bwb_start;
+      }
+   }
 
-   bwb_scan();
+   if( bwb_scan() == FALSE )
+   {
+      WARN_CANT_CONTINUE;
+      return bwb_zline(l);
+   }
 
    /* reset all stack counters */
-   CURTASK         exsc = 0;
-   CURTASK         expsc = 0;
+   bwb_clrexec();
+   if( bwb_incexec() )
+   {
+      /* OK */
+   }
+   else
+   {
+      /* ERROR */
+      WARN_OUT_OF_MEMORY;
+      return &My->bwb_end;
+   }
+   
    /* run the program */
 
    /* CHAIN */
    bwb_Warning_Clear();
-   stopped_line = 0;
+   My->ContinueLine = NULL;
    SetOnError(0);
-
-   CURTASK         bwb_start.position = 0;
-   bwb_setexec(&CURTASK bwb_start, 0, EXEC_NORM);
-   return &CURTASK bwb_start;
+   x->position = 0;
+   My->stack_head->line = x;
+   My->stack_head->code = EXEC_NORM;
+   return x;
 }
-
 
 /***************************************************************
   
@@ -1708,20 +4648,54 @@ bwb_CHAIN(struct bwb_line * l)
       SYNTAX:     MERGE file-name
   
 ***************************************************************/
-
-struct bwb_line *
-bwb_MERGE(struct bwb_line * l)
+LineType *
+bwb_APPEND(LineType * l)
 {
+   bwx_DEBUG(__FUNCTION__);
+   if ( line_skip_char( l, BasicFileNumberPrefix ) )
+   {
+      /* APPEND # filenumber */
+      int             FileNumber;
 
+      if( line_read_integer_expression(l, &FileNumber) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( FileNumber < 0 )
+      {
+         /* "APPEND # -1" is silently ignored */
+         return bwb_zline(l);
+      }
+      if( FileNumber == 0 )
+      {
+         /* "APPEND # 0" is silently ignored */
+         return bwb_zline(l);
+      }
+      My->CurrentFile = find_file_by_number( FileNumber );
+      if( My->CurrentFile == NULL )
+      {
+         WARN_BAD_FILE_NUMBER;
+         return bwb_zline(l);
+      }
+      /* normal file */
+      fseek( My->CurrentFile->cfp, 0, SEEK_END );
+      My->CurrentFile->mode = DEVMODE_APPEND;
+      /* OK */
+      return bwb_zline(l);
+   }
+   /* APPEND filename$ */
+   return bwb_MERGE(l);
+}
+
+LineType *
+bwb_MERGE(LineType * l)
+{
    bwx_DEBUG(__FUNCTION__);
 
    /* call xload function to merge program in memory */
-
    bwb_xload(l);
-
-
    return bwb_zline(l);
-
 }
 
 
@@ -1730,16 +4704,21 @@ void
 SetOnError(int LineNumber)
 {
    /* scan the stack looking for a FUNCTION/SUB */
-   int             i;
+   StackType * stack_item;
 
    bwx_DEBUG(__FUNCTION__);
-
-   i = CURTASK exsc;
-   while (i > 0)
+   
+   if( My->stack_head == NULL )
    {
-      struct bwb_line *current;
+      bwx_DEBUG( "My->stack_head == NULL" );
+      return;
+   }
 
-      current = CURTASK excs[i].LoopTopLine;
+   for( stack_item = My->stack_head; stack_item->next != NULL; stack_item = stack_item->next )
+   {
+      LineType *current;
+
+      current = stack_item->LoopTopLine;
       if (current != NULL)
       {
          switch (current->cmdnum)
@@ -1748,38 +4727,34 @@ SetOnError(int LineNumber)
          case C_SUB:
             /* FOUND */
             /* we are in a FUNCTION/SUB, so this is LOCAL */
-            CURTASK excs[i].OnErrorGoto = LineNumber;
+            stack_item->OnErrorGoto = LineNumber;
             return;
-            break;
+            /* break; */
          }
       }
-      i--;
    }
+   /* stack_item->next == NULL */
    /* NOT FOUND */
    /* we are NOT in a FUNCTION/SUB  */
-   CURTASK         excs[0].OnErrorGoto = LineNumber;
+   stack_item->OnErrorGoto = LineNumber;
 }
 
 
 int
 GetOnError(void)
 {
-   /* scan the stack looking for a FUNCTION/SUB */
-   int             i;
+   /* scan the stack looking for an active "ON ERROR GOTO linenumber" */
+   StackType * stack_item;
 
    bwx_DEBUG(__FUNCTION__);
 
-
-
-   i = CURTASK exsc;
-   while (i >= 0)
+   for ( stack_item = My->stack_head; stack_item != NULL; stack_item = stack_item->next )
    {
-      if (CURTASK excs[i].OnErrorGoto != 0)
+      if( stack_item->OnErrorGoto != 0 )
       {
          /* FOUND */
-         return CURTASK excs[i].OnErrorGoto;
+         return stack_item->OnErrorGoto;
       }
-      i--;
    }
    /* NOT FOUND */
    return 0;
@@ -1796,147 +4771,158 @@ GetOnError(void)
       SYNTAX:     ON ERROR GOSUB line | label
   
 ***************************************************************/
-
-struct bwb_line *
-bwb_ON_ERROR_GOTO(struct bwb_line * l)
+LineType *
+bwb_ON_ERROR(LineType * l)
 {
-  /* ON ERROR GOTO line */
-  struct bwb_line *x;
-  char            tbuf[BasicStringLengthMax + 1];
-  /* get the line number */
-  adv_ws(l->buffer, &(l->position));
-  adv_element(l->buffer, &(l->position), tbuf);
-  if (strcasecmp(tbuf, "0") == 0)
-  {
-     SetOnError(0);
-     return bwb_zline(l);
-  }
-  x = find_label(tbuf);
-  if (x != NULL)
-  {
-     SetOnError(x->number);
-     return bwb_zline(l);
-  }
-   bwb_error(err_syntax);
-
+   WARN_SYNTAX_ERROR;
    return bwb_zline(l);
 }
 
-struct bwb_line *
-bwb_ON_ERROR_GOSUB(struct bwb_line * l)
+LineType *
+bwb_ON_ERROR_GOTO(LineType * l)
 {
-  /* ON ERROR GOSUB line */
-  struct bwb_line *x;
-  char            tbuf[BasicStringLengthMax + 1];
-  /* get the line number */
-  adv_ws(l->buffer, &(l->position));
-  adv_element(l->buffer, &(l->position), tbuf);
-  if (strcasecmp(tbuf, "0") == 0)
-  {
-     SetOnError(0);
-     return bwb_zline(l);
-  }
-  x = find_label(tbuf);
-  if (x != NULL)
-  {
-     SetOnError(x->number);
-     return bwb_zline(l);
-  }
-   bwb_error(err_syntax);
+   /* ON ERROR GOTO line */
+   int LineNumber;
 
+   /* get the line number */
+   LineNumber = 0;
+   if( line_is_eol( l ) )
+   {
+      /* ON ERROR GOTO */
+      SetOnError(0);
+      return bwb_zline(l);
+   }
+   if( line_read_integer_expression( l, &LineNumber ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   /* ON ERORR GOTO linenumber */
+   if( LineNumber == 0 )
+   {
+      /* ON ERROR GOTO 0 */
+      SetOnError(0);
+      return bwb_zline(l);
+   }
+   if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+   {
+      /* ERROR */
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
+   /* OK */
+   SetOnError(LineNumber);
    return bwb_zline(l);
 }
 
-struct bwb_line *
-bwb_ON_ERROR_RESUME_NEXT(struct bwb_line * l)
+LineType *
+bwb_ON_ERROR_GOSUB(LineType * l)
 {
-     SetOnError(-1);
-     return bwb_zline(l);
+   /* ON ERROR GOSUB line */
+   return bwb_ON_ERROR_GOTO(l);
 }
 
-struct bwb_line *
-bwb_ON_ERROR_RETURN_NEXT(struct bwb_line * l)
+LineType *
+bwb_ON_ERROR_RESUME(LineType * l)
 {
-     SetOnError(-1);
-     return bwb_zline(l);
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
 }
 
-struct bwb_line *
-bwb_ON_TIMER(struct bwb_line * l)
+LineType *
+bwb_ON_ERROR_RESUME_NEXT(LineType * l)
 {
-   /* ON TIMER(...) GOSUB ... TIMER ON ... */
-   char            tbuf[BasicStringLengthMax + 1];
-   int             p;
-   struct exp_ese *rvar;
+   SetOnError(-1);
+   return bwb_zline(l);
+}
+
+LineType *
+bwb_ON_ERROR_RETURN(LineType * l)
+{
+   WARN_SYNTAX_ERROR;
+   return bwb_zline(l);
+}
+
+LineType *
+bwb_ON_ERROR_RETURN_NEXT(LineType * l)
+{
+   return bwb_ON_ERROR_RESUME_NEXT(l);
+}
+
+LineType *
+bwb_ON_TIMER(LineType * l)
+{
+   /* ON TIMER(...) GOSUB ... */
    BasicNumberType v;
    BasicNumberType minv;
+   int LineNumber;
 
 
    bwx_DEBUG(__FUNCTION__);
 
    /* turn off the TIMER - so syntax errors will NOT fire the timer */
    bwb_Timer_Off();
-   tmr_gotol = 0;
-   tmr_count = 0;
+   My->tmr_line = 0;
+   My->tmr_count = 0;
 
 
    /* get the SECOMDS parameter */
-   adv_element(l->buffer, &(l->position), tbuf);
-
-   p = 0;
-   rvar = bwb_exp(tbuf, FALSE, &p);
-   if (ERROR_PENDING)
+   if( line_read_numeric_expression( l, &v )  == FALSE)
    {
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
-   v = exp_getnval(rvar);
+   
    minv = 1;
    minv /= CLOCKS_PER_SEC;
 
-   if (v > minv)
+   if (v < minv)
    {
-      /* get the GOSUB keyword */
-      adv_ws(l->buffer, &(l->position));
-      adv_element(l->buffer, &(l->position), tbuf);
-
-      if (strcasecmp(tbuf, "GOSUB") == 0)
-      {
-         /* ON TIMER(X) GOSUB line */
-         struct bwb_line *x;
-         /* get the line number */
-         adv_ws(l->buffer, &(l->position));
-         adv_element(l->buffer, &(l->position), tbuf);
-         x = find_label(tbuf);
-         if (x != NULL)
-         {
-            tmr_gotol = x->number;
-            tmr_count = v;
-            return bwb_zline(l);
-         }
-      }
+      /* ERROR */
+      WARN_ILLEGAL_FUNCTION_CALL;
+      return bwb_zline(l);
    }
-   bwb_error(err_syntax);
-
+      
+   /* get the GOSUB keyword */
+   if( line_skip_word( l, "GOSUB" ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   /* ON TIMER(X) GOSUB line */
+   if( line_read_integer_expression( l, &LineNumber ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+   {
+      /* ERROR */
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
+   /* OK */
+   My->tmr_line = LineNumber;
+   My->tmr_count = v;
    return bwb_zline(l);
-
 }
 
 
-struct bwb_line *
-bwb_TIMER(struct bwb_line * l)
+LineType *
+bwb_TIMER(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
    /* turn off the TIMER - so syntax errors will NOT fire the timer */
    bwb_Timer_Off();
 
-   bwb_error(err_syntax);
+   WARN_SYNTAX_ERROR;
 
    return bwb_zline(l);
 }
 
-struct bwb_line *
-bwb_TIMER_OFF(struct bwb_line * l)
+LineType *
+bwb_TIMER_OFF(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
@@ -1944,14 +4930,14 @@ bwb_TIMER_OFF(struct bwb_line * l)
    bwb_Timer_Off();
 
    /* TIMER OFF */
-   tmr_gotol = 0;
-   tmr_count = 0;
+   My->tmr_line = 0;
+   My->tmr_count = 0;
 
    return bwb_zline(l);
 }
 
-struct bwb_line *
-bwb_TIMER_ON(struct bwb_line * l)
+LineType *
+bwb_TIMER_ON(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
@@ -1959,17 +4945,17 @@ bwb_TIMER_ON(struct bwb_line * l)
    bwb_Timer_Off();
 
    /* TIMER ON */
-   if (tmr_count > 0 && tmr_gotol > 0)
+   if (My->tmr_count > 0 && My->tmr_line > 0)
    {
-      tmr_expires = bwx_TIMER(tmr_count);
+      My->tmr_expires = bwx_TIMER(My->tmr_count);
       bwb_Timer_On();
    }
 
    return bwb_zline(l);
 }
 
-struct bwb_line *
-bwb_TIMER_STOP(struct bwb_line * l)
+LineType *
+bwb_TIMER_STOP(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
@@ -1991,68 +4977,104 @@ bwb_TIMER_STOP(struct bwb_line * l)
       SYNTAX:     RESUME [ 0 | NEXT | line | label ]
   
 ***************************************************************/
-struct bwb_line *
-bwb_RESUME(struct bwb_line * l)
+LineType *
+bwb_RESUME(LineType * l)
 {
-   char            tbuf[BasicStringLengthMax + 1];
-   struct bwb_line *x = NULL;
+   int LineNumber = 0;
+   LineType *x = NULL;
 
    bwx_DEBUG(__FUNCTION__);
 
-   if (err_number == 0) /* RESUME without ERR are FATAL */
+   if (My->err_number == 0) /* RESUME without ERR are FATAL */
    {
-      sprintf(bwb_ebuf, "RESUME WITHOUT ERR AT %d", CURTASK number);
-      bwb_error(bwb_ebuf);
+      WARN_RESUME_WITHOUT_ERROR;
       return bwb_zline(l);
    }
-   if (err_line == NULL)
+   if (My->err_line == NULL)
    {
       /* RESUME without ERL are FATAL */
-      sprintf(bwb_ebuf, "RESUME WITHOUT ERL AT %d", CURTASK number);
-      bwb_error(bwb_ebuf);
+      WARN_RESUME_WITHOUT_ERROR;
       return bwb_zline(l);
    }
-   if (err_line->number == 0)
+   if (My->err_line->number == 0)
    {
       /* RESUME without ERL are FATAL */
-      sprintf(bwb_ebuf, "RESUME WITHOUT ERL AT %d", CURTASK number);
-      bwb_error(bwb_ebuf);
+      WARN_RESUME_WITHOUT_ERROR;
       return bwb_zline(l);
    }
    /* Get optional argument for RESUME */
 
-   adv_ws(l->buffer, &(l->position));
-   adv_element(l->buffer, &(l->position), tbuf);
 
-
-   if (strlen(tbuf) == 0 || strcasecmp(tbuf, "0") == 0)
+   if( line_is_eol(l) )
    {
-      /* RESUME [0] */
-      /* Execution resumes at the statement which caused the error */
-      x = err_line;
-   }
-   else
-   if (strcasecmp(tbuf, "NEXT") == 0)
-   {
-      /* RESUME NEXT */
-      /* Execution resumes at the statement immediately following
-       * the one which caused the error */
-       x = err_line->next;
-   }
-   else
-   {
-      /* RESUME line|label */
-      x = find_label(tbuf);
-   }
-
-
-
-   if (x != NULL)
-   {
+      /* RESUME */
+      /* 
+      Execution resumes at the statement which caused the error 
+      For structured commands, this is the top line of the structure.
+      */
+      x = My->err_line;
       bwb_Warning_Clear();
       x->position = 0;
       return x;
    }
+   if( line_skip_word(l, "NEXT") )
+   {
+      /* RESUME NEXT */
+      /* 
+      Execution resumes at the statement immediately following the one which caused the error. 
+      For structured commands, this is the bottom line of the structure.
+      */
+      switch( My->err_line->cmdnum )
+      {
+      case C_IF_THEN:
+         /* skip to END_IF */
+         for( x = My->err_line->OtherLine; x->cmdnum != C_END_IF; x = x->OtherLine );
+         break;
+      case C_SELECT_CASE:
+         /* skip to END_SELECT */
+         for( x = My->err_line->OtherLine; x->cmdnum != C_END_SELECT; x = x->OtherLine );
+         break;
+      default:
+         x = My->err_line->next;
+      }
+      bwb_Warning_Clear();
+      x->position = 0;
+      return x;
+   }
+   /* RESUME ### */
+   if( line_read_integer_expression( l, &LineNumber ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+
+   if( LineNumber == 0 )
+   {
+      /* SPECIAL CASE */
+      /* RESUME 0 */
+      /* Execution resumes at the statement which caused the error */
+      x = My->err_line;
+      bwb_Warning_Clear();
+      x->position = 0;
+      return x;
+   }
+   if( LineNumber < BasicLineNumberMin || LineNumber > BasicLineNumberMax )
+   {
+      /* ERROR */
+      WARN_UNDEFINED_LINE;
+      return bwb_zline(l);
+   }
+   /* VERIFY LINE EXISTS */
+   x = find_line_number( LineNumber, TRUE );
+   if( x != NULL )
+   {
+      /* FOUND */
+      bwb_Warning_Clear();
+      x->position = 0;
+      return x;
+   }
+   /* NOT FOUND */
+   WARN_UNDEFINED_LINE;
    return bwb_zline(l);
 }
 
@@ -2070,9 +5092,9 @@ bwb_RESUME(struct bwb_line * l)
 ***************************************************************/
 
 void
-bwb_xnew(struct bwb_line * l)
+bwb_xnew(LineType * l)
 {
-   struct bwb_line *current, *previous;
+   LineType *current, *previous;
    int             wait;
 
 
@@ -2080,7 +5102,7 @@ bwb_xnew(struct bwb_line * l)
 
    previous = NULL;  /* JBV */
    wait = TRUE;
-   for (current = l->next; current != &CURTASK bwb_end; current = current->next)
+   for (current = l->next; current != &My->bwb_end; current = current->next)
    {
       if (wait != TRUE)
       {
@@ -2091,7 +5113,7 @@ bwb_xnew(struct bwb_line * l)
       previous = current;
    }
 
-   l->next = &bwb_end;
+   l->next = &My->bwb_end;
 
 }
 
@@ -2110,14 +5132,15 @@ bwb_xnew(struct bwb_line * l)
 ***************************************************************/
 
 
-struct bwb_line *
-bwb_CMDS(struct bwb_line * l)
+LineType *
+bwb_CMDS(LineType * l)
 {
    register int    n;
    int             t;
 
    bwx_DEBUG(__FUNCTION__);
-
+   
+   My->CurrentFile =  My->SYSOUT;
    prn_iprintf("BWBASIC COMMANDS AVAILABLE:\n");
 
    /* run through the command table and print comand names */
@@ -2144,67 +5167,83 @@ bwb_CMDS(struct bwb_line * l)
    return bwb_zline(l);
 }
 
-static void
-CommandUniqueID(int i, char *UniqueID)
+static void FixUp( char * Name )
 {
-   char           *C;
-
-   bwx_DEBUG(__FUNCTION__);
-
-   strcpy(UniqueID, "C_");
-
-   if (strcasecmp(bwb_cmdtable[i].name, "?") == 0)
+   char * C;
+   
+   C = Name;
+   while (*C != BasicNulChar)
    {
-      strcat(UniqueID, "QUEST");
-   }
-   else
-   {
-      strcat(UniqueID, bwb_cmdtable[i].name);
-   }
-   C = UniqueID;
-   while (*C != '\0')
-   {
-      if (!isalnum(*C))
-         *C = '_';
+      if( bwb_isalnum(*C) )
+      {
+         /* OK */
+      }
+      else
+      {
+         /* FIX */
+         switch( *C )
+         {
+         case '!': *C = '1'; break;
+         case '@': *C = '2'; break;
+         case '#': *C = '3'; break;
+         case '$': *C = '4'; break;
+         case '%': *C = '5'; break;
+         case '^': *C = '6'; break;
+         case '&': *C = '7'; break;
+         case '*': *C = '8'; break;
+         case '(': *C = '9'; break;
+         case ')': *C = '0'; break;
+         default:
+            *C = '_';
+         }
+      }  
       C++;
    }
 }
 
-static void
-CommandVector(int i, char *Vector)
-{
-   char           *C;
 
+static void CommandUniqueID(int i, char *UniqueID)
+{
    bwx_DEBUG(__FUNCTION__);
 
-   strcpy(Vector, "bwb_");
+   bwb_strcpy(UniqueID, "C_");
 
-   if (strcasecmp(bwb_cmdtable[i].name, "?") == 0)
+   if (bwb_stricmp(bwb_cmdtable[i].name, "?") == 0)
    {
-      strcat(Vector, "QUEST");
+      bwb_strcat(UniqueID, "QUEST");
    }
    else
    {
-      strcat(Vector, bwb_cmdtable[i].name);
+      bwb_strcat(UniqueID, bwb_cmdtable[i].name);
    }
-   C = Vector;
-   while (*C != '\0')
-   {
-      if (!isalnum(*C))
-         *C = '_';
-      C++;
-   }
+   FixUp( UniqueID );
 }
 
-static void
-CommandOptionVersion(int n, char *OutputLine)
+static void CommandVector(int i, char *Vector)
+{
+   bwx_DEBUG(__FUNCTION__);
+
+   bwb_strcpy(Vector, "bwb_");
+
+   if (bwb_stricmp(bwb_cmdtable[i].name, "?") == 0)
+   {
+      bwb_strcat(Vector, "QUEST");
+   }
+   else
+   {
+      bwb_strcat(Vector, bwb_cmdtable[i].name);
+   }
+   FixUp( Vector );
+}
+
+static void CommandOptionVersion(int n, char *OutputLine)
 {
    int             i;
    int             j;
 
    bwx_DEBUG(__FUNCTION__);
 
-   strcpy(OutputLine, "");
+   bwb_strcpy(OutputLine, "");
    j = 0;
    for (i = 0; i < NUM_VERSIONS; i++)
    {
@@ -2212,17 +5251,18 @@ CommandOptionVersion(int n, char *OutputLine)
       {
          if (j > 0)
          {
-            strcat(OutputLine, " | ");
+            bwb_strcat(OutputLine, " | ");
          }
-         strcat(OutputLine, bwb_vertable[i].ID);
+         bwb_strcat(OutputLine, bwb_vertable[i].ID);
          j++;
       }
    }
 }
 
-void
-SortAllCommands(void)
+
+void SortAllCommands(void)
 {
+   /* sort by name */
    static int      IsSorted = FALSE;
 
    bwx_DEBUG(__FUNCTION__);
@@ -2237,26 +5277,46 @@ SortAllCommands(void)
          k = i;
          for (j = i + 1; j < NUM_COMMANDS; j++)
          {
-            if (strcasecmp(bwb_cmdtable[j].name, bwb_cmdtable[k].name) < 0)
+            if (bwb_stricmp(bwb_cmdtable[j].name, bwb_cmdtable[k].name) < 0)
             {
                k = j;
             }
          }
          if (k > i)
          {
-            struct bwb_command t;
-            memcpy(&t, &(bwb_cmdtable[i]), sizeof(struct bwb_command));
-            memcpy(&(bwb_cmdtable[i]), &(bwb_cmdtable[k]), sizeof(struct bwb_command));
-            memcpy(&(bwb_cmdtable[k]), &t, sizeof(struct bwb_command));
+            CommandType t;
+            bwb_memcpy(&t, &(bwb_cmdtable[i]), sizeof(CommandType));
+            bwb_memcpy(&(bwb_cmdtable[i]), &(bwb_cmdtable[k]), sizeof(CommandType));
+            bwb_memcpy(&(bwb_cmdtable[k]), &t, sizeof(CommandType));
          }
       }
+#if THE_PRICE_IS_RIGHT
+      for( i = 0; i < 26; i++ )
+      {
+         My->CommandStart[ i ] = -1;
+      }
+      for (i = 0; i < NUM_COMMANDS; i++)
+      {
+         char C = bwb_cmdtable[i].name[0];
+         if( bwb_isalpha( C ) )
+         {
+            int j;
+            j = VarTypeIndex( C );
+            if( My->CommandStart[ j ] < 0 )
+            {
+               /* this is the first command starting with this letter */
+               My->CommandStart[ j ] = i;
+            }
+         }
+      }
+#endif
       IsSorted = TRUE;
    }
 }
 
-void
-SortAllFunctions(void)
+void SortAllFunctions(void)
 {
+   /* sort by name then number of parameters */
    static int      IsSorted = FALSE;
 
    bwx_DEBUG(__FUNCTION__);
@@ -2272,7 +5332,7 @@ SortAllFunctions(void)
          for (j = i + 1; j < NUM_FUNCTIONS; j++)
          {
             int             n;
-            n = strcasecmp(bwb_prefuncs[j].Name, bwb_prefuncs[k].Name);
+            n = bwb_stricmp(bwb_prefuncs[j].Name, bwb_prefuncs[k].Name);
             if (n < 0)
             {
                k = j;
@@ -2288,19 +5348,38 @@ SortAllFunctions(void)
          }
          if (k > i)
          {
-            struct bwb_function t;
-            memcpy(&t, &(bwb_prefuncs[i]), sizeof(struct bwb_function));
-            memcpy(&(bwb_prefuncs[i]), &(bwb_prefuncs[k]), sizeof(struct bwb_function));
-            memcpy(&(bwb_prefuncs[k]), &t, sizeof(struct bwb_function));
+            FunctionType t;
+            bwb_memcpy(&t, &(bwb_prefuncs[i]), sizeof(FunctionType));
+            bwb_memcpy(&(bwb_prefuncs[i]), &(bwb_prefuncs[k]), sizeof(FunctionType));
+            bwb_memcpy(&(bwb_prefuncs[k]), &t, sizeof(FunctionType));
          }
       }
+#if THE_PRICE_IS_RIGHT
+      for( i = 0; i < 26; i++ )
+      {
+         My->FunctionStart[ i ] = -1;
+      }
+      for (i = 0; i < NUM_FUNCTIONS; i++)
+      {
+         char C = bwb_prefuncs[i].Name[0];
+         if( bwb_isalpha( C ) )
+         {
+            int j;
+            j = VarTypeIndex( C );
+            if( My->FunctionStart[ j ] < 0 )
+            {
+               /* this is the first command starting with this letter */
+               My->FunctionStart[ j ] = i;
+            }
+         }
+      }
+#endif
       IsSorted = TRUE;
    }
 }
 
 
-void
-DumpAllCommandUniqueID(void)
+void DumpAllCommandUniqueID(void)
 {
    register int    i;
    char            tbuf[BasicStringLengthMax + 1];
@@ -2326,8 +5405,7 @@ DumpAllCommandUniqueID(void)
 
 }
 
-static void
-ProcessEscapeChars(const char *Input, char *Output)
+static void ProcessEscapeChars(const char *Input, char *Output)
 {
    int             n;
 
@@ -2336,14 +5414,39 @@ ProcessEscapeChars(const char *Input, char *Output)
 
    n = 0;
 
-   while (*Input != '\0')
+   while (*Input != BasicNulChar)
    {
+      /* \a  \b  \f  \n  \r  \t  \v \" \\ */
       switch (*Input)
       {
+      case '\a':
+         *Output = '\\';
+         Output++;
+         *Output = 'a';
+         Output++;
+         break;
+      case '\b':
+         *Output = '\\';
+         Output++;
+         *Output = 'b';
+         Output++;
+         break;
+      case '\f':
+         *Output = '\\';
+         Output++;
+         *Output = 'f';
+         Output++;
+         break;
       case '\n':
          *Output = '\\';
          Output++;
          *Output = 'n';
+         Output++;
+         break;
+      case '\r':
+         *Output = '\\';
+         Output++;
+         *Output = 'r';
          Output++;
          break;
       case '\t':
@@ -2352,10 +5455,22 @@ ProcessEscapeChars(const char *Input, char *Output)
          *Output = 't';
          Output++;
          break;
+      case '\v':
+         *Output = '\\';
+         Output++;
+         *Output = 'n';
+         Output++;
+         break;
       case '\"':
          *Output = '\\';
          Output++;
          *Output = '"';
+         Output++;
+         break;
+      case '\\':
+         *Output = '\\';
+         Output++;
+         *Output = '\\';
          Output++;
          break;
       default:
@@ -2364,7 +5479,7 @@ ProcessEscapeChars(const char *Input, char *Output)
          break;
       }
       Input++;
-      *Output = '\0';
+      *Output = BasicNulChar;
       n++;
       if (n > 60)
       {
@@ -2374,14 +5489,13 @@ ProcessEscapeChars(const char *Input, char *Output)
          Output++;
          *Output = '\"';
          Output++;
-         *Output = '\0';
+         *Output = BasicNulChar;
          n = 0;
       }
    }
 }
 
-void
-DumpAllCommandTableDefinitions(void)
+void DumpAllCommandTableDefinitions(void)
 {
    /* generate bwd_cmd.c */
 
@@ -2391,7 +5505,7 @@ DumpAllCommandTableDefinitions(void)
 
    prn_lprintf("/* COMMAND TABLE */\n\n");
    prn_lprintf("#include \"bwbasic.h\"\n\n");
-   prn_lprintf("struct bwb_command bwb_cmdtable[ NUM_COMMANDS ] =\n");
+   prn_lprintf("CommandType bwb_cmdtable[ NUM_COMMANDS ] =\n");
    prn_lprintf("{\n");
 
    /* run through the command table and print comand #define */
@@ -2439,8 +5553,7 @@ DumpAllCommandTableDefinitions(void)
 
 }
 
-void
-DumpAllCommandSwitchStatement(void)
+void DumpAllCommandSwitchStatement(void)
 {
    int             i;
 
@@ -2448,11 +5561,11 @@ DumpAllCommandSwitchStatement(void)
 
    /* run through the command table and print comand #define */
    prn_lprintf("/* SWITCH */\n");
-   prn_lprintf("struct bwb_line *bwb_vector( struct bwb_line *l )\n");
+   prn_lprintf("LineType *bwb_vector( LineType *l )\n");
    prn_lprintf("{\n");
 
    prn_lprintf("   ");
-   prn_lprintf("struct bwb_line *r;\n");
+   prn_lprintf("LineType *r;\n");
 
    prn_lprintf("   ");
    prn_lprintf("switch( l->cmdnum )\n");
@@ -2488,12 +5601,7 @@ DumpAllCommandSwitchStatement(void)
 
    prn_lprintf("   ");
    prn_lprintf("   ");
-   prn_lprintf("sprintf( bwb_ebuf, \"in bwb_vector(), INTERNAL ERROR: %d not in switch\", l->cmdnum );\n");
-
-
-   prn_lprintf("   ");
-   prn_lprintf("   ");
-   prn_lprintf("bwb_error( bwb_ebuf );\n");
+   prn_lprintf("WARN_INTERNAL_ERROR;\n");
 
    prn_lprintf("   ");
    prn_lprintf("   ");
@@ -2514,8 +5622,26 @@ DumpAllCommandSwitchStatement(void)
 
 }
 
-void
-DumpOneCommandSyntax(int n, int lp)
+void FixDescription( char * Buffer )
+{
+   int i;
+   char * C;
+   
+   i = 1;
+   C = Buffer;
+   while( *C != BasicNulChar )
+   {
+      if( i > 60 && *C == ' ' )
+      {
+         *C = '\t';
+         i = 0;
+      }
+      i++;
+      C++;
+   }
+}
+
+void DumpOneCommandSyntax(int n, int lp)
 {
    char            tbuf[BasicStringLengthMax + 1];
 
@@ -2539,14 +5665,46 @@ DumpOneCommandSyntax(int n, int lp)
    }
    /* DESCRIPTION */
    {
+                     
       sprintf(tbuf, "DESCRIPTION: %s\n", bwb_cmdtable[n].Description);
-      if (lp)
+      FixDescription( tbuf );
       {
-         prn_lprintf(tbuf);
-      }
-      else
-      {
-         prn_xprintf(tbuf);
+         char *C;
+         
+         C = tbuf;
+         while( *C != BasicNulChar )
+         {
+            if( *C == '\t' )
+            {
+               char tbuf2[32];
+               bwb_strcpy( tbuf2, "\n             " );
+               if (lp)
+               {
+                  prn_lprintf(tbuf2);
+               }
+               else
+               {
+                  prn_xprintf(tbuf2);
+               }
+               C++;
+               while( *C == ' ' )
+               {
+                  C++;
+               }
+            }
+            else
+            {
+               if( lp )
+               {
+                  bwx_LPRINT( *C );
+               }
+               else
+               {
+                  bwx_PRINT( *C );
+               }
+               C++;
+            }
+         }
       }
    }
    /* COMPATIBILITY */
@@ -2588,15 +5746,17 @@ DumpOneCommandSyntax(int n, int lp)
    }
 }
 
-void
-DumpAllCommandSyntax(void)
+void DumpAllCommandSyntax(void)
 {
    /* for the C maintainer */
    int             n;
-
-
    bwx_DEBUG(__FUNCTION__);
 
+   prn_lprintf("============================================================\n");
+   prn_lprintf("                    COMMANDS                                \n");
+   prn_lprintf("============================================================\n");
+   prn_lprintf("\n");
+   prn_lprintf("\n");
    for (n = 0; n < NUM_COMMANDS; n++)
    {
       prn_lprintf("------------------------------------------------------------\n");
@@ -2607,8 +5767,7 @@ DumpAllCommandSyntax(void)
 }
 
 
-void
-DumpAllCommandHtmlTable(void)
+void DumpAllCommandHtmlTable(void)
 {
    /* generate bwd_cmd.htm */
 
@@ -2619,6 +5778,7 @@ DumpAllCommandHtmlTable(void)
 
 
    /* LEGEND */
+   prn_lprintf("<html><head><title>CMDS</title></head><body>\n");
    prn_lprintf("<h1>LEGEND</h1><br>\n");
    prn_lprintf("<table>\n");
 
@@ -2685,7 +5845,7 @@ DumpAllCommandHtmlTable(void)
    {
       prn_lprintf("<tr>");
       prn_lprintf("<td>");
-      prn_lprintf(bwb_cmdtable[i].name);
+      prn_lprintf( (char *) bwb_cmdtable[i].Syntax);
       prn_lprintf("</td>");
 
       for (j = 0; j < NUM_VERSIONS; j++)
@@ -2704,15 +5864,11 @@ DumpAllCommandHtmlTable(void)
       prn_lprintf("</tr>\n");
    }
    prn_lprintf("</table>\n");
+   prn_lprintf("</body></html>\n");
    prn_lprintf("\n");
 }
 
-
-
-
-
-struct bwb_line *
-bwb_HELP(struct bwb_line * l)
+LineType * bwb_HELP(LineType * l)
 {
    /* HELP ... */
    int             n;
@@ -2726,13 +5882,8 @@ bwb_HELP(struct bwb_line * l)
 
    C = l->buffer;
    C += l->position;
-   strcpy( tbuf, C );
+   bwb_strcpy( tbuf, C );
 
-   C = strchr( tbuf, OptionCommentChar );
-   if( C != NULL )
-   {
-       *C = '\0';
-   }
    /* RTRIM$ */
    C = tbuf;
    if (*C != 0)
@@ -2740,7 +5891,7 @@ bwb_HELP(struct bwb_line * l)
       /* not an empty line, so remove one (or more) trailing spaces */
       char           *E;
 
-      E = strchr(tbuf, 0);
+      E = bwb_strchr(tbuf, 0);
       E--;
       while (E >= tbuf && *E == ' ')
       {
@@ -2753,7 +5904,7 @@ bwb_HELP(struct bwb_line * l)
    /* EXACT match */
    for (n = 0; n < NUM_COMMANDS; n++)
    {
-      if (strcasecmp(bwb_cmdtable[n].name, tbuf) == 0)
+      if (bwb_stricmp(bwb_cmdtable[n].name, tbuf) == 0)
       {
          prn_xprintf("------------------------------------------------------------\n");
          DumpOneCommandSyntax(n, FALSE);
@@ -2763,7 +5914,7 @@ bwb_HELP(struct bwb_line * l)
 
    for (n = 0; n < NUM_FUNCTIONS; n++)
    {
-      if (strcasecmp(bwb_prefuncs[n].Name, tbuf) == 0)
+      if (bwb_stricmp(bwb_prefuncs[n].Name, tbuf) == 0)
       {
          prn_xprintf("------------------------------------------------------------\n");
          DumpOneFunctionSyntax(n, FALSE);
@@ -2775,11 +5926,11 @@ bwb_HELP(struct bwb_line * l)
    {
       /* PARTIAL match */
       int             Length;
-      Length = strlen(tbuf);
+      Length = bwb_strlen(tbuf);
 
       for (n = 0; n < NUM_COMMANDS; n++)
       {
-         if (strncasecmp(bwb_cmdtable[n].name, tbuf, Length) == 0)
+         if (bwb_strnicmp(bwb_cmdtable[n].name, tbuf, Length) == 0)
          {
             if (Found == FALSE)
             {
@@ -2793,7 +5944,7 @@ bwb_HELP(struct bwb_line * l)
 
       for (n = 0; n < NUM_FUNCTIONS; n++)
       {
-         if (strncasecmp(bwb_prefuncs[n].Name, tbuf, Length) == 0)
+         if (bwb_strnicmp(bwb_prefuncs[n].Name, tbuf, Length) == 0)
          {
             if (Found == FALSE)
             {
@@ -2815,13 +5966,12 @@ bwb_HELP(struct bwb_line * l)
       /* NO match */
       prn_xprintf("No help found.\n");
    }
-   adv_eos(l->buffer, &(l->position));
+   line_skip_eol(l);
    return bwb_zline(l);
 
 }
 
-int
-NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
+int NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
 {
    BasicNumberType XR;  /* rounded value */
 
@@ -2836,99 +5986,77 @@ NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
       return -1;
    }
    /* VALID NUMERIC VALUE */
-   XR = rint(X);
+   XR = bwb_rint(X);
    ParameterTests &= 0x0000000F;
    switch (ParameterTests)
    {
    case P1ERR:
-      {
-         /* INTERNAL ERROR */
-         return -1;
-      }
-      break;
+      /* INTERNAL ERROR */
+      return -1;
+      /* break; */
    case P1ANY:
       if (XR < -DBL_MAX || XR > DBL_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
+      /* OK */
+      return 0;
+      /* break; */
    case P1BYT:
       if (XR < 0 || XR > UCHAR_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1INT:
       if (XR < SHRT_MIN || XR > SHRT_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1LNG:
       if (XR < LONG_MIN || XR > LONG_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1CUR:
       if (XR < LONG_MIN || XR > LONG_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1FLT:
       if (X < -FLT_MAX || X > FLT_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1DBL:
       if (X < -DBL_MAX || X > DBL_MAX)
       {
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1DEV:
       /* BasicFileNumberMax must be <= INT16_MAX */
       if (XR < 0 || XR > BasicFileNumberMax)
@@ -2936,12 +6064,9 @@ NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1LEN:
       /* BasicStringLengthMax must be <= INT16_MAX */
       if (XR < 0 || XR > BasicStringLengthMax)
@@ -2949,12 +6074,9 @@ NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1POS:
       /* BasicStringLengthMax must be <= INT16_MAX */
       if (XR < 1 || XR > BasicStringLengthMax)
@@ -2962,12 +6084,9 @@ NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
          /* ERROR */
          return -1;
       }
-      else
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1COM:
       /* Number of COMx: ports must be <= INT16_MAX */
       if (XR == 1 || XR == 2 || XR == 3 || XR == 4)
@@ -3010,8 +6129,7 @@ NumberValueCheck(unsigned long ParameterTests, BasicNumberType X)
    return -1;
 }
 
-int
-StringLengthCheck(unsigned long ParameterTests, int s)
+int StringLengthCheck(unsigned long ParameterTests, int s)
 {
 
    bwx_DEBUG(__FUNCTION__);
@@ -3028,17 +6146,13 @@ StringLengthCheck(unsigned long ParameterTests, int s)
    switch (ParameterTests)
    {
    case P1ERR:
-      {
-         /* INTERNAL ERROR */
-         return -1;
-      }
-      break;
+      /* INTERNAL ERROR */
+      return -1;
+      /* break; */
    case P1ANY:
-      {
-         /* OK */
-         return 0;
-      }
-      break;
+      /* OK */
+      return 0;
+      /* break; */
    case P1BYT:
       if (s >= sizeof(BasicByteType))
       {
@@ -3087,29 +6201,24 @@ StringLengthCheck(unsigned long ParameterTests, int s)
    case P1GEZ:
    case P1GTZ:
    case P1NEZ:
-      {
-         /* ERROR */
-         return -1;
-      }
-      break;
+      /* ERROR */
+      return -1;
+      /* break; */
    }
    /* ERROR */
    return -1;
 }
 
-void
-FunctionDefinitionCheck(struct bwb_function * f)
+void FunctionDefinitionCheck(FunctionType * f)
 {
    /* function definition check -- look for obvious errors */
-   char            bwb_ebuf[BasicStringLengthMax + 1];
-
    bwx_DEBUG(__FUNCTION__);
 
 
    /* sanity check */
-   if (f->ParameterCount == PNONE)
+   if (f->ParameterCount == PNONE || f->ParameterCount == 0xFF)
    {
-      /* function has NO parameters */
+      /* function has NO explicit parameters */
       if (f->ParameterTypes == PNONE)
       {
          /* OK */
@@ -3117,8 +6226,8 @@ FunctionDefinitionCheck(struct bwb_function * f)
       else
       {
          /* oops */
-         sprintf(bwb_ebuf, "in fnc_init(): invalid ParameterTypes <%s>\n", f->Name);
-         prn_xprintf(bwb_ebuf);
+         sprintf(My->bwb_ebuf, "invalid ParameterTypes <%s>\n", f->Name);
+         prn_xprintf(My->bwb_ebuf);
       }
       if (f->ParameterTests == PNONE)
       {
@@ -3127,13 +6236,13 @@ FunctionDefinitionCheck(struct bwb_function * f)
       else
       {
          /* oops */
-         sprintf(bwb_ebuf, "in fnc_init(): invalid ParameterTests <%s>\n", f->Name);
-         prn_xprintf(bwb_ebuf);
+         sprintf(My->bwb_ebuf, "invalid ParameterTests <%s>\n", f->Name);
+         prn_xprintf(My->bwb_ebuf);
       }
    }
    else
    {
-      /* function HAS parameters */
+      /* function HAS an explicit number of parameters */
       int             i;
       unsigned long   ParameterTests;
       ParameterTests = f->ParameterTests;
@@ -3153,8 +6262,8 @@ FunctionDefinitionCheck(struct bwb_function * f)
             else
             {
                /* oops */
-               sprintf(bwb_ebuf, "in fnc_init(): invalid ParameterTests <%s> parameter %d\n", f->Name, i + 1);
-               prn_xprintf(bwb_ebuf);
+               sprintf(My->bwb_ebuf, "invalid ParameterTests <%s> parameter %d\n", f->Name, i + 1);
+               prn_xprintf(My->bwb_ebuf);
             }
          }
          else
@@ -3167,8 +6276,8 @@ FunctionDefinitionCheck(struct bwb_function * f)
             else
             {
                /* oops */
-               sprintf(bwb_ebuf, "in fnc_init(): invalid ParameterTests <%s> parameter %d\n", f->Name, i + 1);
-               prn_xprintf(bwb_ebuf);
+               sprintf(My->bwb_ebuf, "invalid ParameterTests <%s> parameter %d\n", f->Name, i + 1);
+               prn_xprintf(My->bwb_ebuf);
             }
          }
          ParameterTests = ParameterTests >> 4;
@@ -3176,18 +6285,16 @@ FunctionDefinitionCheck(struct bwb_function * f)
       if (ParameterTests != 0)
       {
          /* oops */
-         sprintf(bwb_ebuf, "in fnc_init(): invalid ParameterTests <%s> parameter %d\n", f->Name, i + 1);
-         prn_xprintf(bwb_ebuf);
+         sprintf(My->bwb_ebuf, "invalid ParameterTests <%s> parameter %d\n", f->Name, i + 1);
+         prn_xprintf(My->bwb_ebuf);
       }
    }
 }
 
-void
-FunctionUniqueID(struct bwb_function * f, char *UniqueID)
+void FunctionUniqueID(FunctionType * f, char *UniqueID)
 {
    /* generate the function's UniqueID */
    /* manual fixup required for duplicates */
-   char           *D;   /* location of $ */
    char            NumVar;
    char            StrVar;
 
@@ -3198,29 +6305,19 @@ FunctionUniqueID(struct bwb_function * f, char *UniqueID)
    StrVar = 'A';
 
    /* F_  */
-   strcpy(UniqueID, "F_");
+   bwb_strcpy(UniqueID, "F_");
    /* NAME  */
-   strcat(UniqueID, f->Name);
-   D = strchr(UniqueID, BasicStringSuffix);
-   if (D == NULL)
-   {
-      /* NOT FOUND */
-   }
-   else
-   {
-      /* FOUND */
-      *D = 0;     /* remove it */
-   }
+   bwb_strcat(UniqueID, f->Name);
    /* PARAMETERS */
-   if (f->ParameterCount == PNONE)
+   if (f->ParameterCount == PNONE || f->ParameterCount == 0xFF)
    {
-      /* function has NO parameters */
+      /* function has NO explicit parameters */
    }
    else
    {
-      /* function HAS parameters */
+      /* function HAS explicit parameters */
       int             i;
-      unsigned int    ParameterTypes;
+      unsigned long    ParameterTypes;
       /* unsigned long ParameterTests; */
       ParameterTypes = f->ParameterTypes;
       /* ParameterTests = f->ParameterTests; */
@@ -3243,47 +6340,26 @@ FunctionUniqueID(struct bwb_function * f, char *UniqueID)
             sprintf(VarName, "_%c", NumVar);
             NumVar++;
          }
-         strcat(UniqueID, VarName);
+         bwb_strcat(UniqueID, VarName);
          ParameterTypes = ParameterTypes >> 1;
          /* ParameterTests = ParameterTests >> 4; */
       }
    }
    /* RETURN TYPE */
-   switch (f->ReturnType)
+   if (f->ReturnType == BasicStringSuffix)
    {
-   case STRING:
-      strcat(UniqueID, "_S");
-      break;
-   case NUMBER:
-      strcat(UniqueID, "_N");
-      break;
-   default:
-      strcat(UniqueID, "_INTERNAL ERROR");
-      break;
+      bwb_strcat(UniqueID, "_S");
+   }
+   else
+   {
+      bwb_strcat(UniqueID, "_N");
    }
    /* fixup illegal characters,  "DEF FN" "BLOAD:", "CLOAD*" */
-   {
-      char           *P;
-      P = UniqueID;
-      while (*P)
-      {
-         if (isalnum(*P))
-         {
-            /* OK */
-         }
-         else
-         {
-            /* FIXUP */
-            *P = '_';
-         }
-         P++;
-      }
-   }
+   FixUp(UniqueID);
 }
 
 
-void
-FunctionSyntax(struct bwb_function * f, char *Syntax)
+void FunctionSyntax(FunctionType * f, char *Syntax)
 {
    /* generate the function's Syntax */
    char            NumVar;
@@ -3296,45 +6372,43 @@ FunctionSyntax(struct bwb_function * f, char *Syntax)
    StrVar = 'A';
 
    /* RETURN TYPE */
-   switch (f->ReturnType)
+   if (f->ReturnType == BasicStringSuffix)
    {
-   case STRING:
-      strcpy(Syntax, "S$ = ");
-      break;
-   case NUMBER:
-      strcpy(Syntax, "N  = ");
-      break;
-   default:
-      strcpy(Syntax, "INTERNAL ERROR = ");
-      break;
-   }
-   /* NAME  */
-   strcat(Syntax, f->Name);
-   /* PARAMETERS */
-   if (f->ParameterCount == PNONE)
-   {
-      /* function has NO parameters */
+      bwb_strcpy(Syntax, "S$ = ");
    }
    else
    {
-      /* function HAS parameters */
+      bwb_strcpy(Syntax, "N  = ");
+   }
+   /* NAME  */
+   bwb_strcat(Syntax, f->Name);
+   /* PARAMETERS */
+   if (f->ParameterCount == PNONE )
+   {
+      /* function has NO explicit parameters */
+   }
+   else
+   if (f->ParameterCount == 0xFF)   
+   {
+      /* function has a variable number of parameters */
+      bwb_strcat(Syntax, "( ... )");
+   }
+   else
+   {
+      /* function HAS explicit parameters */
       int             i;
-      unsigned int    ParameterTypes;
+      unsigned long ParameterTypes;
       /* unsigned long ParameterTests; */
       ParameterTypes = f->ParameterTypes;
       /* ParameterTests = f->ParameterTests; */
 
-      switch (f->ReturnType)
+      if (f->ReturnType == BasicStringSuffix)
       {
-      case STRING:
-         strcat(Syntax, "( ");
-         break;
-      case NUMBER:
-         strcat(Syntax, "( ");
-         break;
-      default:
-         strcat(Syntax, "INTERNAL ERROR( ");
-         break;
+         bwb_strcat(Syntax, "( ");
+      }
+      else
+      {
+         bwb_strcat(Syntax, "( ");
       }
 
       for (i = 0; i < f->ParameterCount; i++)
@@ -3345,7 +6419,7 @@ FunctionSyntax(struct bwb_function * f, char *Syntax)
           * ParameterTests & 0x0000000F; */
          if (i > 0)
          {
-            strcat(Syntax, ", ");
+            bwb_strcat(Syntax, ", ");
          }
          /* verify parameter check  */
          if (ParameterTypes & 1)
@@ -3360,27 +6434,22 @@ FunctionSyntax(struct bwb_function * f, char *Syntax)
             sprintf(VarName, "%c", NumVar);
             NumVar++;
          }
-         strcat(Syntax, VarName);
+         bwb_strcat(Syntax, VarName);
          ParameterTypes = ParameterTypes >> 1;
          /* ParameterTests = ParameterTests >> 4; */
       }
-      switch (f->ReturnType)
+      if (f->ReturnType == BasicStringSuffix)
       {
-      case STRING:
-         strcat(Syntax, " )");
-         break;
-      case NUMBER:
-         strcat(Syntax, " )");
-         break;
-      default:
-         strcat(Syntax, " INTERNAL ERROR)");
-         break;
+         bwb_strcat(Syntax, " )");
+      }
+      else
+      {
+         bwb_strcat(Syntax, " )");
       }
    }
 }
 
-void
-DumpAllFuctionUniqueID(void)
+void DumpAllFuctionUniqueID(void)
 {
    /* for the C maintainer */
    char            tbuf[BasicStringLengthMax + 1];
@@ -3403,8 +6472,7 @@ DumpAllFuctionUniqueID(void)
    prn_lprintf(tbuf);
 }
 
-void
-DumpAllFunctionSwitch(void)
+void DumpAllFunctionSwitch(void)
 {
    /* for the C maintainer */
    int             i;
@@ -3487,8 +6555,7 @@ static const char *StringVariableRange[16] =
   /* P1NEZ */ "  PARAMETER: %c$ is a string, RESERVED",
 };
 
-void
-DumpAllFuctionTableDefinitions(void)
+void DumpAllFuctionTableDefinitions(void)
 {
    /* generate bwd_fun.c */
    int             n;
@@ -3498,7 +6565,7 @@ DumpAllFuctionTableDefinitions(void)
 
    prn_lprintf("/* FUNCTION TABLE */\n\n");
    prn_lprintf("#include \"bwbasic.h\"\n\n");
-   prn_lprintf("struct bwb_function bwb_prefuncs[ NUM_FUNCTIONS ] =\n");
+   prn_lprintf("FunctionType bwb_prefuncs[ NUM_FUNCTIONS ] =\n");
    prn_lprintf("{\n");
    for (n = 0; n < NUM_FUNCTIONS; n++)
    {
@@ -3507,7 +6574,7 @@ DumpAllFuctionTableDefinitions(void)
       char            tbuf[BasicStringLengthMax + 1];
       char            UniqueID[BasicStringLengthMax + 1];
       char            Syntax[BasicStringLengthMax + 1];
-      struct bwb_function *f;
+      FunctionType *f;
 
       f = &(bwb_prefuncs[n]);
 
@@ -3525,17 +6592,30 @@ DumpAllFuctionTableDefinitions(void)
       prn_lprintf(tbuf);
       prn_lprintf("\"");
       prn_lprintf(",  /* Description */\n");
-
-
       sprintf(tbuf, "  \"%s\", /* Name */\n", f->Name);
       prn_lprintf(tbuf);
-      switch (f->ReturnType)
+      switch(f->ReturnType)
       {
-      case STRING:
-         sprintf(tbuf, "  %s, /* ReturnType */\n", "STRING");
+      case BasicDoubleSuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicDoubleSuffix");
          break;
-      case NUMBER:
-         sprintf(tbuf, "  %s, /* ReturnType */\n", "NUMBER");
+      case BasicSingleSuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicSingleSuffix");
+         break;
+      case BasicCurrencySuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicCurrencySuffix");
+         break;
+      case BasicLongSuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicLongSuffix");
+         break;
+      case BasicIntegerSuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicIntegerSuffix");
+         break;
+      case BasicByteSuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicByteSuffix");
+         break;
+      case BasicStringSuffix:
+         sprintf(tbuf, "  %s, /* ReturnType */\n", "BasicStringSuffix");
          break;
       default:
          sprintf(tbuf, "  %s, /* ReturnType */\n", "INTERNAL ERROR");
@@ -3544,8 +6624,9 @@ DumpAllFuctionTableDefinitions(void)
       prn_lprintf(tbuf);
       sprintf(tbuf, "  %d, /* ParameterCount */\n", f->ParameterCount);
       prn_lprintf(tbuf);
-      if (f->ParameterCount == 0)
+      if (f->ParameterCount == 0 || f->ParameterCount == 0xFF)
       {
+         /* function has NO explicit parameters */
          sprintf(tbuf, "  %s, /* ParameterTypes */\n", "PNONE");
          prn_lprintf(tbuf);
          sprintf(tbuf, "  %s, /* ParameterTests */\n", "PNONE");
@@ -3553,48 +6634,50 @@ DumpAllFuctionTableDefinitions(void)
       }
       else
       {
-         strcpy(tbuf, "  ");
+         /* function has explicit parameters */
+         bwb_strcpy(tbuf, "  ");
          for (i = 0; i < f->ParameterCount; i++)
          {
-            int             ParameterTypes;
+            unsigned long ParameterTypes;
             ParameterTypes = f->ParameterTypes >> i;
             ParameterTypes &= 0x1;
             if (i > 0)
             {
-               strcat(tbuf, " | ");
+               bwb_strcat(tbuf, " | ");
             }
             if (ParameterTypes)
             {
-               sprintf(strchr(tbuf, 0), "P%dSTR", i + 1);
+               sprintf(bwb_strchr(tbuf, BasicNulChar), "P%dSTR", i + 1);
             }
             else
             {
-               sprintf(strchr(tbuf, 0), "P%dNUM", i + 1);
+               sprintf(bwb_strchr(tbuf, BasicNulChar), "P%dNUM", i + 1);
             }
          }
-         strcat(tbuf, ", /* ParameterTypes */\n");
+         bwb_strcat(tbuf, ", /* ParameterTypes */\n");
          prn_lprintf(tbuf);
 
 
-         strcpy(tbuf, "  ");
+         bwb_strcpy(tbuf, "  ");
          for (i = 0; i < f->ParameterCount; i++)
          {
-            unsigned int    ParameterTests;
+            unsigned long ParameterTests;
             ParameterTests = f->ParameterTests >> (i * 4);
             ParameterTests &= 0xF;
 
             if (i > 0)
             {
-               strcat(tbuf, " | ");
+               bwb_strcat(tbuf, " | ");
             }
-            sprintf(strchr(tbuf, 0), ParameterRangeID[ParameterTests], i + 1);
+            sprintf(bwb_strchr(tbuf, 0), ParameterRangeID[ParameterTests], i + 1);
+            /* Conversion may lose significant digits */
          }
-         strcat(tbuf, ", /* ParameterTests */\n");
+         bwb_strcat(tbuf, ", /* ParameterTests */\n");
          prn_lprintf(tbuf);
       }
       sprintf(tbuf, "  %s, /* NextPointer */\n", "NULL");
       prn_lprintf(tbuf);
-      strcpy(tbuf, "  ");
+      bwb_strcpy(tbuf, "  ");
       j = 0;
       for (i = 0; i < NUM_VERSIONS; i++)
       {
@@ -3602,27 +6685,23 @@ DumpAllFuctionTableDefinitions(void)
          {
             if (j > 0)
             {
-               strcat(tbuf, " | ");
+               bwb_strcat(tbuf, " | ");
             }
-            strcat(tbuf, bwb_vertable[i].ID);
+            bwb_strcat(tbuf, bwb_vertable[i].ID);
             j++;
          }
       }
-      strcat(tbuf, " /* OptionVersionBitmask */\n");
+      bwb_strcat(tbuf, " /* OptionVersionBitmask */\n");
       prn_lprintf(tbuf);
       prn_lprintf("},\n");
    }
    prn_lprintf("};\n\n");
 }
 
-
-
-
-void
-DumpOneFunctionSyntax(int n, int lp)
+void DumpOneFunctionSyntax(int n, int lp)
 {
    char            tbuf[BasicStringLengthMax + 1];
-   struct bwb_function *f;
+   FunctionType *f;
 
    bwx_DEBUG(__FUNCTION__);
 
@@ -3649,15 +6728,15 @@ DumpOneFunctionSyntax(int n, int lp)
       }
    }
    /* PARAMETERS */
-   if (f->ParameterCount == PNONE)
+   if (f->ParameterCount == PNONE || f->ParameterCount == 0xFF)   
    {
-      /* function has NO parameters */
+      /* function has NO explicit parameters */
    }
    else
    {
-      /* function HAS parameters */
+      /* function HAS explicit parameters */
       int             i;
-      unsigned int    ParameterTypes;
+      unsigned long   ParameterTypes;
       unsigned long   ParameterTests;
       char            NumVar;
       char            StrVar;
@@ -3675,12 +6754,14 @@ DumpOneFunctionSyntax(int n, int lp)
          {
             /* STRING */
             sprintf(tbuf, StringVariableRange[thischeck], StrVar);
+            /* Conversion may lose significant digits */
             StrVar++;
          }
          else
          {
             /* NUMBER */
             sprintf(tbuf, NumberVariableRange[thischeck], NumVar);
+            /* Conversion may lose significant digits */
             NumVar++;
          }
          if (lp)
@@ -3706,13 +6787,44 @@ DumpOneFunctionSyntax(int n, int lp)
    /* DESCRIPTION */
    {
       sprintf(tbuf, "DESCRIPTION: %s\n", f->Description);
-      if (lp)
+      FixDescription( tbuf );
       {
-         prn_lprintf(tbuf);
-      }
-      else
-      {
-         prn_xprintf(tbuf);
+         char *C;
+         
+         C = tbuf;
+         while( *C != BasicNulChar )
+         {
+            if( *C == '\t' )
+            {
+               char tbuf2[32];
+               bwb_strcpy( tbuf2, "\n             " );
+               if (lp)
+               {
+                  prn_lprintf(tbuf2);
+               }
+               else
+               {
+                  prn_xprintf(tbuf2);
+               }
+               C++;
+               while( *C == ' ' )
+               {
+                  C++;
+               }
+            }
+            else
+            {
+               if( lp )
+               {
+                  bwx_LPRINT( *C );
+               }
+               else
+               {
+                  bwx_PRINT( *C );
+               }
+               C++;
+            }
+         }
       }
    }
    /* COMPATIBILITY */
@@ -3754,14 +6866,17 @@ DumpOneFunctionSyntax(int n, int lp)
    }
 }
 
-void
-DumpAllFuctionSyntax(void)
+void DumpAllFuctionSyntax(void)
 {
    /* for the C maintainer */
    int             n;
-
    bwx_DEBUG(__FUNCTION__);
 
+   prn_lprintf("============================================================\n");
+   prn_lprintf("                    FUNCTIONS                               \n");
+   prn_lprintf("============================================================\n");
+   prn_lprintf("\n");
+   prn_lprintf("\n");
    for (n = 0; n < NUM_FUNCTIONS; n++)
    {
       prn_lprintf("------------------------------------------------------------\n");
@@ -3770,8 +6885,7 @@ DumpAllFuctionSyntax(void)
    prn_lprintf("------------------------------------------------------------\n");
 }
 
-void
-DumpAllFunctionHtmlTable(void)
+void DumpAllFunctionHtmlTable(void)
 {
    /* generate bwd_cmd.htm */
 
@@ -3782,6 +6896,7 @@ DumpAllFunctionHtmlTable(void)
 
 
    /* LEGEND */
+   prn_lprintf("<html><head><title>FNCS</title></head><body>\n");
    prn_lprintf("<h1>LEGEND</h1><br>\n");
    prn_lprintf("<table>\n");
 
@@ -3848,7 +6963,7 @@ DumpAllFunctionHtmlTable(void)
    {
       prn_lprintf("<tr>");
       prn_lprintf("<td>");
-      prn_lprintf(bwb_prefuncs[i].Name);
+      prn_lprintf( (char *) bwb_prefuncs[i].Syntax);
       prn_lprintf("</td>");
 
       for (j = 0; j < NUM_VERSIONS; j++)
@@ -3867,22 +6982,23 @@ DumpAllFunctionHtmlTable(void)
       prn_lprintf("</tr>\n");
    }
    prn_lprintf("</table>\n");
+   prn_lprintf("</body></html>\n");
    prn_lprintf("\n");
 }
 
-struct bwb_line *
-bwb_DEF_SUB(struct bwb_line * l)
+LineType * bwb_DEF_SUB(LineType * l)
 {
-   /* user is executing a function, such as 100 COS X, as though it were
-    * a command */
-   /* this applies to both intrinsic functions and user defined
-    * functions and subroutines */
+   /* user is executing a function, such as 100 COS X, as though it were a command */
+   /* this applies to both intrinsic functions and user defined functions and subroutines */
    /* no special parsing is required, just add () around the parameters */
 
    char            Buffer[BasicStringLengthMax + 1];
    int             i;
    char           *C;
    char           *F;
+   VariantType   x;      /* no leaks */
+   VariantType * X = &x; /* no leaks */
+   CLEAR_VARIANT( X );
 
    bwx_DEBUG(__FUNCTION__);
 
@@ -3897,23 +7013,23 @@ bwb_DEF_SUB(struct bwb_line * l)
       C++;     
    }
    /* these should not happen */
-   if (*C == '\0' || *C == OptionCommentChar)
+   if (*C == BasicNulChar)
    {
-      bwb_error("bwb_DEF_SUB, INTERNAL null");
-      return bwb_zline(l);
+      WARN_INTERNAL_ERROR;
+      goto EXIT;
    }
-   if (!isalpha(*C))
+   if (!bwb_isalpha(*C))
    {
-      bwb_error("bwb_DEF_SUB, INTERNAL isalpha");
-      return bwb_zline(l);
+      WARN_INTERNAL_ERROR;
+      goto EXIT;
    }
-   if (strlen(C) + 2 > BasicStringLengthMax)
+   if (bwb_strlen(C) + 2 > BasicStringLengthMax)
    {
-      bwb_error("Ibwb_DEF_SUB, NTERNAL strlen");
-      return bwb_zline(l);
+      WARN_INTERNAL_ERROR;
+      goto EXIT;
    }
    /* OK */
-   while (isalpha(*C))
+   while (bwb_isalpha(*C))
    {
       /* copy command name */
       *F = *C;
@@ -3932,44 +7048,41 @@ bwb_DEF_SUB(struct bwb_line * l)
       /* skip trailing spaces after name */
       C++;     
    }
-   /* left paren */
-   *F = '(';
+   /* add left paren */
+   *F = BasicLeftParenChar;
    F++;
-   while (*C != '\0')
+   while (*C != BasicNulChar)
    {
       /* copy parameters */
-      if( *C == '"' )
+      if( *C == BasicQuoteChar )
       {
           /* quoted string */
+          /* if( TRUE ) */
           {
               /* leading quote */
               *F = *C;
               F++;
               C++;
           }
-          while( *C != '\0' && *C != '"' )
+          while( *C != BasicNulChar && *C != BasicQuoteChar )
           {
-              /* copy inclosed string */
+              /* copy enclosed string */
               *F = *C;
               F++;
               C++;
           }
-          if( *C == '"' )
+          if( *C == BasicQuoteChar )
           {
               /* trailing quote */
               *F = *C;
               F++;
               C++;
           }
-      }
-      else
-      if( *C == OptionCommentChar )
-      {
-          /* comment */
-          while( *C != '\0' )
+          else
           {
-              /* skip to end of line */
-              C++;
+             /* add missing trailing quote */
+             *F = BasicQuoteChar;
+             F++;
           }
       }
       else
@@ -3986,20 +7099,21 @@ bwb_DEF_SUB(struct bwb_line * l)
           C++;
       }
    }
-   /* right paren */
-   *F = ')';
+   /* add right paren */
+   *F = BasicRightParenChar;
    F++;
    /* terminate */
-   *F = '\0';
+   *F = BasicNulChar;
+   
    /* Call the expression interpreter to evaluate the function */
-
-   /* prn_xprintf(Buffer); */
-   bwb_exp(Buffer, FALSE, &i);
-   if (ERROR_PENDING)
+   if( buff_read_expression( Buffer, &i, X ) == FALSE )
    {
-      /* prn_xprintf("oops"); */
+      WARN_SYNTAX_ERROR;
+      goto EXIT;
    }
-   adv_eos(l->buffer, &(l->position));
+   line_skip_eol(l);
+EXIT:
+   RELEASE( X );
    return bwb_zline(l);
 }
 
@@ -4015,21 +7129,12 @@ bwb_DEF_SUB(struct bwb_line * l)
   
 ***************************************************************/
 
-struct bwb_line *
-bwb_zline(struct bwb_line * l)
+LineType * bwb_zline(LineType * l)
 {
    bwx_DEBUG(__FUNCTION__);
 
    /* skip trailing spaces */
-   while (l->buffer[l->position] == ' ')
-      l->position++;
-   /* skip trailing comment */
-   if (l->buffer[l->position] == OptionCommentChar)
-   {
-      /* COMMENT */
-      while (l->buffer[l->position] != 0)
-         l->position++;
-   }
+   line_skip_spaces(l);
    /* usually, but NOT always, we are at the end of the line */
    return l;
 }
@@ -4046,8 +7151,7 @@ bwb_zline(struct bwb_line * l)
    SYNTAX:     FNCS
   
 ***************************************************************/
-struct bwb_line *
-bwb_FNCS(struct bwb_line * l)
+LineType * bwb_FNCS(LineType * l)
 {
 
    register int    n;
@@ -4055,6 +7159,7 @@ bwb_FNCS(struct bwb_line * l)
 
    bwx_DEBUG(__FUNCTION__);
 
+   My->CurrentFile = My->SYSOUT;
    prn_iprintf("BWBASIC FUNCTIONS AVAILABLE:\n");
 
    /* run through the command table and print comand names */
@@ -4082,125 +7187,135 @@ bwb_FNCS(struct bwb_line * l)
 }
 
 
-struct bwb_line *
-bwb_MAINTAINER(struct bwb_line * l)
+LineType * bwb_MAINTAINER(LineType * l)
 {
 
    int             ShowHelp;
-   char            tbuf[BasicStringLengthMax + 1];
+   char varname[BasicNameLengthMax + 1]; /* not actually a variable name, just a small buffer */
 
    bwx_DEBUG(__FUNCTION__);
 
    ShowHelp = TRUE;
-   adv_element(l->buffer, &(l->position), tbuf);
-
-   if (strcasecmp(tbuf, "CMDS") == 0)
+   if( line_read_varname(l, varname) )
    {
-
-      adv_element(l->buffer, &(l->position), tbuf);
-
-      if (strcasecmp(tbuf, "HTML") == 0)
+      if (bwb_stricmp(varname, "CMDS") == 0)
       {
-         DumpAllCommandHtmlTable();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "ID") == 0)
-      {
-         DumpAllCommandUniqueID();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "MANUAL") == 0)
-      {
-         DumpAllCommandSyntax();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "SWITCH") == 0)
-      {
-         DumpAllCommandSwitchStatement();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "TABLE") == 0)
-      {
-         DumpAllCommandTableDefinitions();
-         ShowHelp = FALSE;
-      }
-   }
-   else
-   if (strcasecmp(tbuf, "FNCS") == 0)
-   {
-      adv_element(l->buffer, &(l->position), tbuf);
-
-      if (strcasecmp(tbuf, "HTML") == 0)
-      {
-         DumpAllFunctionHtmlTable();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "ID") == 0)
-      {
-         DumpAllFuctionUniqueID();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "MANUAL") == 0)
-      {
-         DumpAllFuctionSyntax();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "SWITCH") == 0)
-      {
-         DumpAllFunctionSwitch();
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "TABLE") == 0)
-      {
-         DumpAllFuctionTableDefinitions();
-         ShowHelp = FALSE;
-      }
-   }
-   else
-   if (strcasecmp(tbuf, "DEBUG") == 0)
-   {
-      adv_element(l->buffer, &(l->position), tbuf);
-      if (strcasecmp(tbuf, "ON") == 0)
-      {
-         MaintainerDebugOn = TRUE;
-         ShowHelp = FALSE;
-      }
-      else
-      if (strcasecmp(tbuf, "OFF") == 0)
-      {
-         MaintainerDebugOn = FALSE;
-         ShowHelp = FALSE;
-      }
-   }
-   else
-   if (strcasecmp(tbuf, "STACK") == 0)
-   {
-      /* * dump the current execution stack, * Leftmost is the
-       * bottom, * Rigthmost is the top. */
-      int             i;
-      for (i = 0; i <= CURTASK exsc; i++)
-      {
-         struct bwb_line *l;
-
-         l = CURTASK excs[i].line;
-         if (l != NULL)
+         if( line_read_varname(l, varname) )
          {
-            char            LineNumber[32];
-
-            sprintf(LineNumber, "%d:", l->number);
-            prn_xprintf(LineNumber);
+            if (bwb_stricmp(varname, "HTML") == 0)
+            {
+               DumpAllCommandHtmlTable();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "ID") == 0)
+            {
+               DumpAllCommandUniqueID();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "MANUAL") == 0)
+            {
+               DumpAllCommandSyntax();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "SWITCH") == 0)
+            {
+               DumpAllCommandSwitchStatement();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "TABLE") == 0)
+            {
+               DumpAllCommandTableDefinitions();
+               ShowHelp = FALSE;
+            }
          }
       }
-      prn_xprintf("\n");
-      ShowHelp = FALSE;
+      else
+      if (bwb_stricmp(varname, "FNCS") == 0)
+      {
+         if( line_read_varname(l, varname) )
+         {
+            if (bwb_stricmp(varname, "HTML") == 0)
+            {
+               DumpAllFunctionHtmlTable();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "ID") == 0)
+            {
+               DumpAllFuctionUniqueID();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "MANUAL") == 0)
+            {
+               DumpAllFuctionSyntax();
+               DumpAllOperatorSyntax();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "SWITCH") == 0)
+            {
+               DumpAllFunctionSwitch();
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "TABLE") == 0)
+            {
+               DumpAllFuctionTableDefinitions();
+               ShowHelp = FALSE;
+            }
+         }
+      }
+      else
+      if (bwb_stricmp(varname, "DEBUG") == 0)
+      {
+         if( line_read_varname(l, varname) )
+         {
+            if (bwb_stricmp(varname, "ON") == 0)
+            {
+               My->MaintainerDebugOn = TRUE;
+               ShowHelp = FALSE;
+            }
+            else
+            if (bwb_stricmp(varname, "OFF") == 0)
+            {
+               My->MaintainerDebugOn = FALSE;
+               ShowHelp = FALSE;
+            }
+         }
+      }
+      else
+      if (bwb_stricmp(varname, "STACK") == 0)
+      {
+         /*
+         dump the current execution stack, 
+         Leftmost is the top, 
+         Rigthmost is the bottom. 
+         */
+         StackType * stack_item;
+      
+         bwx_DEBUG(__FUNCTION__);
+      
+         for( stack_item = My->stack_head; stack_item != NULL; stack_item = stack_item->next )
+         {
+            LineType *l;
+   
+            l = stack_item->line;
+            if (l != NULL)
+            {
+               char            LineNumber[32];
+   
+               sprintf(LineNumber, "%d:", l->number);
+               prn_xprintf(LineNumber);
+            }
+         }
+         prn_xprintf("\n");
+         ShowHelp = FALSE;
+      }
    }
    if (ShowHelp == TRUE)
    {
@@ -4236,127 +7351,94 @@ bwb_MAINTAINER(struct bwb_line * l)
   
 ***************************************************************/
 
-int
-fnc_init(int task)
+int fnc_init( void )
 {
    register int    n;
-   struct bwb_function *f;
+   FunctionType *f;
 
    bwx_DEBUG(__FUNCTION__);
 
-   strcpy(LOCALTASK fnc_start.Name, "FNC_START");
-   LOCALTASK       fnc_start.ReturnType = 'X';
-   strcpy(LOCALTASK fnc_end.Name, "FNC_END");
-   LOCALTASK       fnc_end.ReturnType = 'x';
-   LOCALTASK       fnc_end.next = &LOCALTASK fnc_end;
-
-
-   f = &LOCALTASK fnc_start;
-
-   /* now go through each of the preestablished functions and set up
-    * links between them; from this point the program address the
-    * functions only as a linked list (not as an array) */
-
-   for (n = 0; n < NUM_FUNCTIONS; ++n)
+   My->fnc_head = NULL;
+   for (n = 0; n < NUM_FUNCTIONS; n++)
    {
-      f->next = &(bwb_prefuncs[n]);
-      f = f->next;
+      f = &(bwb_prefuncs[n]);
       FunctionDefinitionCheck(f);
+      f->next = My->fnc_head;
+      My->fnc_head = f;
    }
-
-   /* link the last pointer to the end; this completes the list */
-
-   f->next = &LOCALTASK fnc_end;
-
    return TRUE;
 }
 
-
-
-
-
-void
-fnc_add_deffn(struct fslte * F)
+void fnc_add_deffn(LookupType * F, char TypeChar)
 {
-   struct bwb_function *f;
-   struct bwb_function *n;
+   FunctionType *f;
 
    bwx_DEBUG(__FUNCTION__);
 
    /* get memory for fslt structure */
 
-   if ((f = CALLOC(1, sizeof(struct bwb_function), "fnc_add_deffn")) == NULL)
+   if ((f = CALLOC(1, sizeof(FunctionType), "fnc_add_deffn")) == NULL)
    {
-      bwb_error("in fnc_add_deffn(): failed to get memory for bwb_function structure");
+      WARN_OUT_OF_MEMORY;
       return;
    }
-   strcpy(f->Name, F->name);
-   if (strchr(F->name, BasicStringSuffix) != NULL)
+   bwb_strcpy(f->Name, F->name);
+
+
+   if( TypeChar == BasicNulChar )
    {
-      f->ReturnType = STRING;
+      /* default function return type */
+      TypeChar = BasicDoubleSuffix;
    }
-   else
-   {
-      f->ReturnType = NUMBER;
-   }
-   f->ReturnType |= (F->line->cmdnum & 0x00FF) << 8;  /* UniqueID is a line
-                         * number */
+   f->ReturnType = TypeChar;
+
+
+   f->ReturnType |= (F->line->cmdnum & 0x00FF) << 8;  /* UniqueID is a line number */
    f->UniqueID = F->line->number;
    f->ParameterCount = F->ParameterCount; /* 0..32, 0xFF == VARIANT */
    f->ParameterTypes = F->ParameterTypes;
-   f->OptionVersionBitmask = OptionVersion;
+   f->OptionVersionBitmask = My->CurrentVersion->OptionVersionBitmask;
 
    /* establish linkages */
 
-   n = CURTASK fnc_start.next;
-   CURTASK         fnc_start.next = f;
-   f->next = n;
-
+   f->next = My->fnc_head;
+   My->fnc_head = f;
 }
 
-
-
-
-static struct fslte *
-fslt_find_by_line(int LineNumber)
+static LookupType * fslt_find_by_line(int LineNumber)
 {
-   struct fslte   *f;
+   LookupType   *f;
 
    bwx_DEBUG(__FUNCTION__);
 
    /* SEARCH */
-
-   for (f = CURTASK fslt_start.next; f != &CURTASK fslt_end; f = f->next)
+   for (f = My->fslt_head; f != NULL; f = f->next)
    {
-      if (f->line->number == LineNumber)
+      if( f->line )
       {
-         /* FOUND */
-         return f;
+         if (f->line->number == LineNumber)
+         {
+            /* FOUND */
+            return f;
+         }
       }
    }
-
    /* NOT FOUND */
-
    return NULL;
-
 }
 
-
-
-/* 
-The generic handler for user defined functions.  
-When called by exp_function(), f->id will be set to the line number of a specific DEF USR.
-*/
-struct bwb_variable *
-fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
+VariableType * fnc_deffn(int argc, VariableType * argv, int unique_id)
 {
-   struct fslte   *f;
-   struct bwb_variable *v;
-   struct bwb_variable *argn;
+   /* 
+   The generic handler for user defined functions.  
+   When called by exp_function(), f->id will be set to the line number of a specific DEF USR.
+   */
+   LookupType   *f;
+   VariableType *v;
+   VariableType *argn;
    int             i;
-   struct bwb_line *call_line;
-   int             save_elevel;
-
+   LineType *call_line;
+   StackType *   save_elevel;
    bwx_DEBUG(__FUNCTION__);
 
    /* initialize the variable if necessary */
@@ -4366,14 +7448,12 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
    /* these errors should not occur */
    if (f == NULL)
    {
-      sprintf(bwb_ebuf, "INTERNAL ERROR, f == NULL");
-      bwb_error(bwb_ebuf);
+      WARN_INTERNAL_ERROR;
       return NULL;
    }
    if (argv == NULL)
    {
-      sprintf(bwb_ebuf, "INTERNAL ERROR, argv == NULL");
-      bwb_error(bwb_ebuf);
+      WARN_INTERNAL_ERROR;
       return NULL;
    }
    if (f->ParameterCount == 0xFF)
@@ -4383,8 +7463,7 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
    else
    if (argc != f->ParameterCount)
    {
-      sprintf(bwb_ebuf, "INTERNAL ERROR, argc != f->ParameterCount");
-      bwb_error(bwb_ebuf);
+      WARN_INTERNAL_ERROR;
       return NULL;
    }
    if (f->ParameterCount == 0xFF)
@@ -4402,46 +7481,28 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
          argn = argn->next;
          if (v == NULL)
          {
-            sprintf(bwb_ebuf, "INTERNAL ERROR, v == NULL");
-            bwb_error(bwb_ebuf);
+            WARN_INTERNAL_ERROR;
             return NULL;
          }
          if (argn == NULL)
          {
-            sprintf(bwb_ebuf, "INTERNAL ERROR, argn == NULL");
-            bwb_error(bwb_ebuf);
+            WARN_INTERNAL_ERROR;
             return NULL;
          }
-         if (v->type != argn->type)
+         if ( VAR_IS_STRING( v ) != VAR_IS_STRING( argn ) )
          {
-            sprintf(bwb_ebuf, "INTERNAL ERROR, v->type != argn->type");
-            bwb_error(bwb_ebuf);
+            WARN_INTERNAL_ERROR;
             return NULL;
          }
          /* NEW ... */
-         if (strlen(v->name) > 0)
+         if (v->name[0] != BasicNulChar)
          {
-            /* FIXME: this is a hack - the variable type
-             * should be determined when the variable is
-             * created */
-            char           *E;
-            char            e;
-            int             IsError;
-            IsError = 0;
-
-            E = strchr(v->name, '\0');
-            E--;
-            e = *E;
-            /* sprintf( bwb_ebuf, "LAST CHAR is %c, TYPE
-             * is %c", e, v->type ); puts( bwb_ebuf ); */
-            /* so the following code is easier to read
-             * and maintain */
 #define PARAM_NUMBER   *argn->memnum
 #define PARAM_LENGTH    argn->memstr->length
 #define PARAM_BUFFER    argn->memstr->sbuffer
-            /* check actual values versus formal
-             * parameter type */
-            switch (e)
+            int             IsError;
+            IsError = 0;
+            switch (v->VariableTypeChar)
             {
             case BasicStringSuffix:
                IsError = StringLengthCheck(P1ANY, PARAM_LENGTH);
@@ -4461,11 +7522,17 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
             case BasicIntegerSuffix:
                IsError = NumberValueCheck(P1INT, PARAM_NUMBER);
                break;
+            case BasicByteSuffix:
+               IsError = NumberValueCheck(P1BYT, PARAM_NUMBER);
+               break;
+            default:
+               WARN_TYPE_MISMATCH;
+               return NULL;
             }
             if (IsError != 0)
             {
-               sprintf(bwb_ebuf, "ILLEGAL FUUNCTION CALL: %s(%s)", f->name, v->name);
-               bwb_Warning_InvalidParameter(bwb_ebuf);
+               sprintf(My->bwb_ebuf, "ILLEGAL FUUNCTION CALL: %s(%s)", f->name, v->name);
+               bwb_Warning(5, My->bwb_ebuf); /* WARN_ILLEGAL_FUNCTION_CALL */
                return argv;
             }
          }
@@ -4479,19 +7546,28 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
 
    if (call_line->cmdnum == C_DEF)
    {
-      adv_ws(call_line->buffer, &call_line->position);
-      if (call_line->buffer[call_line->position] != '=')
+      line_skip_spaces(call_line);
+      if ( line_skip_char(call_line, '=') == FALSE )
       {
-         sprintf(bwb_ebuf, "*** INTERNAL ERROR #%d (%s) ***", 5, "call_line->buffer[ ] != '='");
-         bwb_error(bwb_ebuf);
-         return argv;
+         WARN_INTERNAL_ERROR;
+         return NULL;
       }
-      call_line->position++;  /* NOTE - we skip past the '=' sign */
    }
 /* PUSH STACK */
-   save_elevel = CURTASK exsc;
-   bwb_incexec();
-   bwb_setexec(call_line, call_line->position, EXEC_FUNCTION);
+ 
+   save_elevel = My->stack_head;
+   if( bwb_incexec() )
+   {
+      /* OK */
+   }
+   else
+   {
+      /* ERROR */
+      WARN_OUT_OF_MEMORY;
+      return NULL;
+   }
+   My->stack_head->line = call_line;
+   My->stack_head->code = EXEC_FUNCTION;
 
 
    /* create variable chain */
@@ -4502,28 +7578,194 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
    else
    if (argc > 0)
    {
-      struct bwb_variable *source = NULL; /* source variable */
+      VariableType *source = NULL; /* source variable */
       source = f->local_variable;
       argn = argv;
       for (i = 0; i < argc; i++)
       {
          argn = argn->next;
          /* copy the name */
-         strcpy(argn->name, source->name);
+         bwb_strcpy(argn->name, source->name);
+         
+         if ( VAR_IS_STRING( source ) )
+         {
+         }
+         else
+         {
+            int            IsError;
+            double         Value;
+            VariantType    variant;
+            
+            if( var_get( argn, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return NULL;
+            }
+            if( variant.TypeChar == '$' )
+            {
+               WARN_TYPE_MISMATCH;
+               return NULL;
+            }
+            Value = variant.Number;
+            IsError = 0;
+            switch (source->VariableTypeChar)
+            {
+            case BasicStringSuffix:
+               break;
+            case BasicDoubleSuffix:
+               IsError = NumberValueCheck(P1DBL, Value);
+               break;
+            case BasicSingleSuffix:
+               IsError = NumberValueCheck(P1FLT, Value);
+               break;
+            case BasicCurrencySuffix:
+               IsError = NumberValueCheck(P1CUR, Value);
+               Value = bwb_rint( Value );
+               break;
+            case BasicLongSuffix:
+               IsError = NumberValueCheck(P1LNG, Value);
+               Value = bwb_rint( Value );
+               break;
+            case BasicIntegerSuffix:
+               IsError = NumberValueCheck(P1INT, Value);
+               Value = bwb_rint( Value );
+               break;
+            case BasicByteSuffix:
+               IsError = NumberValueCheck(P1BYT, Value);
+               Value = bwb_rint( Value );
+               break;
+            default:
+               WARN_TYPE_MISMATCH;
+               return NULL;
+            }
+            if (IsError != 0)
+            {
+               sprintf(My->bwb_ebuf, "ILLEGAL FUUNCTION CALL: %s(%s)", f->name, source->name);
+               bwb_Warning(5, My->bwb_ebuf); /* WARN_ILLEGAL_FUNCTION_CALL */
+               return argv;
+            }
+            variant.Number = Value;
+            if( var_set( argn, &variant ) == FALSE )
+            {
+               WARN_VARIABLE_NOT_DECLARED;
+               return NULL;
+            }
+         }
          source = source->next;
       }
    }
    if (call_line->cmdnum == C_DEF)
    {
-      struct exp_ese *e;
+      VariantType   x;      /* no leaks */
+      VariantType * X = &x; /* no leaks */
+      CLEAR_VARIANT( X );
+
 
       /* the function return variable is hidden */
-      CURTASK         excs[CURTASK exsc].local_variable = argv->next;
-      e = bwb_exp(call_line->buffer, FALSE, &call_line->position);
-      bwb_etov(argv, e);
+      My->stack_head->local_variable = argv->next;
+      /* var_islocal() uses the LoopTopLine to find local variables */
+      My->stack_head->LoopTopLine = call_line; /* FUNCTION, SUB */
+
+      /* evaluate the expression */
+      if( line_read_expression( call_line, X ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         goto EXIT;
+      }
+      
+      /* save the value */
+      switch( X->TypeChar )
+      {
+      case BasicStringSuffix  :
+         if( argv->VariableTypeChar != BasicStringSuffix )
+         {
+            WARN_TYPE_MISMATCH;
+            goto EXIT;
+         }
+         /* OK */
+         {
+            StringType t;
+            StringType * b;
+   
+            b = argv->memstr;
+            t.sbuffer = X->Buffer;
+            t.length  = X->Length;
+            str_btob(b, &t);
+         }
+         break;
+      case BasicDoubleSuffix  :
+      case BasicSingleSuffix  :
+      case BasicCurrencySuffix:
+      case BasicLongSuffix    :
+      case BasicIntegerSuffix :
+      case BasicByteSuffix    :
+         /* OK */
+         {
+            /* both numbers */
+            int             IsError = 0;
+            double          Value;
+      
+            Value = X->Number;
+            Value = VerifyNumeric(Value);
+      
+            switch (argv->VariableTypeChar)
+            {
+            case BasicStringSuffix:
+               WARN_TYPE_MISMATCH;
+               goto EXIT;
+               /* break; */
+            case BasicDoubleSuffix:
+               IsError = NumberValueCheck(P1DBL,Value);
+               break;
+            case BasicSingleSuffix:
+               IsError = NumberValueCheck(P1FLT,Value);
+               break;
+            case BasicCurrencySuffix:
+               IsError = NumberValueCheck(P1CUR,Value);
+               Value = bwb_rint( Value );
+               break;
+            case BasicLongSuffix:
+               IsError = NumberValueCheck(P1LNG,Value);
+               Value = bwb_rint( Value );
+               break;
+            case BasicIntegerSuffix:
+               IsError = NumberValueCheck(P1INT,Value);
+               Value = bwb_rint( Value );
+               break;
+            case BasicByteSuffix:
+               IsError = NumberValueCheck(P1BYT,Value);
+               Value = bwb_rint( Value );
+               break;
+            default:
+               WARN_TYPE_MISMATCH;
+               goto EXIT;
+               /* break; */
+            }
+            if (IsError != 0)
+            {
+               if( bwb_Warning_Overflow("*** Arithmetic Overflow ***") )
+               {
+                  /* ERROR */
+                  goto EXIT;
+               }
+               /* CONTINUE */
+            }
+            /* assign Value */
+            *argv->memnum = Value;
+         }
+         break;
+      default                 :
+         WARN_TYPE_MISMATCH;
+         goto EXIT;
+         /* break; */
+      }
+EXIT:
+      RELEASE( X );
+
 
       /* break variable chain */
-      CURTASK         excs[CURTASK exsc].local_variable = NULL;
+      My->stack_head->local_variable = NULL;
+
 
 
 /* POP STACK */
@@ -4533,18 +7775,14 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
    else
    {
       /* the function return variable is visible */
-      CURTASK         excs[CURTASK exsc].local_variable = argv;
-      /* exp_isfn() uses these to determine use of the function
-       * name as a variable */
-      CURTASK         excs[CURTASK exsc].LoopTopLine = call_line;
-      CURTASK         excs[CURTASK exsc].LoopBottomLine = call_line->OtherLine;
-
+      My->stack_head->local_variable = argv;
+      /* var_islocal() uses the LoopTopLine to find local variables */
+      My->stack_head->LoopTopLine = call_line; /* FUNCTION, SUB */
       /* execute until function returns */
-      while (CURTASK exsc > save_elevel)
+      while (My->stack_head != save_elevel)
       {
          bwb_execline();
       }
-
    }
 
    if (f->ParameterCount == 0xFF)
@@ -4552,14 +7790,56 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
       /* VARIANT */
       f->local_variable = NULL;
    }
+
+   if (argv->name[0] != BasicNulChar)
+   {
+#define RESULT_NUMBER  *argv->memnum
+#define RESULT_BUFFER   argv->memstr->sbuffer
+#define RESULT_LENGTH   argv->memstr->length
+      int             IsError;
+
+      IsError = 0;
+      switch ( argv->VariableTypeChar ) 
+      {
+      case BasicStringSuffix:
+         IsError = StringLengthCheck(P1ANY, RESULT_LENGTH);
+         break;
+      case BasicDoubleSuffix:
+         IsError = NumberValueCheck(P1DBL, RESULT_NUMBER);
+         break;
+      case BasicSingleSuffix:
+         IsError = NumberValueCheck(P1FLT, RESULT_NUMBER);
+         break;
+      case BasicCurrencySuffix:
+         IsError = NumberValueCheck(P1CUR, RESULT_NUMBER);
+         break;
+      case BasicLongSuffix:
+         IsError = NumberValueCheck(P1LNG, RESULT_NUMBER);
+         break;
+      case BasicIntegerSuffix:
+         IsError = NumberValueCheck(P1INT, RESULT_NUMBER);
+         break;
+      case BasicByteSuffix:
+         IsError = NumberValueCheck(P1BYT, RESULT_NUMBER);
+         break;
+      default:
+         /* no check */
+         break;
+      }
+      if (IsError != 0)
+      {
+         if( bwb_Warning_Overflow("*** Arithmetic Overflow ***") )
+         {
+            /* ERROR */
+         }
+         /* CONTINUE */
+      }
+   }
+   /* ...NEW */
+
+
    return argv;
 }
-
-
-
-
-
-
 
 /***************************************************************
   
@@ -4573,49 +7853,170 @@ fnc_deffn(int argc, struct bwb_variable * argv, int unique_id)
   
 ***************************************************************/
 
-struct bwb_function *
-fnc_find(char *name)
+FunctionType * fnc_find(char *name)
 {
-   struct bwb_function *f;
-
+#if THE_PRICE_IS_RIGHT
+   char C;
    bwx_DEBUG(__FUNCTION__);
 
-   if (strlen(name) == 0)
+   C = name[0];
+   if( bwb_isalpha( C ) )
+   {
+      FunctionType *f;
+      int i;
+
+      /* search USER functions */
+      for (f = My->fnc_head; f != NULL && (f->ReturnType & 0xFF00) != 0; f = f->next)
+      {
+         if (My->CurrentVersion->OptionVersionBitmask & f->OptionVersionBitmask)
+         {
+            if (bwb_stricmp(f->Name, name) == 0)
+            {
+               return f;
+            }
+         }
+      }
+
+      /* search INTRINSIC functions */
+      /* start with the closest function, without going over */
+      i = My->FunctionStart[ VarTypeIndex( C ) ]; 
+      /* first function starting with this letter, assigned in SortAllFunctions() */
+      if( i < 0 )
+      {
+         /* NOT FOUND */
+         return NULL;
+      }
+      for(; i < NUM_FUNCTIONS; i++ )
+      {
+         f = &bwb_prefuncs[ i ];
+         if (My->CurrentVersion->OptionVersionBitmask & f->OptionVersionBitmask)
+         {
+            int result;
+            
+            result = bwb_stricmp(f->Name, name);
+
+            if( result == 0 )
+            {
+               /* FOUND */
+               return f;
+            }
+            if( result > 0 /* found > searched */ )
+            {
+               /* NOT FOUND */
+               return NULL;
+            }
+         }
+      }
+   }
+   /* NOT FOUND */
+   return NULL;
+#else   
+   FunctionType *f;
+   bwx_DEBUG(__FUNCTION__);
+
+   if (name[0] == BasicNulChar)
    {
       return NULL;
    }
-   for (f = CURTASK fnc_start.next; f != &CURTASK fnc_end; f = f->next)
+
+   for (f = My->fnc_head; f != NULL; f = f->next)
    {
-      if (OptionVersion & f->OptionVersionBitmask)
-         if (strcasecmp(f->Name, name) == 0)
+      if (My->CurrentVersion->OptionVersionBitmask & f->OptionVersionBitmask)
+      {
+         if (bwb_stricmp(f->Name, name) == 0)
          {
             return f;
          }
+      }
    }
-
    /* search has failed: return NULL */
-
    return NULL;
-
+#endif
 }
 
-
-struct bwb_function *
-fnc_find_exact(char *name, int ParameterCount, int ParameterTypes)
+FunctionType * fnc_find_exact(char *name, int ParameterCount, unsigned long ParameterTypes)
 {
-   struct bwb_function *f;
+#if THE_PRICE_IS_RIGHT
+   char C;
+   bwx_DEBUG(__FUNCTION__);
+
+   C = name[0];
+   if( bwb_isalpha( C ) )
+   {
+      FunctionType *f;
+      int i;
+
+      /* search USER functions */
+      for (f = My->fnc_head; f != NULL && (f->ReturnType & 0xFF00) != 0; f = f->next)
+      {
+         if (My->CurrentVersion->OptionVersionBitmask & f->OptionVersionBitmask)
+         {
+            if (f->ParameterCount == ParameterCount)
+            {
+               if (f->ParameterTypes == ParameterTypes)
+               {
+                  if (bwb_stricmp(f->Name, name) == 0)
+                  {
+                     return f;
+                  }
+               }
+            }
+         }
+      }
+
+      /* search INTRINSIC functions */
+      /* start with the closest function, without going over */
+      i = My->FunctionStart[ VarTypeIndex( C ) ]; 
+      /* first function starting with this letter, assigned in SortAllFunctions() */
+      if( i < 0 )
+      {
+         /* NOT FOUND */
+         return NULL;
+      }
+      for(; i < NUM_FUNCTIONS; i++ )
+      {
+         f = &bwb_prefuncs[ i ];
+         if (My->CurrentVersion->OptionVersionBitmask & f->OptionVersionBitmask)
+         {
+            if (f->ParameterCount == ParameterCount)
+            {
+               if (f->ParameterTypes == ParameterTypes)
+               {
+                  int result;
+                  
+                  result = bwb_stricmp(f->Name, name);
+      
+                  if( result == 0 )
+                  {
+                     /* FOUND */
+                     return f;
+                  }
+                  if( result > 0 /* found > searched */ )
+                  {
+                     /* NOT FOUND */
+                     return NULL;
+                  }
+               }
+            }
+         }
+      }
+   }
+   /* NOT FOUND */
+   return NULL;
+#else
+   FunctionType *f;
 
    bwx_DEBUG(__FUNCTION__);
 
-   for (f = CURTASK fnc_start.next; f != &CURTASK fnc_end; f = f->next)
+   for (f = My->fnc_head; f != NULL; f = f->next)
    {
-      if (OptionVersion & f->OptionVersionBitmask)
+      if (My->CurrentVersion->OptionVersionBitmask & f->OptionVersionBitmask)
       {
          if (f->ParameterCount == ParameterCount)
          {
             if (f->ParameterTypes == ParameterTypes)
             {
-               if (strcasecmp(f->Name, name) == 0)
+               if (bwb_stricmp(f->Name, name) == 0)
                {
                   return f;
                }
@@ -4625,66 +8026,12 @@ fnc_find_exact(char *name, int ParameterCount, int ParameterTypes)
    }
    /* search has failed: return NULL */
    return NULL;
+#endif
 }
 
-
-
-struct bwb_variable *
-var_free(struct bwb_variable * v)
+FunctionType * fnc_find_by_id(int unique_id)
 {
-   /* // Release all the memory associated with a specific variable. //
-    * This function returns NULL, so you can use it like this: //     v
-    * = var_new(...); //     ... //     v = var_free( v ); */
-   bwx_DEBUG(__FUNCTION__);
-
-   if (v != NULL)
-   {
-      if (v->next != NULL)
-      {
-         /* This allows variable chains to be easily released. */
-         v->next = var_free(v->next);
-      }
-      /* cleanup this variable */
-      if (v->memnum != NULL)
-      {
-         FREE(v->memnum, "var_free");
-         v->memnum = NULL;
-      }
-      if (v->memstr != NULL)
-      {
-         int             j;
-         for (j = 0; j < v->array_units; ++j)
-         {
-            if (v->memstr[j].sbuffer != NULL)
-            {
-               FREE(v->memstr[j].sbuffer, "var_free");
-               v->memstr[j].sbuffer = NULL;
-            }
-            v->memstr[j].rab = FALSE;
-            v->memstr[j].length = 0;
-         }
-         FREE(v->memstr, "var_free");
-         v->memstr = NULL;
-      }
-      if (v->array_sizes != NULL)
-      {
-         FREE(v->array_sizes, "var_free");
-         v->array_sizes = NULL;
-      }
-      if (v->array_pos != NULL)
-      {
-         FREE(v->array_pos, "var_free");
-         v->array_pos = NULL;
-      }
-   }
-   return NULL;
-}
-
-struct bwb_function *
-fnc_find_by_id(int unique_id)
-{
-   /* NOTE: This should ONLY search the INTRINSIC functions, not USER
-    * functions  */
+   /* NOTE: This should ONLY search the INTRINSIC functions, not USER functions  */
    int             i;
 
    bwx_DEBUG(__FUNCTION__);
@@ -4701,91 +8048,130 @@ fnc_find_by_id(int unique_id)
    return NULL;
 }
 
-struct bwb_line *
-bwb_CHANGE(struct bwb_line * l)
+static VariableType * find_variable_by_type( char * name, int dimensions, char vartype )
 {
-   /* * CHANGE A$ TO X * CHANGE X TO A$ */
+   VariableType *v = NULL;
+   
+   v = var_find( name, dimensions, FALSE );
+   if( v )
+   {
+      if ( VAR_IS_STRING( v ) )
+      {
+         if( vartype == BasicStringSuffix )
+         {
+            /* found */
+            return v;
+         }
+      }
+      else
+      {
+         if( vartype != BasicStringSuffix )
+         {
+            /* found */
+            return v;
+         }
+      }
+   }
+   /* not found */
+   return NULL;
+}
 
-   char            tbuf[BasicStringLengthMax + 1];
-   struct bwb_variable *v = NULL;
-   struct bwb_variable *A = NULL;
-   struct bwb_variable *X = NULL;
+/* 
+--------------------------------------------------------------------------------------------
+                               CHANGE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType * bwb_CHANGE(LineType * l)
+{
+   /* SYNTAX: CHANGE A$ TO X */
+   /* SYNTAX: CHANGE X TO A$ */
+
+   char            varname[BasicNameLengthMax + 1];
+   VariableType *v = NULL;
+   VariableType *A = NULL;
+   VariableType *X = NULL;
    int             IsStringToArray = FALSE;
 
 
    bwx_DEBUG(__FUNCTION__);
-
-   if (OptionFlags & OPTION_BASE_ONE)
-   {
-      bwb_error("CHANGE is only valid for OPTION BASE 0");
-      return bwb_zline(l);
-   }
    /* get 1st variable */
-   adv_ws(l->buffer, &(l->position));
-   bwb_getvarname(l->buffer, tbuf, &(l->position));
-   v = var_find(tbuf);
-   if (v == NULL)
+   if( line_read_varname(l, varname) == FALSE )
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
-   if (v->type == STRING)
+
+   v = find_variable_by_type( varname, 0, BasicStringSuffix );
+   if( v )
    {
+      /* STRING to ARRAY */
       A = v;
       IsStringToArray = TRUE;
    }
    else
    {
-      /* variable MUST be an array */
-      if ((v->dimensions == 1) && (v->array_sizes[0] == 1))
+      /* ARRAY to STRING */
+      v = find_variable_by_type( varname, 1, BasicDoubleSuffix );
+      if( v )
       {
-         bwb_error(err_syntax);
-         return bwb_zline(l);
+         X = v;
+         IsStringToArray = FALSE;
       }
-      X = v;
-      IsStringToArray = FALSE;
    }
-   /* get "TO" */
-   adv_ws(l->buffer, &(l->position));
-   adv_element(l->buffer, &(l->position), tbuf);
-   if (strcasecmp(tbuf, "TO") != 0)
+   if( v == NULL )
    {
-      bwb_error(err_syntax);
+      WARN_VARIABLE_NOT_DECLARED;
+      return bwb_zline(l);
+   }
+   
+   /* get "TO" */
+   if( line_skip_word( l, "TO" ) == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
    }
    /* get 2nd variable */
-   adv_ws(l->buffer, &(l->position));
-   bwb_getvarname(l->buffer, tbuf, &(l->position));
-   v = var_find(tbuf);
-   if (v == NULL)
+   line_skip_spaces(l);
+   if( line_read_varname(l, varname) == FALSE )
    {
-      bwb_error(err_syntax);
+      WARN_SYNTAX_ERROR;
       return bwb_zline(l);
-   }
-   if (v->type == STRING)
+   }   
+
+   if (IsStringToArray)
    {
-      A = v;
-      if (IsStringToArray == TRUE)
+      /* STRING to ARRAY */
+      v = find_variable_by_type( varname, 1, BasicDoubleSuffix );
+      if( v == NULL )
       {
-         bwb_error(err_syntax);
-         return bwb_zline(l);
+         v = var_find( varname, 1, TRUE );
+      }
+      if( v )
+      {
+         X = v;
       }
    }
    else
    {
-      /* variable MUST be an array */
-      if ((v->dimensions == 1) && (v->array_sizes[0] == 1))
+      /* ARRAY to STRING */
+      v = find_variable_by_type( varname, 0, BasicStringSuffix );
+      if( v == NULL )
       {
-         bwb_error(err_syntax);
-         return bwb_zline(l);
+         v = var_find( varname, 0, TRUE );
       }
-      X = v;
-      if (IsStringToArray == FALSE)
+      if( v )
       {
-         bwb_error(err_syntax);
-         return bwb_zline(l);
+         A = v;
       }
    }
+
+   if( v == NULL )
+   {
+      WARN_VARIABLE_NOT_DECLARED;
+      return bwb_zline(l);
+   }
+
    if (IsStringToArray)
    {
       /* CHANGE A$ TO X */
@@ -4797,23 +8183,23 @@ bwb_CHANGE(struct bwb_line * l)
 
       if (A->memstr == NULL)
       {
-         bwb_error("String Variable not allocated");
+         WARN_INTERNAL_ERROR;
          return bwb_zline(l);
       }
       if (A->memstr->sbuffer == NULL)
       {
-         bwb_error("String Variable not allocated");
+         WARN_INTERNAL_ERROR;
          return bwb_zline(l);
       }
       /* variable storage is a mess, we bypass that tradition here. */
       t = 1;
       for (n = 0; n < X->dimensions; n++)
       {
-         t *= X->array_sizes[n];
+         t *= X->UBOUND[n] - X->LBOUND[n] + 1;
       }
       if (t <= A->memstr->length)
       {
-         bwb_error("Numeric Array too small");
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
          return bwb_zline(l);
       }
       n = A->memstr->length;
@@ -4825,6 +8211,7 @@ bwb_CHANGE(struct bwb_line * l)
       {
          char            C;
          BasicNumberType V;
+
          C = *a;
          V = C;
          *x = V;
@@ -4835,47 +8222,60 @@ bwb_CHANGE(struct bwb_line * l)
    else
    {
       /* CHANGE X TO A$ */
-      int             i;
-      int             n;
-      char           *a;
+      int              i;
+      int              n;
+      char            *a;
       BasicNumberType *x;
-      unsigned long   t;
+      unsigned long    t;
 
       if (A->memstr == NULL)
       {
-         bwb_error("String Variable not allocated");
-         return bwb_zline(l);
+         A->memstr = calloc( 1, sizeof( StringType ) );
+         if (A->memstr == NULL)
+         {
+            WARN_INTERNAL_ERROR;
+            return bwb_zline(l);
+         }
+         A->memstr->sbuffer = calloc( 1, BasicStringLengthMax + 1 );
+         A->memstr->length = 0;
       }
       if (A->memstr->sbuffer == NULL)
       {
-         bwb_error("String Variable not allocated");
-         return bwb_zline(l);
+         A->memstr->sbuffer = calloc( 1, BasicStringLengthMax + 1 );
+         if (A->memstr->sbuffer == NULL)
+         {
+            WARN_INTERNAL_ERROR;
+            return bwb_zline(l);
+         }
+         A->memstr->length = 0;
       }
       /* variable storage is a mess, we bypass that tradition here. */
       t = 1;
       for (n = 0; n < X->dimensions; n++)
       {
-         t *= X->array_sizes[n];
+         t *= X->UBOUND[n] - X->LBOUND[n] + 1;
       }
       if (t <= 1)
       {
-         bwb_error("Numeric Array to small");
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
          return bwb_zline(l);
       }
       if (t > BasicStringLengthMax)
       {
-         bwb_error("Numeric Array too large");
+         WARN_SUBSCRIPT_OUT_OF_RANGE;
          return bwb_zline(l);
       }
       /* n = A->memstr->length; */
       a = A->memstr->sbuffer;
       x = X->memnum;
-      n = *x;
+      n = (int) bwb_rint( *x );
+      A->memstr->length = n;
       x++;
       for (i = 0; i < n; i++)
       {
          char            C;
          BasicNumberType V;
+
          V = *x;
          C = V;
          *a = C;
@@ -4885,5 +8285,241 @@ bwb_CHANGE(struct bwb_line * l)
    }
    return bwb_zline(l);
 }
+
+/* 
+--------------------------------------------------------------------------------------------
+                               CONSOLE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType * bwb_CONSOLE(LineType * l)
+{
+   /* SYNTAX: CONSOLE */
+   /* SYNTAX: CONSOLE WIDTH width */
+
+   if( My->IsPrinter == TRUE )
+   {
+      FileType * T;
+      
+      T = My->SYSOUT;
+      My->SYSOUT = My->SYSPRN;
+      My->SYSPRN = T;
+   
+      My->IsPrinter = FALSE;
+   }
+   /* 
+   In general, this is the result:
+   My->SYSOUT->cfp == stdout
+   My->SYSPRN->cfp == stderr
+   */
+   if( line_skip_word( l, "WIDTH" ) )
+   {
+      int width = 0;
+      
+      if( line_read_integer_expression( l, &width ) == FALSE )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+      if( width < 0 )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+      My->SYSOUT->width = width;
+   }
+   
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               LPRINTER
+--------------------------------------------------------------------------------------------
+*/
+
+LineType * bwb_LPRINTER(LineType * l)
+{
+   /* SYNTAX: LPRINTER */
+   /* SYNTAX: LPRINTER WIDTH width */
+
+   if( My->IsPrinter == FALSE )
+   {
+      FileType * T;
+      
+      T = My->SYSOUT;
+      My->SYSOUT = My->SYSPRN;
+      My->SYSPRN = T;
+   
+      My->IsPrinter = TRUE;
+   }
+   /*
+   In general, this is the result:
+   My->SYSOUT->cfp == stderr
+   My->SYSPRN->cfp == stdout
+   */
+   if( line_skip_word( l, "WIDTH" ) )
+   {
+      int width = 0;
+      
+      if( line_read_integer_expression( l, &width ) == FALSE )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+      if( width < 0 )
+      {
+         WARN_ILLEGAL_FUNCTION_CALL;
+         return bwb_zline(l);
+      }
+      My->SYSOUT->width = width;
+   }
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               CREATE
+--------------------------------------------------------------------------------------------
+*/
+
+LineType * bwb_CREATE(LineType * l)
+{
+   /* SYNTAX: CREATE filename$ [ RECL reclen ] AS filenum [ BUFF number ] [ RECS size ] */
+   int  FileNumber = 0;
+   int  width = 0;   
+   int  buffnum = 0;
+   int  recsnum = 0;
+   char filename[ BasicStringLengthMax + 1 ];
+
+   {
+      char * Value = NULL;
+      
+      if( line_read_string_expression( l, &Value ) == FALSE )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      if( Value == NULL )
+      {
+         WARN_SYNTAX_ERROR;
+         return bwb_zline(l);
+      }
+      bwb_strcpy( filename, Value );
+      free( Value );
+   }
+   if( filename[ 0 ] == BasicNulChar )
+   {
+      WARN_BAD_FILE_NAME;
+      return bwb_zline(l);
+   }
+   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
+   {
+      strupper( filename ); /* CBASIC-II: file names are always upper case */
+   }
+   if( line_skip_word( l, "RECL" ) )
+   {
+      if( line_read_integer_expression( l, &width ) == FALSE )
+      {
+         WARN_FIELD_OVERFLOW;
+         return bwb_zline(l);
+      }
+      if( width <= 0 )
+      {
+         WARN_FIELD_OVERFLOW;
+         return bwb_zline(l);
+      }
+   }
+   if( line_skip_word( l, "AS") == FALSE )
+   {
+      WARN_SYNTAX_ERROR;
+      return bwb_zline(l);
+   }
+   if( line_read_integer_expression( l, &FileNumber ) == FALSE )
+   {
+      WARN_BAD_FILE_NUMBER;
+      return bwb_zline(l);
+   }
+   if( FileNumber <= 0 )
+   {
+      WARN_BAD_FILE_NUMBER;
+      return bwb_zline(l);
+   }
+   if( line_skip_word( l, "BUFF" ) )
+   {
+      if( line_read_integer_expression( l, &buffnum ) == FALSE )
+      {
+         WARN_FIELD_OVERFLOW;
+         return bwb_zline(l);
+      }
+      if( buffnum <= 0 )
+      {
+         WARN_FIELD_OVERFLOW;
+         return bwb_zline(l);
+      }
+   }
+   if( line_skip_word( l, "RECS" ) )
+   {
+      if( line_read_integer_expression( l, &recsnum ) == FALSE )
+      {
+         WARN_FIELD_OVERFLOW;
+         return bwb_zline(l);
+      }
+      if( recsnum <= 0 )
+      {
+         WARN_FIELD_OVERFLOW;
+         return bwb_zline(l);
+      }
+   }
+   /* now, we are ready to create the file */      
+   My->CurrentFile = find_file_by_number( FileNumber );
+   if( My->CurrentFile == NULL )
+   {
+      My->CurrentFile = file_new();
+      My->CurrentFile->FileNumber = FileNumber;
+   }
+   bwb_strcpy( My->CurrentFile->filename, filename );
+   if( My->CurrentFile->mode != DEVMODE_CLOSED )
+   {
+      if( My->CurrentFile->cfp != NULL )
+      {
+         fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
+      }
+      if( My->CurrentFile->buffer != NULL )
+      {
+         FREE( My->CurrentFile->buffer, "bwb_CREATE" );
+      }
+   }
+   My->CurrentFile->width = 0;
+   My->CurrentFile->col = 1;
+   My->CurrentFile->row = 1;
+   My->CurrentFile->delimit = ',';
+   My->CurrentFile->buffer = NULL;
+   My->CurrentFile->mode = DEVMODE_CLOSED;
+   /* truncate to zero length or create text file for update  (reading and writing) */
+   if( (My->CurrentFile->cfp = fopen( My->CurrentFile->filename, "w+" )) == NULL )
+   {
+      WARN_BAD_FILE_NAME;
+      return bwb_zline(l);
+   }
+   if( width > 0 )
+   {
+      My->CurrentFile->width = width;
+      My->CurrentFile->mode = DEVMODE_RANDOM;
+   }
+   else
+   {
+      My->CurrentFile->mode = DEVMODE_INPUT | DEVMODE_OUTPUT;
+   }
+   return bwb_zline(l);
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+                               EOF
+--------------------------------------------------------------------------------------------
+*/
+
+
 
 /* EOF */

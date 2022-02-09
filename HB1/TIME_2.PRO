@@ -1,0 +1,1 @@
+OPTION TIME "%H%M%S"

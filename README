@@ -3,7 +3,7 @@
                               README file for
 
 
-               Bywater BASIC Interpreter, version 3.00
+               Bywater BASIC Interpreter, version 3.10
                ---------------------------------------------
 
                     Copyright (c) 1993, Ted A. Campbell
@@ -35,6 +35,9 @@
 
                Version 3.00 modifications by Howard Wulf, AF5NE
                                12 May 2015
+
+               Version 3.10 modifications by Howard Wulf, AF5NE
+                               27 July 2016
 
 
 
@@ -70,7 +73,7 @@ COMMUNICATIONS:
 
    email:  tcamp@delphi.com  (for Ted Campbell)
            eidetics@cerf.net (for Jon Volkoff)
-           fight.subjugation@gmail.com (for Paul Edwards)
+           mutazilah@gmail.com (for Paul Edwards)
 
 
 A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
@@ -79,297 +82,576 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
    available unless you have enabled a particular dialect using
    the OPTION VERSION command. 
 
-     ? expressions...
-     ABS( X )
-     ACOS( X )
-     ANGLE( X, Y )
-     ARGC
-     ARGT$( X )
-     ARGV$( X )
-     ARGV( X )
-     ASC( A$ )
-     ASIN( X )
-     ATN( X )
-     CALL subroutine-name [parameter [, ...] ]
-     CASE ELSE
-     CASE IF partial-expression
-     CASE IS
-     CASE constant
-     CCUR( X )
-     CDBL( X )
-     CEIL( X )
-     CHAIN filename$
-     CHANGE A$ TO X | CHANGE X TO A$
-     CHDIR( A$ )
-     CHR$( X )
-     CINT( X )
-     CLEAR
-     CLNG( X )
-     CLOAD [file-name$]
-     CLOAD* ArrayName
-     CLOSE( X )
-     CLS
-     CMDS
-     COLOR( X, Y )
-     COMMON variable [, ...]
-     CONT
-     COS( X )
-     COSH( X )
-     COT( X )
-     CSAVE [file-name$]
-     CSAVE* ArrayName
-     CSC( X )
-     CSNG( X )
-     CVC( A$ )
-     CVD( A$ )
-     CVI( A$ )
-     CVL( A$ )
-     CVS( A$ )
-     DATA constant[, ...]
-     DATE
-     DATE$
-     DEF FN
-     DEF FNname(arg...)] = expression
-     DEF SUB
-     DEFDBL letter[-letter] [, ...]
-     DEFINT  letter[-letter] [, ...]
-     DEFSNG letter[-letter] [, ...]
-     DEFSTR letter[-letter] [, ...]
-     DEG( X )
-     DELETE line [- line]
-     DIM variable( elements [, ...]) [, ...]
-     DO
-     DO UNTIL expression
-     DO WHILE expression
-     EDIT
-     ELSE
-     ELSEIF
-     END
-     END FUNCTION
-     END IF
-     END SELECT
-     END SUB
-     ENVIRON$( A$ )
-     ENVIRON( A$ )
-     EOF( X )
-     EPS( X )
-     ERASE variable [, ...]
-     ERL
-     ERR
-     ERR$
-     ERROR( X )
-     ERROR( X, A$ )
-     EXIT
-     EXIT DO
-     EXIT FOR
-     EXIT FUNCTION
-     EXIT SUB
-     EXIT UNTIL
-     EXIT WHILE
-     EXP( X )
-     FIELD [#] device-number, number AS string-variable$ [, ...]
-     FILEATTR( X, Y )
-     FILES
-     FILES( A$ )
-     FIX( X )
-     FNCS
-     FOR variable = start TO finish [STEP increment]
-     FP( X )
-     FRE
-     FRE( A$ )
-     FRE( X )
-     FREEFILE
-     FUNCTION [ ( parameter [, ...  ] ) ]
-     GET( X )
-     GET( X, Y )
-     GO
-     GOSUB line
-     GOTO line
-     HELP name
-     HEX$( X )
-     IF expression THEN
-     IF expression THEN line1 [ELSE line2]
-     INKEY$
-     INP( X )
-     INPUT [# device-number]|[;]["prompt string";]list of variables
-     INPUT$( X )
-     INPUT$( X, Y )
-     INSTR( A$, B$ )
-     INSTR( X, A$, B$ )
-     INT( X )
-     IP( X )
-     KILL( A$ )
-     LCASE$( A$ )
-     LEFT$( A$, X )
-     LEN( A$ )
-     [LET] variable = expression
-     LINE INPUT [[#] device-number,]["prompt string";] string-variable$
-     LIST line1 [- line2]
-     LOAD [file-name$]
-     LOC( X )
-     LOCATE( X, Y )
-     LOF( X )
-     LOG( X )
-     LOG10( X )
-     LOG2( X )
-     LOOP
-     LOOP UNTIL
-     LOOP WHILE
-     LPOS
-     LPRINT [USING format-string$;] expressions...
-     LSET string-variable$ = expression
-     LTRIM$( A$ )
-     LWIDTH( X )
-     MAINTAINER
-     MAX( X, Y )
-     MAXBYT
-     MAXCUR
-     MAXDBL
-     MAXDEV
-     MAXINT
-     MAXLEN( A$ )
-     MAXLNG
-     MAXLVL
-     MAXNUM
-     MAXSNG
-     MERGE file-name
-     MID$( A$, X )
-     MID$( A$, X, Y )
-     MID$( variable$, start [, count ] ) = expression
-     MIN( X, Y )
-     MINBYT
-     MINCUR
-     MINDBL
-     MINDEV
-     MININT
-     MINLNG
-     MINNUM
-     MINSNG
-     MKC$( X )
-     MKD$( X )
-     MKDIR( A$ )
-     MKI$( X )
-     MKL$( X )
-     MKS$( X )
-     MOD( X, Y )
-     NAME old-file-name AS new-file-name
-     NAME( A$, B$ )
-     NEW
-     NEXT [variable]
-     NULL( X )
-     OCT$( X )
-     ON ERROR GOTO errline   |   ON ERROR RESUME NEXT
-     ON TIMER count GOSUB line
-     ON expression GOTO | GOSUB line [, ...]
-     OPEN file-name [FOR INPUT|OUTPUT|APPEND|BINARY|RANDOM] AS [#]device-number [LEN = record-length]
-     OPEN( A$, X, B$ )
-     OPEN( A$, X, B$, Y )
-     OPTION ...
-     OPTION ANGLE DEGREES
-     OPTION ANGLE RADIANS
-     OPTION ARITHMETIC DECIMAL
-     OPTION ARITHMETIC FIXED
-     OPTION ARITHMETIC NATIVE
-     OPTION BASE 0
-     OPTION BASE 1
-     OPTION BUGS OFF
-     OPTION BUGS ON
-     OPTION COMPARE BINARY
-     OPTION COMPARE TEXT
-     OPTION COVERAGE OFF
-     OPTION COVERAGE ON
-     OPTION INDENT number
-     OPTION STRICT OFF
-     OPTION STRICT ON
-     OPTION TERMINAL ADM-3A
-     OPTION TERMINAL ANSI
-     OPTION TERMINAL NONE
-     OPTION TRACE OFF
-     OPTION TRACE ON
-     OPTION VERSION [version] 
-     ORD( A$ )
-     OUT( X, Y )
-     PEEK( X )
-     PI
-     POKE( X, Y )
-     POS
-     POS( A$, B$ )
-     POS( A$, B$, X )
-     POS( X )
-     PRINT [# device-number,][USING format-string$;] expressions...
-     PUT( X )
-     PUT( X, Y )
-     QUIT
-     RAD( X )
-     RANDOMIZE
-     RANDOMIZE( X )
-     READ variable [, ...]
-     REM ...
-     REMAINDER( X, Y )
-     RENUM
-     REPEAT$( X, A$ )
-     REPEAT$( X, Y )
-     RESET
-     RESTORE [line]
-     RESUME [ 0 | line | NEXT ]
-     RETURN
-     RIGHT$( A$, X )
-     RMDIR( A$ )
-     RND
-     RND( X )
-     ROUND( X, Y )
-     RSET string-variable$ = expression
-     RTRIM$( A$ )
-     RUN [line | file-name$]
-     SAVE [file-name$]
-     SEC( X )
-     SEEK( X )
-     SEEK( X, Y )
-     SELECT
-     SELECT CASE expression
-     SGN( X )
-     SHELL( A$ )
-     SIN( X )
-     SINH( X )
-     SPACE$( X )
-     SPC( X )
-     SQR( X )
-     STOP
-     STR$( X )
-     STRING$( X, A$ )
-     STRING$( X, Y )
-     SUB name [ ( parameter [,...] ) ]
-     SWAP variable, variable
-     SYSTEM
-     TAB( X )
-     TAN( X )
-     TANH( X )
-     TIME
-     TIME$
-     TIMER
-     TIMER ON | STOP | OFF
-     TRIM$( A$ )
-     TROFF
-     TRON
-     TRUNCATE( X, Y )
-     UCASE$( A$ )
-     UEND
-     UNTIL expression
-     USER LBL
-     VAL( A$ )
-     VARS
-     WAIT( X, Y )
-     WAIT( X, Y, Z )
-     WEND
-     WHILE
-     WIDTH( X )
-     WIDTH( X, Y )
-     WRITE [# device-number,] element [, .... ]
+      # X
+      + X
+      - X
+      ? expressions...
+      A$ LIKE B$
+      APPEND filename$ | APPEND # filenumber
+      AS string-variable$ [, ...]
+      AUTO [start [, increment]]
+      BACKSPACE # X
+      BREAK line [, ...]]
+      BYE
+      CALL subroutine-name( [parameter [, ...] ] )
+      CASE ELSE
+      CASE constant [TO constant] | CASE IF partial-expression | CASE IS partial-expression
+      CHAIN filename$ [, linenumber]
+      CHANGE A$ TO X | CHANGE X TO A$
+      CLEAR
+      CLOAD [file-name$]
+      CLOAD* ArrayName
+      CLOSE filename$ [, ...]
+      CLR
+      CMDS
+      COMMON variable [, ...]
+      CONSOLE [WIDTH width]
+      CONT
+      CREATE filename$ [ RECL reclen ] AS filenum [ BUFF number ] [ RECS size ]
+      CSAVE [file-name$]
+      CSAVE* ArrayName
+      DATA constant [, ...]
+      DEF FNname[(arg...)] [= expression]
+      DEF SUB
+      DEFBYT letter[-letter] [, ...]
+      DEFCUR letter[-letter] [, ...]
+      DEFDBL letter[-letter] [, ...]
+      DEFINT  letter[-letter] [, ...]
+      DEFLNG letter[-letter] [, ...]
+      DEFSNG letter[-letter] [, ...]
+      DEFSTR letter[-letter] [, ...]
+      DELETE line [- line]
+      DELIMIT # X, A$
+      DIM variable( elements [, ...]) [, ...]
+      DO [UNTIL|WHILE expression]
+      DSP variable [, ...]]
+      EDIT
+      ELSE
+      ELSEIF
+      END
+      END FUNCTION
+      END IF
+      END SELECT
+      END SUB
+      ERASE variable [, ...]
+      EXCHANGE variable, variable
+      EXIT
+      EXIT DO
+      EXIT FOR
+      EXIT FUNCTION
+      EXIT SUB
+      EXIT UNTIL
+      EXIT WHILE
+      FEND
+      FIELD [#] device-number, number AS string-variable$ [, ...]
+      FILE # X, A$
+      FILES A$[, ...]
+      FNCS
+      FNEND
+      FOR variable = start TO finish [STEP increment]
+      FUNCTION [ ( parameter [, ...  ] ) ]
+      GET filename$ , scalar [, ...]
+      GO
+      GO SUB line
+      GO TO line
+      GOODBYE
+      GOSUB line
+      GOTO line
+      HELP name
+      IF END # filenum THEN line1 [ELSE line2]
+      IF MORE # filenum THEN line1 [ELSE line2]
+      IF expression THEN
+      IF expression THEN line1 [ELSE line2]
+      IMAGE "format string" 
+      INPUT [# device-number]|[;]["prompt string";] variable [, ...]s
+      LINE INPUT [[#] device-number,]["prompt string";] string-variable$
+      LIST line1 [- line2]
+      LLIST line1 [- line2]
+      LOAD [file-name$]
+      LOOP [UNTIL|WHILE expression]
+      LPRINT [USING format-string$;] expressions...
+      LPRINTER [WIDTH width]
+      LSET string-variable$ = expression
+      MAINTAINER
+      MARGIN # filenumber, width
+      MAT GET filename$, arrayname
+      MAT INPUT arrayname
+      MAT PRINT arrayname
+      MAT PUT filename$, arrayname
+      MAT READ arrayname
+      MAT WRITE arrayname
+      MAT arrayname = expression
+      MERGE file-name
+      MID$( variable$, start [, count ] ) = expression
+      N  = ABS( X )
+      N  = ACOS( X )
+      N  = ACS( X )
+      N  = ACSD( X )
+      N  = ACSG( X )
+      N  = ANGLE( X, Y )
+      N  = ARCSIN( X )
+      N  = ARCTAN( X )
+      N  = ARGC
+      N  = ARGV( X )
+      N  = ASC( A$ )
+      N  = ASC( A$, X )
+      N  = ASCII( A$ )
+      N  = ASIN( X )
+      N  = ASN( X )
+      N  = ASND( X )
+      N  = ASNG( X )
+      N  = ATAN( X )
+      N  = ATN( X )
+      N  = ATND( X )
+      N  = ATNG( X )
+      N  = BASE
+      N  = CATALOG
+      N  = CATALOG( A$ )
+      N  = CCUR( X )
+      N  = CDBL( X )
+      N  = CEIL( X )
+      N  = CHDIR( A$ )
+      N  = CINT( X )
+      N  = CLG( X )
+      N  = CLK( X )
+      N  = CLNG( X )
+      N  = CLOG( X )
+      N  = CLOSE
+      N  = CLOSE( X )
+      N  = CLS
+      N  = CODE( A$ )
+      N  = COLOR( X, Y )
+      N  = COS( X )
+      N  = COSD( X )
+      N  = COSG( X )
+      N  = COSH( X )
+      N  = COT( X )
+      N  = COUNT
+      N  = CSC( X )
+      N  = CSH( X )
+      N  = CSNG( X )
+      N  = CVC( A$ )
+      N  = CVD( A$ )
+      N  = CVI( A$ )
+      N  = CVL( A$ )
+      N  = CVS( A$ )
+      N  = DATE
+      N  = DEF FN
+      N  = DEG
+      N  = DEG( X )
+      N  = DEGREE
+      N  = DEGREE( X )
+      N  = DET
+      N  = DIM( ... )
+      N  = ENVIRON( A$ )
+      N  = EOF( X )
+      N  = EPS( X )
+      N  = ERL
+      N  = ERR
+      N  = ERRL
+      N  = ERRN
+      N  = ERROR( X )
+      N  = ERROR( X, A$ )
+      N  = EXAM( X )
+      N  = EXP( X )
+      N  = FETCH( X )
+      N  = FILEATTR( X, Y )
+      N  = FILES
+      N  = FILES( A$ )
+      N  = FILL( X, Y )
+      N  = FIX( X )
+      N  = FLOAT( X )
+      N  = FLOW
+      N  = FP( X )
+      N  = FRAC( X )
+      N  = FRE
+      N  = FRE( A$ )
+      N  = FRE( X )
+      N  = FREE
+      N  = FREE( A$ )
+      N  = FREE( X )
+      N  = FREEFILE
+      N  = GET( X )
+      N  = GET( X, Y )
+      N  = GRAD
+      N  = GRADIAN
+      N  = HCS( X )
+      N  = HOME
+      N  = HSN( X )
+      N  = HTN( X )
+      N  = INDEX( A$, B$ )
+      N  = INITIALIZE
+      N  = INP( X )
+      N  = INSTR( A$, B$ )
+      N  = INSTR( X, A$, B$ )
+      N  = INT%( X )
+      N  = INT( X )
+      N  = IP( X )
+      N  = KILL( A$ )
+      N  = LBOUND( ... )
+      N  = LEN( A$ )
+      N  = LGT( X )
+      N  = LN( X )
+      N  = LOC( X )
+      N  = LOCATE( X, Y )
+      N  = LOF( X )
+      N  = LOG( X )
+      N  = LOG10( X )
+      N  = LOG2( X )
+      N  = LOGE( X )
+      N  = LPOS
+      N  = LTW( X )
+      N  = LWIDTH( X )
+      N  = MATCH( A$, B$, X )
+      N  = MAX( X, Y )
+      N  = MAXBYT
+      N  = MAXCUR
+      N  = MAXDBL
+      N  = MAXDEV
+      N  = MAXINT
+      N  = MAXLEN( A$ )
+      N  = MAXLNG
+      N  = MAXLVL
+      N  = MAXNUM
+      N  = MAXSNG
+      N  = MEM
+      N  = MIN( X, Y )
+      N  = MINBYT
+      N  = MINCUR
+      N  = MINDBL
+      N  = MINDEV
+      N  = MININT
+      N  = MINLNG
+      N  = MINNUM
+      N  = MINSNG
+      N  = MKDIR( A$ )
+      N  = MOD( X, Y )
+      N  = NAME( A$, B$ )
+      N  = NOFLOW
+      N  = NOTRACE
+      N  = NULL( X )
+      N  = NUM
+      N  = NUM( A$ )
+      N  = OPEN( A$, X, B$ )
+      N  = OPEN( A$, X, B$, Y )
+      N  = ORD( A$ )
+      N  = OUT( X, Y )
+      N  = PAUSE( X )
+      N  = PDL( X )
+      N  = PEEK( X )
+      N  = PI
+      N  = PI( X )
+      N  = PIN( X )
+      N  = POKE( X, Y )
+      N  = POS
+      N  = POS( A$, B$ )
+      N  = POS( A$, B$, X )
+      N  = POS( X )
+      N  = PUT( X )
+      N  = PUT( X, Y )
+      N  = RAD
+      N  = RAD( X )
+      N  = RADIAN
+      N  = RAN
+      N  = RAN( X )
+      N  = RANDOM
+      N  = RANDOM( X )
+      N  = RANDOMIZE
+      N  = RANDOMIZE( X )
+      N  = REMAINDER( X, Y )
+      N  = RENAME( A$, B$ )
+      N  = RESET
+      N  = RMDIR( A$ )
+      N  = RND
+      N  = RND( X )
+      N  = ROUND( X, Y )
+      N  = SEC( X )
+      N  = SEEK( X )
+      N  = SEEK( X, Y )
+      N  = SGN( X )
+      N  = SHELL( A$ )
+      N  = SIN( X )
+      N  = SIND( X )
+      N  = SING( X )
+      N  = SINH( X )
+      N  = SIZE( ... )
+      N  = SIZE( A$ )
+      N  = SLEEP( X )
+      N  = SNH( X )
+      N  = SQR( X )
+      N  = SQRT( X )
+      N  = STUFF( X, Y )
+      N  = TAN( X )
+      N  = TAND( X )
+      N  = TANG( X )
+      N  = TANH( X )
+      N  = TI
+      N  = TIM
+      N  = TIM( X )
+      N  = TIME
+      N  = TIME( X )
+      N  = TIMER
+      N  = TOP
+      N  = TRACE
+      N  = TROFF
+      N  = TRON
+      N  = TRUNCATE( X, Y )
+      N  = UBOUND( ... )
+      N  = UNSAVE( A$ )
+      N  = VAL( A$ )
+      N  = VTAB( X )
+      N  = WAIT( X )
+      N  = WAIT( X, Y )
+      N  = WAIT( X, Y, Z )
+      N  = WIDTH( X )
+      N  = WIDTH( X, Y )
+      NAME old-file-name AS new-file-name
+      NEW
+      NEXT [variable]
+      NOT X
+      OF line, ...
+      OLD [file-name$]
+      ON ERROR ...
+      ON ERROR GOSUB errline
+      ON ERROR GOTO errline
+      ON ERROR RESUME ...
+      ON ERROR RESUME NEXT
+      ON ERROR RETURN ...
+      ON ERROR RETURN NEXT
+      ON TIMER count GOSUB line
+      ON expression GOTO | GOSUB line [, ...]
+      OPEN file-name [FOR INPUT|OUTPUT|APPEND|BINARY|RANDOM] AS [#]device-number [LEN = record-length]
+      OPTION ...
+      OPTION ANGLE ...
+      OPTION ANGLE DEGREES
+      OPTION ANGLE GRADIANS
+      OPTION ANGLE RADIANS
+      OPTION ARITHMETIC
+      OPTION ARITHMETIC DECIMAL
+      OPTION ARITHMETIC FIXED
+      OPTION ARITHMETIC NATIVE
+      OPTION BASE X
+      OPTION BUGS
+      OPTION BUGS OFF
+      OPTION BUGS ON
+      OPTION COMMENT char
+      OPTION COMPARE
+      OPTION COMPARE BINARY
+      OPTION COMPARE DATABASE
+      OPTION COMPARE TEXT
+      OPTION COVERAGE
+      OPTION COVERAGE OFF
+      OPTION COVERAGE ON
+      OPTION DATE format
+      OPTION DISABLE
+      OPTION DISABLE COMMAND name
+      OPTION DISABLE FUNCTION name
+      OPTION DISABLE OPERATOR name
+      OPTION ENABLE
+      OPTION ENABLE COMMAND name
+      OPTION ENABLE FUNCTION name
+      OPTION ENABLE OPERATOR name
+      OPTION ERROR
+      OPTION ERROR GOSUB
+      OPTION ERROR GOTO
+      OPTION EXPLICIT
+      OPTION IMAGE char
+      OPTION IMPLICIT
+      OPTION INDENT number
+      OPTION LABELS
+      OPTION LABELS OFF
+      OPTION LABELS ON
+      OPTION PRINT char
+      OPTION ROUND
+      OPTION ROUND BANK
+      OPTION ROUND MATH
+      OPTION ROUND TRUNCATE
+      OPTION SLEEP number
+      OPTION STATEMENT char
+      OPTION STDERR filename$
+      OPTION STDIN filename$
+      OPTION STDOUT filename$
+      OPTION STRICT
+      OPTION STRICT OFF
+      OPTION STRICT ON
+      OPTION TERMINAL
+      OPTION TERMINAL ADM
+      OPTION TERMINAL ANSI
+      OPTION TERMINAL NONE
+      OPTION TIME format
+      OPTION TRACE
+      OPTION TRACE OFF
+      OPTION TRACE ON
+      OPTION USING string$
+      OPTION VERSION [version]
+      PAUSE [comment]
+      POP
+      PRINT [# device-number,][USING format$;] expressions ...
+      PUT filename$ , value [, ...]
+      QUIT
+      READ variable [, ...]
+      RECALL ArrayName
+      REM ...
+      RENAME [file-name$]
+      RENUM
+      RENUMBER
+      RESET filename$ [, ...]
+      RESTORE [line]
+      RESUME [ 0 | line | NEXT ]
+      RETURN
+      RSET string-variable$ = expression
+      RUN [line | file-name$]
+      S$ = ARGT$( X )
+      S$ = ARGV$( X )
+      S$ = CHAR$( X )
+      S$ = CHAR( X, Y )
+      S$ = CHR$( X )
+      S$ = CHR( X )
+      S$ = CLK$
+      S$ = CLK( X )
+      S$ = COMMAND$( X )
+      S$ = CUR( X, Y )
+      S$ = DAT$
+      S$ = DATE$
+      S$ = DATE$( X )
+      S$ = ENVIRON$( A$ )
+      S$ = ERR$
+      S$ = ERROR$
+      S$ = HEX$( X )
+      S$ = INKEY$
+      S$ = INPUT$( X )
+      S$ = INPUT$( X, Y )
+      S$ = KEY
+      S$ = KEY$
+      S$ = LCASE$( A$ )
+      S$ = LEFT$( A$, X )
+      S$ = LEFT( A$, X )
+      S$ = LIN( X )
+      S$ = LTRIM$( A$ )
+      S$ = MAX( A$, B$ )
+      S$ = MID$( A$, X )
+      S$ = MID$( A$, X, Y )
+      S$ = MID( A$, X )
+      S$ = MID( A$, X, Y )
+      S$ = MIN( A$, B$ )
+      S$ = MKC$( X )
+      S$ = MKD$( X )
+      S$ = MKI$( X )
+      S$ = MKL$( X )
+      S$ = MKS$( X )
+      S$ = NUM$( X )
+      S$ = OCT$( X )
+      S$ = REPEAT$( X, A$ )
+      S$ = REPEAT$( X, Y )
+      S$ = RIGHT$( A$, X )
+      S$ = RIGHT( A$, X )
+      S$ = RTRIM$( A$ )
+      S$ = SEG$( A$, X, Y )
+      S$ = SEG( A$, X, Y )
+      S$ = SPA( X )
+      S$ = SPACE$( X )
+      S$ = SPACE( X )
+      S$ = SPC( X )
+      S$ = STR$( X )
+      S$ = STR( X, Y )
+      S$ = STRING$( X, A$ )
+      S$ = STRING$( X, Y )
+      S$ = STRING( X, Y )
+      S$ = TAB( X )
+      S$ = TI$
+      S$ = TIME$
+      S$ = TIME$( X )
+      S$ = TRIM$( A$ )
+      S$ = UCASE$( A$ )
+      SAVE [file-name$]
+      SCRATCH # X
+      SELECT
+      SELECT CASE expression
+      STEP
+      STOP
+      STORE ArrayName
+      SUB name [ ( parameter [,...] ) ]
+      SUBEND
+      SWAP variable, variable
+      SYSTEM
+      TEXT letter[-letter] [, ...]
+      THEN line1
+      TIMER
+      TIMER OFF
+      TIMER ON
+      TIMER STOP
+      TLOAD [file-name$]
+      TO
+      TRACE OFF
+      TRACE ON
+      TRACE ON | OFF
+      TSAVE [file-name$]
+      UEND
+      UNTIL expression
+      USE parameter$
+      USER LBL
+      VARS
+      WEND
+      WHILE
+      WRITE [# device-number,] element [, .... ]
+      X # Y
+      X & Y
+      X * Y
+      X ** Y
+      X + Y
+      X - Y
+      X / Y
+      X < Y
+      X <= Y
+      X <> Y
+      X = Y
+      X =< Y
+      X => Y
+      X > Y
+      X >< Y
+      X >= Y
+      X AND Y
+      X EQ Y
+      X EQV Y
+      X GE Y
+      X GT Y
+      X IMP Y
+      X LE Y
+      X LT Y
+      X MAX Y
+      X MIN Y
+      X MOD Y
+      X NE Y
+      X OR Y
+      X XOR Y
+      X XRA Y
+      X [ Y
+      X \ Y
+      X ^ Y
+      [LET] variable = expression
 
 
 
 
 CHANGE HISTORY
+
+CHANGES FROM 3.00 to 3.10
+
+   * Implements most of the following BASIC dialects:
+      OPTION VERSION DARTMOUTH        ' Dartmouth DTSS BASIC
+      OPTION VERSION MARK-I           ' GE 265 Mainframe BASIC
+      OPTION VERSION MARK-II          ' GE 435 Mainframe BASIC
+      OPTION VERSION SYSTEM-360       ' IBM System/360 BASIC
+      OPTION VERSION SYSTEM-370       ' IBM System/370 BASIC
+      OPTION VERSION CBASIC-II        ' CBASIC-II for CP/M
+      OPTION VERSION ECMA-55          ' ANSI Minimal BASIC
+      OPTION VERSION HANDBOOK1        ' The BASIC Handbook, 1st Edition
+      OPTION VERSION HANDBOOK2        ' The BASIC Handbook, 2nd Edition
+      OPTION VERSION TRS-80           ' TRS-80 Model I/III/4 LBASIC
+      OPTION VERSION BASIC-80         ' Microsoft BASIC-80 for Xenix
+      OPTION VERSION ECMA-116         ' ANSI Full BASIC
+   
+   * from Howard Wulf, AF5NE
 
 
 CHANGES FROM 2.61 to 3.00

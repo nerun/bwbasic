@@ -4,7 +4,7 @@ REM   Author:  Howard Wulf, AF5NE
 REM     Date:  2015-01-29
 REM   Uasage:  implementation defined
 REM  Example:
-REM            CD \sdcard\Download\BASIC\bwbasic-2.62\
+REM            CD \sdcard\Download\BASIC\bwbasic\
 REM            01INDENT.BAT bwbasic.c
 REM
 indent.exe %1 -bl -ncdb  -nfc1 -nce -ei

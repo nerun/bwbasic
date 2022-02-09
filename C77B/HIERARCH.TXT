@@ -1,0 +1,220 @@
+Chaining sequence of BIZMII files.  Level of indentation
+shows chaining and include calls.
+
+Note that most files include ALL.BAS, so I show it only once.
+
+The number in parentheses at the end of each line is the CPMUG
+volume containing the file.  The "-n" following that is the
+reference to the relative volume number as documented in the
+file "APPENDE.DOC" on CPMUG volume 86.
+
+The .BAS files ALL, FORMAT, CONTROL, CHECK, READFILE, and BIZMII
+are on all disks.
+
+BIZMII.BAS - the Master Menu Businessmaster II. (bizmii)
+    %INCLUDE ALL.BAS
+	%INCLUDE FORMAT.BAS - set common and formats. -1
+	%INCLUDE CONTROL.BAS - set up terminal control chars -1
+    %INCLUDE CHECK.BAS - check for needed files -1
+	CHAIN "READFILE" - read name,date,formats and tabs. (90) -1
+	    CHAIN "BIZMII" - (return)
+---FOLLOWING ON CPMUG VOLUME 90---  LABEL IT "DISK #1"
+    CHAIN "MASTER1" - General Ledger/General Journal Menu (90) -1
+    |   CHAIN "GLENTRY" - General Ledger Entry (90) -1
+    |   |   CHAIN "GLSORT" - General Ledger Entry Sort (90) -1
+    |	|	CHAIN "GLENTRY" - (Return)
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "GLCHART" - General Ledger Chart of Accounts Printer (90) -1
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "MASTER11" - (Return)
+    |   |   CHAIN "GLJOTRAN" - General Journal Transaction Entry (90) -1
+    |   |   |   CHAIN "GLJOSORT" - General Journal entry sort (90) -1
+    |   |   |   |   CHAIN "GLJOTRAN" - (Return)
+    |   |   |   CHAIN "MASTER11" - (Return)
+    |   |   CHAIN "GLJOPOST" - General Journal Posting (90) -1
+    |   |   |   CHAIN "MASTER11" - (Return)
+    |   |   CHAIN "GLCDTRAN" - Check Disbursements Journal Entry (90) -1
+    |   |   |   CHAIN "GLCDSORT" - Check Disbursements Entry Sort (90) -1
+    |   |   |   |   CHAIN "GLCDTRAN" - (Return)
+    |   |   |   CHAIN "MASTER11" - (Return)
+    |   |   CHAIN "GLCDPOST" - Check Disbursement Posting (90) -1
+    |   |   |   CHAIN "MASTER11" - (Return)
+    |   |   CHAIN "GDCHECKS" - General Check Printer (90) -1
+    |   |   |   CHAIN "MASTER11" - (Return)
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "MASTER12" - (Return)
+    |   |   CHAIN "GLCKTRAN" - Check Rcpts Jrnl Tx. Entry (90) -1
+    |   |   |   CHAIN "GLCKSORT" - Check Disbursements Entry Sort (90) -1
+    |   |   |   |   CHAIN "GLCKTRAN" - (Return)
+    |   |   |   CHAIN "MASTER12" - (Return)
+    |   |   CHAIN "GLCKPOST" - Check Receipt Posting (90) -1
+    |   |   |   CHAIN "MASTER12" - (Return)
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "GLTBAL" - General Ledger Trial Balance Printer (90) -1
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "GLBALSHT" - General Ledger Balance Sheet Printer (90) -1
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "GLINCOME" - Income Statement Printer (90) -1
+    |   |   CHAIN "GCINCOME" - Comparative Income Statement Printer (90) -1
+    |   |   |   CHAIN "MASTER1" - (Return)
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "GLBUDGET" - General Ledger Budget Analysis Printer (90) -1
+    |   |   CHAIN "MASTER1" - (Return)
+    |   CHAIN "BIZMII" - (Return)
+---FOLLOWING ON CPMUG VOLUME 89--- LABEL IT "DISK #3"
+    CHAIN "MASTER2" - The Accounts Receivable/Customer Menu (89) -3
+    |   CHAIN "CRENTRY" - Customer Information Entry (89) -3
+    |   |   CHAIN "CRSORT" - Customer Information Entry Sort (89) -3
+    |   |   |   CHAIN "CRENTRY" - (Return)
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRJOTRAN" - Order/Invoice Entry  (89) -3
+    |   |   CHAIN "CRJOSORT" ((( MISSING FILE ))) - 
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRJOLIST" - Invoice Register Printing (89) -3
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRFMINV" - Formatted Invoice Printing (89) -3
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRPPINV" - Preprinted Invoice Printing (89) -3
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRJOPOST" - Accounts Receivable Posting (89) -3
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRRPT" - Aged Accounts Receivable Statement Printer (89) -3
+    |   |   CHAIN "MASTER2" - (Return)
+    |   CHAIN "CRLABELS" - customer mailing label printing. (87) -3
+    |   |   CHAIN "MASTER6" - (expanded below) (87) -4
+    |   CHAIN "BIZMII" - (Return)
+    CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPENTRY" - Vendor Information Entry (89) -3
+    |   |   CHAIN "VPSORT" - Vendor Information Entry Sort (89) -3
+    |   |   CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPJOTRAN" - Purchase Order Entry  (89) -3
+    |   |   CHAIN "VPJOSORT" - ((( missing file )))
+    |   |   CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPJOLIST" - Purchase Order Register Printing (89) -3
+    |   |   CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPFMPO" - Formatted Purchase Order Printing (89) -3
+    |   |   CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPPPPO" - Preprinted Purchase Order Printing (89) -3
+    |   |   CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPJOPOST" - Accounts Payable Posting (89) -3
+    |   |   CHAIN "MASTER3" - (Return)
+    |   CHAIN "VPRPT" - Aged Accounts Payable Statement Printer (89) -3
+    |   |   CHAIN "MASTER3" - (Return) (89)
+    |   CHAIN "VPLABELS" - mailing label printing. (89) -3
+    |   |   CHAIN "MASTER6" (expanded below) (87)
+    |   CHAIN "BIZMII" - (Return)
+---FOLLOWING ON CPMUG VOLUME 87--- LABEL IT "DISK #4"
+    CHAIN "MASTER4" - (Return)
+    |   CHAIN "FGENTRY" - Finished Goods Inventory Entry (87) -3
+    |   |   CHAIN "FGSORT" - Finished Goods Entry Sort (87) -4
+    |   |   |   CHAIN "FGENTRY" - (Return)
+    |   |   CHAIN "MASTER4" - (Return)
+    |   CHAIN "RGENTRY" - Raw Goods Inventory Entry (87) -4
+    |   |   CHAIN "RGSORT" - Raw Goods Entry Sort (87) -4
+    |   |   |   CHAIN "RGENTRY" - (Return)
+    |   |   CHAIN "MASTER4" - (Return)
+    |   CHAIN "FGRPT" - Finished Goods Inventory Report Printer (87) -4
+    |   |   CHAIN "MASTER4" - (Return)
+    |   CHAIN "RGRPT" - Raw Goods Inventory Report Printer (87) -4
+    |   |   CHAIN "MASTER4" - (Return)
+    |   CHAIN "FGALERT" - Finished Goods Inventory Alert Printer (87) -4
+    |   |   CHAIN "MASTER4" - (Return)
+    |   CHAIN "RGALERT" - Raw Goods Inventory Alert Printer (87) -4
+    |   |   CHAIN "MASTER4" - (Return)
+    |   CHAIN "MASTER16" - Fixed Asset Accounting Menu (87) -4
+    |   |   CHAIN "CGENTRY" - Capital Goods (Fixed Asset) Entry (87) -4
+    |   |   |   CHAIN "CGSORT" - Capital Goods Entry Sort (87) -4
+    |   |   |   |   CHAIN "CGENTRY" - (Return)
+    |   |   |   CHAIN "MASTER16" - (Return)
+    |   |   CHAIN "CGDEPCAL" - Depreciation Calculator (87) -4
+    |   |   |   CHAIN "MASTER16" - (Return)
+    |   |   CHAIN "CGRPT" - Depreciation Report Printer (87) -4
+    |   |   |   CHAIN "MASTER16" - (Return)
+    |   |   CHAIN "CGFM4562" - IRS Form 4652 - Depreciation Printer (87) -4
+    |   |   |   CHAIN "MASTER16" - (Return)
+    |   |   CHAIN "MASTER4" -  (87)
+    |   CHAIN "BIZMII" - (Return)
+---FOLLOWING ON CPMUG VOLUME 88---  LABEL IT "DISK #2"
+    CHAIN "MASTER5" - (Return)
+    |   CHAIN "EPENTRY" - Employee Payroll Record Entry (88) -2
+    |   |   CHAIN "EPSORT" - Employee Information Entry Sort (88) -2
+    |   |   |   CHAIN "EPENTRY" - (Return)
+    |   |   CHAIN "EPLIST" - Payroll File Listing (88) -2
+    |   |   |   CHAIN "EPENTRY" - (Return)
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "TMENTRY" - Payroll Time Card Entry (88) -2
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "EPJOTRAN" - Payroll Calculation (88) -2
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "EPSUMARY" - Payroll Register Printer (88) -2
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "EPCHECKS" - Payroll Check Printer (88) -2
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "EPJOPOST" - Payroll Journal Posting (88) -2
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "EPDPOSIT" - Federal Tax Deposit Entry (88) -2
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "MASTER14" - (Return)
+    |   |   CHAIN "FED941PR" - Fed 941 Quarterly Tax Ret Printer (88) -2
+    |   |   |   CHAIN "MASTER5" - (Return)
+    |   |   CHAIN "MASTER5" - (Return)
+    |   |   CHAIN "W2PRINT" - Federal W2 Printer (88) -2
+    |   |   |   CHAIN "MASTER5" - (Return)
+    |   |   CHAIN "MASTER5" - (Return)
+    |   CHAIN "BIZMII" - (Return)
+    |
+---FOLLOWING ON CPMUG VOLUME 87--- LABEL IT "DISK #4 AND #5"
+    CHAIN "MASTER6" - Mailing List Menu (87)
+    |   CHAIN "MAENTRY" - Mailing List Name Entry Program (87) -4
+    |   |   CHAIN "MASORT" - Mailing List Entry Sort Program (87) -4
+    |   |   |   CHAIN "MAENTRY" - (Return)
+    |   |   CHAIN "MASTER6" - (Return)
+    |   CHAIN "MALABELS" - mailing label printing program. (87) -4
+    |   |   CHAIN "MASTER6" - (Return)
+    |   CHAIN "CRLABELS" - customer mailing label printing program. (87) -4
+    |   |   CHAIN "MASTER6" - (Return)
+    |   CHAIN "VPLABELS" - mailing label printing program. (89) -4
+    |   |   CHAIN "MASTER6" - (Return)
+    |   CHAIN "EPLABELS" - employee mailing label printing program. (87) -4
+    |   |   CHAIN "MASTER6" - (Return)
+    |   CHAIN "BIZMII" - (Return)
+    CHAIN "MASTER7" - (Return)
+    |   CHAIN "DAENTRY" - Date Entry Program (87) -5
+    |   |   CHAIN "MASTER7" - (Return)
+    |   CHAIN "FMTENTRY" - Dollar and Percentage Format Entry Program (87) -5
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "TAENTRY" - General Ledger Tab Entry Program (87) -5
+    |   |   CHAIN "MASTER7" - (Return)
+    |   CHAIN "MASTER9" - (Return)
+    |   |   CHAIN "GLHENTRY" - General Ledger Heading Entry Program (87) -5
+    |   |   |   CHAIN "GLHSORT" - General Ledger Entry Sort Program (87) -5
+    |   |   |   |   CHAIN "GLHENTRY" - (Return)
+    |   |   |   CHAIN "BIZMII" - (Return)
+    |   |   CHAIN "GLSENTRY" - General Ledger Subheading Entry Program (87) -5
+    |   |   |   CHAIN "GLSSORT" - Genl Ledger Subhdg Entry Sort Program (87) -5
+    |   |   |   |   CHAIN "GLSENTRY" - (Return)
+    |   |   |   CHAIN "BIZMII" - (Return)
+    |   |   CHAIN "MASTER7" - (Return)
+    |   CHAIN "NAMENTRY" - Company Name Entry Program (87) -5
+    |   |   CHAIN "NMSORT" - Company Name Entry Sort Program (87) -5
+    |   |   |   CHAIN "NAMENTRY" - (Return)
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "EFENTRY" - Federal Tax Table Entry Program (87) -5
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "ESENTRY" - California State Tax Table Entry Program (87) -5
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "MASTER15" - (Return)
+    |   |   CHAIN "EPTABS" - Payroll Check Tab Entry Program (87) -5
+    |   |   |   CHAIN "MASTER15" - (Return)
+    |   |   CHAIN "EPCUTS" - Payroll Cutoff and Percentage Entry Program (87) -5
+    |   |   |   CHAIN "MASTER15" - (Return)
+    |   |   CHAIN "MASTER7" - (Return)
+    |   CHAIN "BIZMII" - (Return)
+    CHAIN "MASTER8" - (Return)
+    |   CHAIN "MMAINT" - Monthly File Maintenance Program (87) -5
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "QMAINT" - Quarterly File Maintenance Program (87) -5
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "YMAINT" - Yearly File Maintenance Program (87) -5
+    |   |   CHAIN "BIZMII" - (Return)
+    |   CHAIN "BIZMII" - (Return)

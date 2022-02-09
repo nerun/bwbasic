@@ -1,0 +1,18 @@
+THIS PROGRAM TESTS THE SAVE FEATURE                                             
+bwBASIC: LIST                                                                   
+   10 REM 'SAVE' TEST PROGRAM                                                   
+   20 PRINT "THIS PROGRAM TESTS THE SAVE FEATURE"                               
+   99 END                                                                       
+                                                                                
+bwBASIC: SAVE "SAVE_1.DAT"                                                      
+bwBASIC: NEW                                                                    
+bwBASIC: LIST                                                                   
+                                                                                
+bwBASIC: LOAD "SAVE_1.DAT"                                                      
+bwBASIC: LIST                                                                   
+   10 REM 'SAVE' TEST PROGRAM                                                   
+   20 PRINT "THIS PROGRAM TESTS THE SAVE FEATURE"                               
+   99 END                                                                       
+                                                                                
+bwBASIC: RUN                                                                    
+THIS PROGRAM TESTS THE SAVE FEATURE                                             

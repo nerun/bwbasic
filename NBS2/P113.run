@@ -24,4 +24,4 @@ PLEASE ENTER: 1,2,3
 STATEMENT FOR THIS REPLY: INPUT A,,B                                            
 ? 0,0,0                                                                         
                                                                                 
-ERROR in line 270: Syntax Error                                                 
+ERROR in line 270: Variable Not Declared                                        

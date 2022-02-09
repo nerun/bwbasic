@@ -29,5 +29,8 @@ OCCURRENCES OF THE QUOTE CHARACTER AND A QUESTION MARK
 APPEARS IN THE NEXT STATEMENT AFTER THIS PARAGRAPH.                             
 CHECK THE NEXT LINE OF OUTPUT FOR THE PROCESSOR'S                               
 INTERPRETATION.                                                                 
+                       *"?                                                      
                                                                                 
-ERROR in line 300: in bwb_exp(): incomplete expression.                         
+                               END TEST.                                        
+                                                                                
+END PROGRAM 193                                                                 

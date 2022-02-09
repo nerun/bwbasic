@@ -233,7 +233,7 @@ EXCEPTION: WRONG TYPE; SHOULD BE  1  ITEM(S).
 PLEASE ENTER:                                                                   
   #AB#CD#                                                                       
 ? "AB"CD"                                                                       
-*** Type Mismatch ***                                                           
+*** Count Mismatch ***                                                          
 *** Retry INPUT ***                                                             
 ? 0                                                                             
 ITEM# 1 :0                                                                      

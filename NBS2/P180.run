@@ -21,6 +21,5 @@ ABOUT TO EXECUTE:
    ON 1E-33 / 0 GOTO ...                                                        
                                                                                 
 *** WARNING:  Divide by 0 ***                                                   
-*** Arithmetic Overflow ***                                                     
                                                                                 
-ERROR in line 250: Value is out of range                                        
+ERROR in line 250: Undefined line                                               

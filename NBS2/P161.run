@@ -25,5 +25,9 @@ FOR DETAILED CRITERIA.
 DEFINITION OF FNA(X) = X / FNA(X-1)                                             
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF FNA.                                             
+*** WARNING:  Divide by 0 ***                                                   
+*** WARNING:  Divide by 0 ***                                                   
+*** Arithmetic Overflow ***                                                     
+*** Arithmetic Overflow ***                                                     
                                                                                 
-ERROR in line 290: in inc_esc(): Maximum expression stack exceeded <63>         
+ERROR in line 290: Out of memory                                                

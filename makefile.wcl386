@@ -34,14 +34,14 @@ LINK=		wlink
 # 	-wx	Display warnings at maximum level
 # 	-za	ANSI C syntax only; no language extensions
 #
-CFLAGS=         -bc -c -ox -q -wx -za -DMSDOS 
+CFLAGS=         -bc -c -ox -q -wx -za -DMSDOS -D__WATCOM__
 
 LFLAGS=         OPTION QUIET
 
-OFILES=         bwbasic.obj bwb_cmd.obj bwb_cnd.obj bwb_dio.obj bwb_elx.obj &
-                bwb_exp.obj bwb_fnc.obj bwb_inp.obj bwb_int.obj bwb_ops.obj &
-                bwb_prn.obj bwb_stc.obj bwb_str.obj bwb_tbl.obj bwb_var.obj &
-                bwd_cmd.obj bwd_fun.obj bwx_tty.obj 
+OFILES=         bwbasic.obj bwb_cmd.obj bwb_cnd.obj bwb_dio.obj &
+                bwb_exp.obj bwb_fnc.obj bwb_inp.obj bwb_int.obj &
+                bwb_prn.obj bwb_stc.obj bwb_str.obj bwb_tbl.obj &
+                bwb_var.obj bwd_cmd.obj bwd_fun.obj bwx_tty.obj 
 
 HFILES=         bwbasic.h
 
@@ -69,8 +69,6 @@ bwb_cnd.obj:	bwb_cnd.c $(HFILES) $(__MAKEFILES__)
 
 bwb_dio.obj:	bwb_dio.c $(HFILES) $(__MAKEFILES__)
 
-bwb_elx.obj:	bwb_elx.c $(HFILES) $(__MAKEFILES__)
-
 bwb_exp.obj:	bwb_exp.c $(HFILES) $(__MAKEFILES__)
 
 bwb_fnc.obj:	bwb_fnc.c $(HFILES) $(__MAKEFILES__)
@@ -78,8 +76,6 @@ bwb_fnc.obj:	bwb_fnc.c $(HFILES) $(__MAKEFILES__)
 bwb_inp.obj:	bwb_inp.c $(HFILES) $(__MAKEFILES__)
 
 bwb_int.obj:	bwb_int.c $(HFILES) $(__MAKEFILES__)
-
-bwb_ops.obj:	bwb_ops.c $(HFILES) $(__MAKEFILES__)
 
 bwb_prn.obj:	bwb_prn.c $(HFILES) $(__MAKEFILES__)
 

@@ -1,0 +1,9 @@
+bwBASIC: NEW                                                                    
+bwBASIC: FLOW                                                                   
+Trace is ON                                                                     
+bwBASIC: LOAD "NOFLOW_1.DAT"                                                    
+[ 1 LOAD "NOFLOW_1.DAT" ]bwBASIC: RUN                                           
+[ 1 RUN ][ 10 REM 'NOFLOW' TEST PROGRAM ][ 20 PRINT "THE FIRST THREE LINES OF TH
+[ 30 NOFLOW ]Trace is OFF                                                       
+ARE PRINTED WITH THE TRACE TURNED ON.                                           
+THIS LINE IS PRINTED WITH THE TRACE TURNED OFF.                                 

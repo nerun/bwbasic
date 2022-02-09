@@ -26,4 +26,4 @@ DEFINITION OF FNA(X)=X*10
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF FNA.                                             
                                                                                 
-ERROR in line 290: *** Illegal Function Call (FNA) ***                          
+ERROR in line 290: Illegal Function Call (FNA)                                  

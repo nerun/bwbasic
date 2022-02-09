@@ -24,7 +24,7 @@ let N = 0
 let E$ = "extern "
 let E = len( E$ )
 open "bwbasic.h" for input as #1
-open "cms.h" for output as #2
+open "cms.txt" for output as #2
 while not eof( #1 )
   line input #1, L$
   L$ = trim$( L$ )
@@ -67,6 +67,30 @@ while not eof( #1 )
       ' ignore magic function name
     else
       ' pad for alignment
+      REM L$ = L$ + space$(32)
+      REM L$ = left$( L$, 32 )
+      REM H$ = "00000" + hex$(N)
+      REM H$ = right$( H$, 5 )
+      REM print #2, "#define ";L$;" X";H$
+      REM N = N + 1
+      if len( L$ ) > 0 then
+        print #2, L$
+      end if
+    end if
+  end if
+wend
+close #2
+close #1
+REM sort before assigning value
+if shell( "sort < cms.txt > cms.out" ) = 0 then
+  N = 0
+  open "cms.out" for input  as #1
+  open "cms.h"   for output as #2
+  while not eof(#1)
+    line input #1, L$
+    L$ = trim$(L$)
+    if len(L$) then
+      ' pad for alignment
       L$ = L$ + space$(32)
       L$ = left$( L$, 32 )
       H$ = "00000" + hex$(N)
@@ -74,8 +98,11 @@ while not eof( #1 )
       print #2, "#define ";L$;" X";H$
       N = N + 1
     end if
-  end if
-wend
-close #2
-close #1
+  wend
+  close #2
+  close #1
+  rem Cleanup temporary files
+  kill "cms.txt"
+  kill "cms.out"
+end if
 end

@@ -1,0 +1,36 @@
+.pl 66
+
+                           APPENDIX D
+
+          Programs Not Accessed Through The Menu.
+
+     The  entire  system  runs through  menu  control.  The  four 
+exception are the following :
+
+     GLCLEAR - This program can be run separately to clear all
+               DOLLAR values in the GL file. In this way you
+               can repost the General Ledger for testing 
+               purposes. To run this program install the GL
+               program disk in drive A: and type :
+               CRUN2 GLCLEAR.
+
+     EPCLEAR - This program can be run separately to clear all
+               DOLLAR values in the Employee payroll (EP) file.
+               To run this program install the payroll program
+               disk in drive A: and type : CRUN2 EPCLEAR.
+
+     INVENT  - This short program allows the first sequential
+               invoice number to be set. If the number is set to
+               0 (zero), the operator can enter random invoice
+               numbers. Any other setting will be the first
+               invoice number in a FORCED sequence over which
+               the operator has no control. This is an accounting
+               safeguard. To run this program insert the AR/AP
+               program disk in drive A: then type :
+               CRUN2 INVENT
+
+     POENT   - This short program allows the first sequential
+               purchase order number to be set. It functions like
+               INVENT. To run this program insert the AR/AP
+               program disk in drive A: then type :
+               CRUN2 POENT

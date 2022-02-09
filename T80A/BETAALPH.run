@@ -1,0 +1,38 @@
+              BETA AND ALPHA                                                    
+                                                                                
+GIVEN DATA WITH REGARDS TO PRICES AND DIVIDENDS OVER A                          
+PERIOD OF TIME FOR A GIVEN STOCK AND AN INVESTOR SELECTED                       
+MARKET INDEX THIS PROGRAM WILL COMPUTE THE ALPHA AND BETA                       
+VALUES FOR A STOCK ALONG WITH ITS EXPECTED RETURN, VARIANCE                     
+OF RETURN, AND STANDARD DEVIATION OF RETURN.                                    
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+HOW MANY PERIODS OF DATA ARE AVAILABLE ? 3                                      
+                                                                                
+INPUT MARKET INDEX PRICE,DIVIDEND FOR PERIOD 1 ? 123,55                         
+INPUT MARKET INDEX PRICE,DIVIDEND FOR PERIOD 2 ? 149,66                         
+INPUT MARKET INDEX PRICE,DIVIDEND FOR PERIOD 3 ? 197,77                         
+                                                                                
+INPUT STOCK PRICE,DIVIDEND FOR  PERIOD   1 ? 23.45,5.60                         
+INPUT STOCK PRICE,DIVIDEND FOR  PERIOD   2 ? 33.98,6.30                         
+INPUT STOCK PRICE,DIVIDEND FOR  PERIOD   3 ? 44.36,7.23                         
+THE NUMBER OF OBSERVATIONS =  3                                                 
+THE ESTIMATED EQUATION IS Y =    -2.193 X  +     2.358                          
+                                                                                
+THE CORRELATION COEFFICIENT = -1.0000                                           
+THE COEFF. OF DETERMINATION = 1.0000                                            
+*** WARNING:  Divide by 0 ***                                                   
+THE STANDARD ERROR OF ESTIMATE =                                                
+13407807929942595611008317640802934282464207265959107021466054756094376573581619
+054852612241927956455650759996398703782412109633178814162067569513603268608.000 
+ALPHA         =  2.35782                                                        
+BETA          = -2.19277                                                        
+EXPECTED RETURN    =  .617972                                                   
+*** WARNING:  Divide by 0 ***                                                   
+VARIANCE OF RETURN=  1.79769E+308                                               
+STAN DEV OF RETURN=  1.34078E+154                                               
+FOR INDEX EXPECTED RETURN = .793447    VAR OF RETURN = 4.13674E-3               
+   SD OF RETURN =  6.43175E-2                                                   
+                                                                                
+PRESS ENTER TO SUBMIT DATA FOR SAME TIME PERIOD BUT                             
+DIFFERENT STOCK,I.E. MARKET DATA STAYS THE SAME? 0                              

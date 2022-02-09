@@ -1,41 +1,29 @@
 # Filename:  xxx.sh
-#  Purpose:  compile source code
+#  Purpose:  Build Bywater BASIC for Unix uwing GCC 4.8
 #   Author:  Howard Wulf, AF5NE
 #     Date:  2015-01-29
 #   Uasage:  implementation defined
 #  Example:
-#            cd /sdcard/Download/BASIC/bwbasic-2.62/
-#            ash ./yyy.sh
+#            cd /sdcard/Download/BASIC/bwbasic3/
+#            ash ./xxx.sh
 #
 
 # cleanup
 rm -f bwbasic
 rm -f *.o
 
-# for normal compile
-# gcc -DHAVE_ISNAN -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
+# normal compile
+gcc -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
 
-
-# for broken strpcy()
-# gcc -DHAVE_ISNAN -DBROKEN_STRCPY -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
-
-
-
-# for regression testing
-gcc -DHAVE_ISNAN -DAUTOMATED_REGRESSION -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
-
-
-# for regression testing with broken strpcy()
-# gcc -DHAVE_ISNAN -DAUTOMATED_REGRESSION -DBROKEN_STRCPY -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
-
-
-# On my system, I have to copy the binary to another location
+# On my system, I cannot execute the binary from the source folder.
+# So, I have to copy the binary to ~ which is
+# /data/data/com.pdaxrom.cctools/root/cctools/home/
 cp bwbasic ~/
 
 # cleanup
 rm -f bwbasic
 
-# make executable
+# make the binary executable
 chmod 764 ~/bwbasic
 
 # start exectuable

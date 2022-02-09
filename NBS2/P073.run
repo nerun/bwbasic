@@ -25,4 +25,4 @@ FOR DETAILED CRITERIA.
                BEGIN TEST                                                       
                                                                                 
                                                                                 
-ERROR in line 280: SUBSCRIPT OUT OF RANGE A(0)                                  
+ERROR in line 280: Subscript out of range                                       

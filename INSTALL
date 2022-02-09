@@ -5,11 +5,24 @@ Some Notes on Installation of the Bywater BASIC Interpreter:
 
    To use the default configuration (which is reasonable for most situations):
 
-   On Unix, type "configure; make".
-   On Android using CCTools, type "ash ./xxc.sh".
-   If you are using GCC with the default libraries on a flavor of Unix,
-   then perhaps "gcc -DHAVE_ISNAN -o bwbasic -lm -ansi bw*.c"
-   On MSDOS, add all the bw*.c file to a new project.
+   On Unix using GCC:
+       gcc -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
+   
+   On Android CCTools using GCC:
+       gcc -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
+      
+   On MSDOS using Borland C++ 3.1:
+      bcc.exe -mh -eBWBASIC -D_DOS bw*.c
+   
+   On MSBOS using Open Watcom 1.9:
+      wcl386 -bc -c -ox -q -wx -za -D_DOS -D__WATCOM__ bw*.c
+      wlink option quiet file bw*.obj name bwbasic.exe
+      
+   On MSDOS using Hi-Tech Pacific C 7.51:
+      This compiler is unable to compile Bywaater BASIC
+
+   On MSDOS using Borland Turbo C 2.01:
+      This compiler is unable to compile Bywaater BASIC
 
    You can skip the rest of this file unless you want to customize the
    BASIC dialect that is supported, or something goes wrong in the
@@ -30,16 +43,11 @@ Some Notes on Installation of the Bywater BASIC Interpreter:
 3. Makefiles
 
    Several compiler-specific makefiles are provided AS-IS,
-   and have not been tested with version 3.00.
+   and have not been tested with version 3.XX.
    
-   "makefile" will compile the
-   program on Unix-based computers. 
+   "makefile" should compile the program on Unix-based computers. 
       
-   "makefile.qcl" is for the Microsoft QuickC (tm).
-
-   I have also compiled the program utilizing 
-   Borland's Turbo C++ (tm) and Pacific C (tm) 
-   on DOS-based machines.
+   "makefile.qcl" should compile using Microsoft QuickC (tm).
 
    
 4. Implementations

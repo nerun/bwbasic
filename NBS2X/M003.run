@@ -1,0 +1,23 @@
+THIS PROGRAM DISPLAYS THE IMPLEMENTATION-DEFINED                                
+RANGES FOR ALL BASIC VARIABLE TYPES.                                            
+THERE SHOULD BE NO ERROR MESSAGES.                                              
+MAXLVL= 255                                                                     
+MAXNUM= 1.79769E+308                                                            
+MAXDBL= 1.79769E+308                                                            
+MAXSNG= 3.40282E+38                                                             
+MAXCUR= 2.14748E+9                                                              
+MAXLNG= 2.14748E+9                                                              
+MAXINT= 32767                                                                   
+MAXBYT= 255                                                                     
+MAXDEV= 17                                                                      
+MAXLEN= 4096                                                                    
+MINNUM=-1.79769E+308                                                            
+MINDBL=-1.79769E+308                                                            
+MINSNG=-3.40282E+38                                                             
+MINCUR=-2.14748E+9                                                              
+MINLNG=-2.14748E+9                                                              
+MININT=-32768                                                                   
+MINBYT= 0                                                                       
+MINDEV= 0                                                                       
+MINLEN= 0                                                                       
+IF NO ERROR MESSAGES, THEN *** TEST PASSED ***                                  

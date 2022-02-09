@@ -1,4 +1,0 @@
-STOP.BAS -- Test STOP Statement
-If the program is interrupted after this line, STOP worked OK
-
-Program interrupted at line 40

@@ -27,5 +27,5 @@ A PRINT-ITEM CONTAINING AN ASTERISK, A SINGLE
 OCCURRENCE OF THE QUOTE CHARACTER AND A QUESTION MARK                           
 APPEARS IN THE NEXT STATEMENT AFTER THIS PARAGRAPH. CHECK                       
 THE NEXT LINE FOR THE PROCESSOR'S INTERPRETATION.                               
-                                                                                
+                       *                                                        
 ERROR in line 280: Syntax error                                                 

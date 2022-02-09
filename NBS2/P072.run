@@ -34,4 +34,4 @@ HAVE ASSIGNED  9  TO B(12, 1 ).
                                                                                 
 ABOUT TO ASSIGN TO B(12, 0 ).*** EXCEPTION SHOULD OCCUR NOW ***                 
                                                                                 
-ERROR in line 310: SUBSCRIPT OUT OF RANGE B(0)                                  
+ERROR in line 310: Subscript out of range                                       

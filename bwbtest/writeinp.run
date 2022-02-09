@@ -1,6 +1,0 @@
-WRITEINP.BAS -- Test WRITE # and INPUT # Statements                             
-This is what was written:                                                       
-"String 1", 1.12346,"String 2", 2.23457,"String 3", 3.34568                     
-This is what was read:                                                          
-"String 1", 1.12346,"String 2", 2.23457,"String 3", 3.34568                     
-End of WRITEINP.BAS                                                             

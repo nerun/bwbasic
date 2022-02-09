@@ -22,4 +22,4 @@ ABOUT TO EXECUTE:
    ON EXP (-1E11) GOTO ...                                                      
                                                                                 
                                                                                 
-ERROR in line 300: Value is out of range                                        
+ERROR in line 300: Undefined line                                               

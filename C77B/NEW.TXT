@@ -1,0 +1,2995 @@
+.pl 66
+.po 0
+ 	                   SECTION 1
+
+                        System Operation
+
+    In  the next few pages we are going to cover the operation of 
+the BusinessMaster series of software.  After initial setup,  the 
+package is for the most part self-explanatory.
+
+    We  will  start this process by covering in some  detail  the 
+establishment  of  a  Chart of Accounts and the  entry  of  these 
+accounts via the General Ledger Entry program.  This is a typical 
+entry program and will serve to give you a sound understanding of 
+the later data entry programs.
+
+    Your  Chart  of  Accounts should first be planned  using  the 
+forms in Appendix G.  A sample set of these forms is shown in the 
+next few pages.
+
+The  General  Ledger  program  package allows  a  great  deal  of 
+flexibility with few restrictions:
+
+1.  Account numbers MUST be numeric. They cannot include imbedded 
+punctuation marks or alphabetic characters. They must each be the 
+same length and can be up to 10 digits long.
+
+2.   Account  numbers  MUST be entered in  ascending  order  from 
+lowest  being  ASSETS  to highest being EXPENSES.  The  order  is 
+ASSETS,  LIABILITIES,  EQUITY,  SALES,  and EXPENSES.  An example 
+would  be Assets from 100 to 199;  Liabilities from 200  to  299; 
+Equity  from  300 to 399;  Sales (revenue) from 400 to  499;  and 
+Expenses from 900 to 999.
+
+3.   Account  names  may  be  up to 30  characters  long  but  we 
+recommend keeping them under 24 characters since some programs on 
+8.5 inch wide paper will only print 24 characters.
+
+.pa
+                Setting Up the Chart of Accounts.
+
+    The  actual procedure for establishing a Chart of Account  in 
+this  system is quite simple.  A group of forms (Appendix G)   is 
+provided  for your convenience in establishing  account  numbers, 
+headings, and subheadings.
+
+    All  posting  and printing operations in the  General  Ledger 
+depend on the numbering conventions established here. Notice that 
+the "Current Assets" subheading in the first table is followed by 
+four accounts.  These are numbered 102, 105, 110, and 132. In the 
+SUBHEADING table,  the first and second account numbers are given 
+as  102 and 132.  These two numbers define the ABSOLUTE range  of 
+account  numbers  for  this  particular  subheading.   This  same 
+convention must be followed with all account numbering.
+.pa
+ASSETS
+
+Tag    Account #   Description
+***********************************************************
+|      |           | Current Assets (subheading)          |
+-----------------------------------------------------------
+|  1   |       102 | Cash at Bank                         |
+-----------------------------------------------------------
+|  2   |       105 | Securities                           |
+-----------------------------------------------------------
+|  3   |       110 | Accounts Receivable                  |
+-----------------------------------------------------------
+|  4   |       132 | Inventory                            |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           | Fixed Assets (subheading)            |
+-----------------------------------------------------------
+|  5   |       160 | Land                                 |
+-----------------------------------------------------------
+|  6   |       161 | Buildings                            |
+-----------------------------------------------------------
+|  7   |       173 | Machinery & Equipment                |
+-----------------------------------------------------------
+|  8   |       175 | (less depreciation)                  |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           | Other Assets (subheading)            |
+-----------------------------------------------------------
+|  9   |       195 | Prepaid Expenses                     |
+-----------------------------------------------------------
+| 10   |       196 | Patents                              |
+-----------------------------------------------------------
+| 11   |       197 | Goodwill                             |
+-----------------------------------------------------------
+
+.pa
+LIABILITIES
+
+Tag    Account #   Description
+***********************************************************
+|      |           | Current Liabilities (subheading)     |
+-----------------------------------------------------------
+| 12   |       201 | Accounts Payable                     |
+-----------------------------------------------------------
+| 13   |       203 | Dividends Payable                    |
+-----------------------------------------------------------
+| 14   |       204 | Miscellaneous Payable                |
+-----------------------------------------------------------
+| 15   |       209 | Bonds Payable                        |
+-----------------------------------------------------------
+| 16   |       210 | Sales Tax Payable                    |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+
+.pa
+EQUITY
+
+Tag    Account #   Description
+***********************************************************
+|      |           | Stockholder's Equity (subheading)    |
+-----------------------------------------------------------
+| 17   |       292 | Common Stock                         |
+-----------------------------------------------------------
+| 18   |       294 | Retained Earnings                    |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+
+.pa
+SALES
+
+Tag    Account #   Description
+***********************************************************
+|      |           | Income (subheading)                  |
+-----------------------------------------------------------
+| 19   |       301 | Sales - Dealer                       |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+
+.pa
+EXPENSES
+
+Tag    Account #   Description
+***********************************************************
+|      |           | Cost of Goods (subheading)           |
+-----------------------------------------------------------
+| 20   |       401 | Cost of Goods                        |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           | Expenses (subheading)                |
+-----------------------------------------------------------
+| 21   |       825 | Discounts Allowed                    |
+-----------------------------------------------------------
+| 22   |       828 | Dues and Subscriptions               |
+-----------------------------------------------------------
+| 23   |       838 | Insurance                            |
+-----------------------------------------------------------
+| 24   |       852 | Officer's Salaries                   |
+-----------------------------------------------------------
+| 25   |       880 | Wages                                |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+|      |           |                                      |
+-----------------------------------------------------------
+
+.pa
+HEADINGS
+
+Tag    Account #   Description        1st Acct  2nd Acct
+                                      Number	Number
+***********************************************************
+|  1   |    1(A)   | ASSETS           |     102 |     197 |
+-----------------------------------------------------------
+|  2   |    2(L)   | LIABILITIES & EQ |     201 |     294 |
+-----------------------------------------------------------
+|  3   |    3(S)   | SALES            |     301 |     301 |
+-----------------------------------------------------------
+|  4   |    4(X)   | EXPENSES         |     401 |     880 |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+
+.pa
+SUBHEADINGS
+
+Tag    Account #   Description        1st Acct  2nd Acct
+                                      Number	Number
+***********************************************************
+|  1   |    1(A)   | Current Assets   |     102 |     132 |
+-----------------------------------------------------------
+|  2   |    2(A)   | Fixed Assets     |     160 |     175 |
+-----------------------------------------------------------
+|  3   |    3(A)   | Other Assets     |     195 |     197 |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|  4   |    4(L)   | Current Liab.    |     201 |     210 |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|  5   |    5(E)   | Stockholder's Eq |     292 |     294 |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|  6   |    6(S)   | Sales - Dealer   |     301 |     301 |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|  7   |    7(X)   | Cost of Goods    |     401 |     401 |
+-----------------------------------------------------------
+|  8   |    8(X)   | Expenses         |     825 |     880 |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+|      |           |                  |         |         |
+-----------------------------------------------------------
+
+.pa
+
+
+    It  should  be noted here that all entry programs follow  the 
+general pattern illustrated in the following material.
+
+    Type  crun2 bizmii followed by the return key.  This  is  the 
+preamble to starting the system for all operations.
+
+The following MENU will appear on the screen.
+
+*** BUSINESSMASTER X MASTER MENU ***
+
+1 - GENERAL LEDGER/GENERAL JOURNAL OPERATIONS
+
+2 - ORDER ENTRY/RECEIVABLES OPERATIONS
+
+3 - PURCHASE ORDER/PAYABLES OPERATIONS
+
+4 - INVENTORY OPERATIONS
+
+5 - EMPLOYEE PAYROLL OPERATIONS
+
+6 - MAILING LIST OPERATIONS
+
+7 - INITIALIZE SYSTEM/START-UP/MODIFY SYSTEM
+
+8 - PERIODIC FILE MAINTENANCE
+
+9 - FINISHED
+
+    Typing  the  appropriate number followed by  carriage  return 
+(RETURN) will bring up the desired new menu.
+
+.pa
+
+    Typing 1 followed by return will bring up the following menu.
+
+*** GENERAL LEDGER - JOURNAL MENU ***
+
+1 - ENTER G/L ACCOUNTS - MAKE ADJUSTING ENTRIES
+
+2 - LIST THE CHART OF ACCOUNTS
+
+3 - ENTER DISBURSEMENT TRANSACTIONS
+
+4 - ENTER RECEIPT TRANSACTIONS
+
+5 - PRINT TRIAL BALANCE
+
+6 - PRINT BALANCE SHEET
+
+7 - PRINT INCOME STATEMENTS
+
+8 - PRINT BUDGET ANALYSIS
+
+9 - FINISHED
+.pa
+    Type a 1 followed by return.
+
+    The system will respond by clearing the screen and presenting 
+the General Ledger Data Entry menu.
+
+    If  at this point there is no General Ledger file,  the  next 
+message is
+
+IF YOU HAVE ARRIVED HERE,  AND HAVE A GENERAL LEDGER FILE ALREADY 
+ON  A DISK,  YOU SHOULD INSTALL THAT DISK THEN TYPE THE LETTER  C 
+FOLLOWED BY RETURN TO CONTINUE.
+
+IF  YOU WISH TO CREATE A NEW FILE,  TYPE THE LETTER N FOLLOWED BY 
+RETURN.
+
+    Notice  that if the drive is not up or the wrong disk  is  in 
+place  this same message will be printed.  In that  case,  simply 
+bring the drive up by installing the correct disk and closing the 
+drive door.
+
+    In this case we want to create a new file.  Typing N followed 
+by return will give the following message
+
+NUMBER OF RECORDS DESIRED?
+
+    Answer with the desired number of records. This number should 
+be  at least 25% more than the number of records (general  ledger 
+accounts) you actually intend to use.  The requirement to add two 
+accounts to a file that only has one record left can be less than 
+desireable.
+
+    After taking the time required to create the new records, the 
+system will respond with
+
+GENERAL LEDGER FILE CREATED AND CLEARED.
+ nnnn RECORDS CREATED.
+TO CONTINUE, TYPE RETURN.
+
+where nnnn is the number of records created in the file.
+
+    After typing return, the system will respond with
+
+GENERAL LEDGER ENTRY PROGRAM
+----------------------------
+THERE ARE  XX  AVAILABLE RECORDS
+OF THESE THERE ARE:           XX  RECORDS OPEN
+                              XX  RECORDS USED
+
+THIS IS A LIST OF OPERATIONS
+
+1 - NEW ENTRY
+2 - EXAMINE EXISTING ENTRY
+3 - MODIFY EXISTING ENTRY
+4 - DELETE EXISTING ENTRY
+5 - CREATE NEW FILE
+6 - CLEAR EXISTING FILE
+7 - BACK-UP AND SORT FILE
+8 - LIST FILE
+9 - FINISHED
+
+INDICATE WHAT YOU WOULD LIKE TO DO BY TYPING
+THE CORRESPONDING NUMBER.
+
+    The  menu  just presented is typical of ALL entry  menues  in 
+this  system.  Typing  a  1  followed by return  will  bring  the 
+following series -
+.pa
+RECORD NUMBER x
+
+                             ----
+TAG                        ?
+                             ----------
+LEDGER ACCOUNT NUMBER      ?
+                             ---------------------------
+DESCRIPTION                ?
+
+    Each of the above items will be presented one at a time.  The 
+cursor  (see  Glossary) will stop after the  question  mark.  The 
+over-bar  delimiters  indicate  the maximum allowable  length  of 
+entry for each item.
+
+    Once the above items are entered, the system will present the 
+following display and allow alterations if required.
+
+RECORD NUMBER x
+
+1 - TAG                                nnnn
+2 - LEDGER ACCOUNT NUMBER	 nnnnnnnnnn
+3 - DESCRIPTION              xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+4 - MONTH TO DATE AMOUNT     $          .00
+5 - QUARTER TO DATE AMOUNT   $          .00
+6 - YEAR TO DATE AMOUNT      $          .00
+7 - PREV M TO DATE AMOUNT    $          .00
+8 - PREV Q TO DATE AMOUNT    $          .00
+9 - PREV Y TO DATE AMOUNT    $          .00
+10- BUDGETED AMOUNT          $          .00
+11- NONE
+
+IF AN ITEM IS TO BE CHANGED, TYPE THE APPROPRIATE NUMBER.
+
+    You  may,  at this point,  enter one of the  "field  numbers" 
+shown  at the left of the display and reenter the data or  change 
+it as desired before actually storing the record on the disk.
+
+    The  following information will be presented with each  entry 
+program to indicate what each entry contains.
+
+    The Item # refers to the field number in the data entry menu. 
+The  Description is similar or identical to the description shown 
+on the screen.  The Size gives the items size in characters.  The 
+Type will be either N for numeric or A for alphanumeric.  Finally 
+Entry will give you some general information about the intent and 
+use of the information being entered.
+
+GENERAL LEDGER FILE
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    This numeric entry is used as a  sort 
+                                         parameter. It must be non-zero and is 
+                                         best  used  as  a  sequential  record 
+                                         number.
+
+2       Ledger Account Number  10   N    This  is  the actual  General  Ledger 
+                                         Account  number.  If the accounts  in 
+                                         this  file  are changed,  be sure  to 
+                                         check that the ranges established  in 
+                                         the General Ledger TABS file, General 
+                                         Ledger  Headings  and General  Ledger 
+                                         Subheadings are still correct.
+
+3       Description            30   A    This is the description such as "Cash 
+                                         in  Bank" that will be used for  this 
+                                         account number.
+
+4       Month to date amount   12   N    This and the next five entries  carry 
+                                         the  accrued  dollar  figures  posted 
+                                         from  other programs.  These  figures 
+                                         should  seldom  be  altered  directly 
+                                         except  to to fill in figures if  the 
+                                         system  is set up in the middle of  a 
+                                         year.
+ 
+                                         When  a  Chart of Accounts  is  first 
+                                         developed,  the TAG,  ACCOUNT NUMBER, 
+                                         and  DESCRIPTION should be filled in. 
+                                         The file should then be sorted on the 
+                                         ACCOUNT  NUMBER (selection A  in  the 
+                                         sort routine) to sort the accounts in 
+                                         ascending  order.   On  exitting  the 
+                                         program,  a  General Ledger Reference 
+                                         file  will automatically  be  created 
+                                         which contains the account numbers in 
+                                         ascending order.  This Reference file 
+                                         is  called  into main  memory  during 
+                                         posting and other operations to allow 
+                                         the swift location of account numbers 
+                                         for posting and validation.
+
+                                         Amounts  posted  are  added  to  this 
+                                         field  and the next five fields.  The 
+                                         monthly  maintenance  program   zeros 
+                                         this  field out when it is run.  This 
+                                         should  be  done at the end  of  each 
+                                         months accounting activity.
+
+5       Quarter to date amount 12   N    This value is added to by the posting 
+                                         programs and zeroed out at the end of 
+                                         each quarter by running the quarterly 
+                                         maintenance program.
+
+6       Year to date amount    12   N    This value is added to by the posting 
+                                         programs and zeroed out at the end of 
+                                         each  year  by  running  the   yearly 
+                                         maintenance program.
+
+7       Previous M-T-D amount  12   N    See above.
+
+8       Previous Q-T-D amount  12   N    See above.
+
+9       Previous Y-T-D amount  12   N    See above.
+
+10      Budgeted amount        12   N    Any  expense,  cost of goods or other 
+                                         item may be assigned a budget amount. 
+                                         These  values MUST be  entered  here. 
+                                         These figures will be used to prepare 
+                                         a  comprehensive budget report at the 
+                                         end of each month.
+
+    After  all  accounts have been entered they should be  sorted 
+using  the BACK-UP AND SORT FILE menu call (#7).  When  the  sort 
+program  asks  for  Sort by Tag or Account  #,  answer  with  the 
+appropriate  response  (A) for account number to ensure that  the 
+accounts are in ascending numeric order by account number.
+
+    The  accounts  can now be listed (menu call #8). 
+
+    It  is  now possible to examine the accounts to  ensure  that 
+they are exactly what you want.  The lion's share of the work  is 
+now done in establishing your general ledger system.
+
+.pa
+                            SECTION 2
+
+                      System Initialization
+
+    This entire system runs from a single MASTER menu which calls 
+subsidiary  menues as required to perform various  functions.  We 
+will  present  the rest of the material in this manual  from  the 
+menu calls.  We will start with #7 - INITIALIZATION which  brings 
+up the following menu.
+.pa
+1 - CHANGE REPORT DATES
+
+2 - CHANGE DOLLAR VALUE OR PERCENTAGE FORMATS
+
+3 - CHANGE PAGE WIDTH, TABS OR COMPANY NAME IN USE TAG
+
+4 - CHANGE CHART OF ACCTS HEADINGS AND SUBHEADS
+
+5 - ADD NEW COMPANY NAMES
+
+6 - CHANGE OR LIST FEDERAL TAX TABLES
+
+7 - CHANGE OR LIST STATE TAX TABLES
+
+8 - CHANGE CHECK TABS OR PAYROLL CUTOFFS
+
+9 - FINISHED
+
+.pa
+#1 - Entering New Dates
+
+    This  program  should be run each day to update  the  current 
+date.  In this way the proper date will appear on all records.  A 
+sample  run  of the date program is shown on the  following  page 
+including responses.
+
+    A  missing date on a report will probably indicate that  that 
+date has not been entered.
+
+    The entry labeled RESERVED is not presently used.
+
+THIS IS A LIST OF OPERATIONS.
+
+1 - ENTER DATES
+2 - EXAMINE DATES
+3 - MODIFY DATES
+4 - CREATE NEW FILE
+5 - CLEAR EXISTING FILE
+6 - FINISHED
+
+INDICATE WHAT YOU WOULD LIKE TO DO BY TYPING
+THE CORRESPONDING NUMBER.
+
+? 3
+
+1 - CURRENT DATE             09-14-78
+2 - PERIOD ENDING DATE       09-30-78
+3 - PREV PERIOD ENDING DATE  08-31-78
+4 - MONTH ENDING DATE
+5 - QUARTER ENDING DATE
+6 - YEAR ENDING DATE
+7 - RESERVED
+8 - FISCAL YEAR ENDING DATE
+9 - NONE
+
+IF AN ITEM IS TO BE CHANGED, TYPE THE APPROPRIATE NUMBER.
+
+? 9
+
+ANY MORE CHANGES? N
+
+IS RECORD TO BE ENTERED? N
+
+DATE INFORMATION
+
+    The  DATE  file  contains  all dates  for  the  current  days     
+    business.The  seven dates actually included are CURRENT  DATE 
+    for     all checks,Invoices, purchase Orders, and other items 
+    requiring     the current date;  A PERIOD ENDING and PREVIOUS 
+    PERIOD  ENDING DATE     for  payroll  purposes;MONTH,QUARTER, 
+    and YEAR ENDING DATES; and     a FISCAL YEAR ENDING DATE.
+
+1       Current Date           8    A    This  is the current date printed  on 
+                                         various  forms and should be  updated 
+                                         daily. It takes the form mm/dd/yy.
+
+2       Period Ending Date     8    A    This date is used in the payroll  and 
+                                         other   programs   requiring   period 
+                                         ending dates.
+
+3       Previous Period Ending 8    A    This   records  the  previous  period 
+                                         ending date.
+
+4       Month Ending Date      8    A    This  entry  should be  changed  each 
+                                         month to reflect the new month ending 
+                                         date.
+
+5       Quarter Ending Date    8    A    This  entry  should be  changed  each 
+                                         quarter  to reflect the  new  quarter 
+                                         ending date.
+
+6       Year Ending Date       8    A    This  entry  should be  changed  each 
+                                         year  to reflect the new year  ending 
+                                         date.
+
+7       Reserved               8    A    Reserved for future use.
+
+8       Fiscal Year Ending     8    A    This  date can be used for  recording 
+                                         fiscal   year  ending   dates   where 
+                                         required.
+
+1 - CHANGE REPORT DATES
+
+2 - CHANGE DOLLAR VALUE OR PERCENTAGE FORMATS
+
+3 - CHANGE PAGE WIDTH, TABS OR COMPANY NAME IN USE TAG
+
+4 - CHANGE CHART OF ACCTS HEADINGS AND SUBHEADS
+
+5 - ADD NEW COMPANY NAMES
+
+6 - CHANGE OR LIST FEDERAL TAX TABLES
+
+7 - CHANGE OR LIST STATE TAX TABLES
+
+8 - CHANGE CHECK TABS OR PAYROLL CUTOFFS
+
+9 - FINISHED
+.pa
+#2 - GENERAL LEDGER FORMATS
+
+    The General Ledger FORMATS file allows the numeric format  of 
+    some  statements to be set.  Instructions for entering  these 
+    are given in the program that creates the file.
+
+Item #  Description            Size/Type Entry
+
+1       Dollar formats         20   A    This  will  normally  take  the  form 
+                                         #,###,###.##.  This is called a PRINT 
+                                         USING string.  It allows the printing 
+                                         of 9,999,999.99.  This can be changed 
+                                         if desired...  for example ##,###,### 
+                                         would    allow   the   printing    of 
+                                         99,999,999.  A  minor  caution  here, 
+                                         dropping  pennies  in this  way  will 
+                                         cause TRUNCATION rather than ROUNDING 
+                                         even though the correct figures would 
+                                         still  be present in the files.  Thus 
+                                         99.35  would  print as 99  and  99.85 
+                                         would  also print as 99  even  though 
+                                         both  figures  remained as shown  for 
+                                         calculation  purposes.   The  pennies 
+                                         would NOT be dropped,  they would not 
+                                         be printed.
+
+2       Percentage formats     20   A    In  this case ###.## would allow  the 
+                                         printing of 999.99 percent.
+.pa
+1 - CHANGE REPORT DATES
+
+2 - CHANGE DOLLAR VALUE OR PERCENTAGE FORMATS
+
+3 - CHANGE PAGE WIDTH, TABS OR COMPANY NAME IN USE TAG
+
+4 - CHANGE CHART OF ACCTS HEADINGS AND SUBHEADS
+
+5 - ADD NEW COMPANY NAMES
+
+6 - CHANGE OR LIST FEDERAL TAX TABLES
+
+7 - CHANGE OR LIST STATE TAX TABLES
+
+8 - CHANGE CHECK TABS OR PAYROLL CUTOFFS
+
+9 - FINISHED
+.pa
+#3 - Entering Page Width, Tabs and Co Name in Use Tag
+
+THIS IS A LIST OF OPERATIONS
+
+1 - ENTER TABS
+2 - EXAMINE TABS
+3 - MODIFY TABS
+4 - CREATE NEW FILE
+5 - CLEAR EXISTING FILE
+6 - FINISHED
+
+INDICATE WHAT YOU WOULD LIKE TO DO BY TYPING
+THE CORRESPONDING NUMBER.
+
+? 3
+
+1 - PAGE WIDTH               72
+2 - TAG TAB                  2
+3 - ACCOUNT NUMBER TAB       10
+4 - MAJOR HEADING TAB        22
+5 - SUBHEADING TAB           8
+6 - PARTIAL TOTAL TAB        10
+7 - PARTIAL TOTAL DOLLAR TAB 36
+8 - FINAL TOTAL TAB          17
+9 - FINAL TOTAL DOLLAR TAB   43
+10- DATE TAB                 8
+11- PAGE NUMBER TAB          57
+12- COMPANY NAME TAG #       1000
+13- LOWEST BAL SHEET ACCT #  101
+14- HIGHEST BAL SHEET ACCT # 295
+15- LOW COST OF GOODS ACCT # 401
+16- HIGH COST OF GOODS ACCT #405
+17- NONE
+
+
+IF AN ITEM IS TO BE CHANGED, TYPE THE APPROPRIATE NUMBER.
+
+? 17
+
+ANY MORE CHANGES? N
+
+IS RECORD TO BE ENTERED? N
+
+*** RECORD NOT ENTERED ***
+
+GENERAL LEDGER REPORT TABS
+
+    The  General Ledger TABS file contains a number of  items  of 
+    information  including series of TABS used in some  statement 
+    printing  operations.  These additional items include COMPANY 
+    NAME IN USE TAG, First and Last BALANCE SHEET account numbers 
+    and First and Last COST OF GOODS account numbers.
+
+Item #  Description            Size/Type Entry
+
+1       Page Width             3    N    This  entry is used by the system  to 
+                                         center  headings on all  reports.  It 
+                                         should be set to 80,  132 or whatever 
+                                         page width printer you are using.
+
+2       Tag Tab                3    N    This  number is used in some  general 
+                                         ledger  reports  to postion  the  Tag 
+                                         number  when  it is  printed.  Please 
+                                         change  it  with caution  only  after 
+                                         determining  that is will  not  cause 
+                                         overlaps in printing.
+
+3       Account Number Tab     3    N    This  number is used in some  general 
+                                         ledger   reports   to  position   the 
+                                         account  number when it  is  printed. 
+                                         See caution above.
+
+4       Major Heading Tab      3    N    This  number  is used in  reports  to 
+                                         postion the DESCRIPTION obtained from 
+                                         HEADING files. See caution above.
+
+5       Subheading TAB         3    N    This  number  is used in  reports  to 
+                                         position   the  DESCRIPTION  obtained 
+                                         from  SUBHEADING files.  See  caution 
+                                         above.
+
+6       Partial Total Tab      3    N    This  number is used to position  the 
+                                         subtotal   description   created   by 
+                                         adding  TOTAL  (TOTAL CURRENT  ASSETS 
+                                         for   example)  to   the   SUBHEADING 
+                                         descriptions.
+
+7       Partial Total Dollar   3    N    This  number is used to position  the 
+                                         dollar value associated with 6 above.
+
+8       Final Total Tab        3    N    This  number  is associated with  the 
+                                         HEADINGS as in 6 above.
+
+9       Final Total Dollar Tab 3    N    This   entry  is  as  #7  above   but 
+                                         operates  on HEADING  related  dollar 
+                                         totals.
+
+10      Date Tab               3    N    This  entry  allows  positioning  the 
+                                         date on reports.
+
+11      Page Number Tab        3    N    The   page  number  position  may  be 
+                                         changed  on  reports using  this  tab 
+                                         number.
+
+12      Company Name in Use    3    N    Several Company names can be retained 
+                                         in the Company Name File. The correct 
+                                         name  to be used for reports is  read 
+                                         into  system memory by  setting  this 
+                                         number to match the TAG number of the 
+                                         Company Name record desired.
+
+13      Low Balance Sheet      10   N    The  account  numbers to be  included 
+        Account Number                   when  creating  a BALANCE  SHEET  are 
+                                         defined   by  specifying  the   first 
+                                         account  number  here  and  the  last 
+                                         account number in item 14 below.  The 
+                                         numbers must EXACTLY match the  first 
+                                         and   last   account   numbers...they 
+                                         cannot  be 100 and 199 if,  in  fact, 
+                                         the actual first and last numbers are 
+                                         110 and 180!
+
+14      High Balance Sheet     10   N    The high balance sheet account number 
+        Account Number                   should be entered here.
+
+15      Low COST OF GOODS      10   N    The INCOME STATEMENT normally records 
+        Account Number                   the   COST  OF  GOODS  separate  from 
+                                         general expenses.  This and the  next 
+                                         entry are used to define the range of 
+                                         numbers for COST OF GOODS.
+
+16      High COST OF GOODS     10   N    This entry is used to define the high 
+        Account Number                   cost  of goods account  number.  This 
+                                         and  the  previous entry  follow  the 
+                                         same rules as item 13 and 14 above.
+.pa
+1 - CHANGE REPORT DATES
+
+2 - CHANGE DOLLAR VALUE OR PERCENTAGE FORMATS
+
+3 - CHANGE PAGE WIDTH, TABS OR COMPANY NAME IN USE TAG
+
+4 - CHANGE CHART OF ACCTS HEADINGS AND SUBHEADS
+
+5 - ADD NEW COMPANY NAMES
+
+6 - CHANGE OR LIST FEDERAL TAX TABLES
+
+7 - CHANGE OR LIST STATE TAX TABLES
+
+8 - CHANGE CHECK TABS OR PAYROLL CUTOFFS
+
+9 - FINISHED
+.pa
+#4 - Entering Headings and Subheadings
+
+    Calling  Item  4  of the Initialize menu will  bring  up  the 
+following -
+
+1 - CHANGE GENERAL LEDGER HEADINGS
+
+2 - CHANGE GENERAL LEDGER SUBHEADINGS
+
+3 - FINISHED
+
+    These  operations are called in two parts.  The same  general 
+information  applies for these entry programs as for the  general 
+ledger  entry program.  The only entries currently used in  these 
+records are the TAG,  ACCOUNT NUMBER,  DESCRIPTION, FIRST ACCOUNT 
+NUMBER, and SECOND ACCOUNT NUMBER.
+
+    The TAG and ACCOUNT NUMBER can be any value.  A suggestion is 
+the  same number in each which might be 100 for ASSETS,  200  for 
+LIABILITIES,  and so forth. TheDESCRIPTIONs should be in order as 
+illustrated in the samples included here.
+
+    The FIRST ACCOUNT NUMBER should be the lowest number used for 
+accounts  of that category in the chart of accounts;  the  SECOND 
+ACCOUNT NUMBER should be the highest number used.
+
+    The remaining entries are not used at this time.
+
+    Enter  the Headings and Subheadings in the appropriate  files 
+and list them to ensure that they are what you want.
+
+    The  request  that  appears  before  each  entry,  causes  an 
+appropriate  prefix  to  be added to  each  description.  In  the 
+Heading  entry  program  for  example,  ASSETS will  show  up  as 
+HAASSETS.  The HA is used in the report and statement  generating 
+programs  so don't be concerned that ASSETS is HAASSETS.  CURRENT 
+ASSETS in the subheading entry program will show up as  SACURRECT 
+ASSETS.  The heirarchy is ASSETS - HA or SA;  LIABILITIES - HL or 
+SL; EQUITY - HE or SE; SALES - HS or SS; and EXPENSES - HX of SX.
+
+GENERAL LEDGER HEADINGS
+
+Item #  Description            Size/Type Entry
+
+1       Tag Number             4    N    This  number could be used as a  sort 
+                                         parameter.  It MUST be non-zero since 
+                                         a  zero  in this  field  indicates  a 
+                                         deleted  record.  Otherwise it has no 
+                                         significance.
+
+2       Ledger Account Number  10   N    This   number  is  used  as  a   sort 
+                                         parameter.   These   numbers   should 
+                                         probably  best  be set to  match  the 
+                                         first account number of each  account 
+                                         number  group they head.  In this way 
+                                         sorting   will  yield   a   correctly 
+                                         ordered group of HEADINGS.
+
+3       Description            30   A    This entry will be a description such 
+                                         as ASSETS. The program will add H for 
+                                         heading  and A for assets yielding an 
+                                         entry of HAASETS.  The heading  entry 
+                                         program    takes    care   of    this 
+                                         automatically  after  asking  whether 
+                                         the account is an  Asset,  Liability, 
+                                         Equity, Sales, or Expense account.
+
+4       First Account Number   10   N    This  entry must exactly specify  the 
+                                         FIRST  account number used under this 
+                                         heading.  A mistake often made is  to 
+                                         select a range say of 100 to 199 then 
+                                         make  the  first account  number  say 
+                                         105.  If 100 is entered here, strange 
+                                         things will happen...  you MUST enter 
+                                         105!
+
+5       Last Account Number    10   N    This entry follows the rules above!
+
+6       M-T-D Amount           12   N    No  entry  is made in  these  fields. 
+                                         They  are  used by some  programs  to 
+                                         store  data temporarily but they will 
+                                         be  erased  once the  data  has  been 
+                                         used.  You should only find data here 
+                                         if  one  of the programs using  these 
+                                         fields terminates in error.
+
+7       Q-T-D Amount           12   N    See #6 above.
+
+8       Y-T-D Amount           12   N    See #6 above.
+
+9       M-T-D Percentage       12   N    See #6 above.
+                                         
+10      Q-T-D Percentage       12   N    See #6 above.
+
+11      Y-T-D Percentage       12   N    See #6 above.
+
+
+GENERAL LEDGER SUBHEADINGS
+
+                                         The   only  difference  between   the 
+                                         headings  and subheadings is  in  the 
+                                         prefix placed on the description.  In 
+                                         the  subheading  files the prefix  SA 
+                                         (SACurrent Assets) is used instead of 
+                                         HA  thus identifying the record as  a 
+                                         subheading.
+.pa
+1 - CHANGE REPORT DATES
+
+2 - CHANGE DOLLAR VALUE OR PERCENTAGE FORMATS
+
+3 - CHANGE PAGE WIDTH, TABS OR COMPANY NAME IN USE TAG
+
+4 - CHANGE CHART OF ACCTS HEADINGS AND SUBHEADS
+
+5 - ADD NEW COMPANY NAMES
+
+6 - CHANGE OR LIST FEDERAL TAX TABLES
+
+7 - CHANGE OR LIST STATE TAX TABLES
+
+8 - CHANGE CHECK TABS OR PAYROLL CUTOFFS
+
+9 - FINISHED
+.pa
+#5 - This file can be set up for more than one name.  It is aimed 
+at  future hard-disk operations in client writeup operations  but 
+fares  very nicely in the floppy disk environment.  The name that 
+will be used for the headings on all reports is controlled by  an 
+entry  in  the General Ledger TABS file to be mentioned  shortly. 
+The  Company  Name file is file "NM" on  the  diskette.  It  will 
+contain,   in   addition   to  complete  address  and   telephone 
+information, the Federal and State Tax Identification Numbers for 
+preparing Form 941 and others.
+
+COMPANY NAME FILE
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    This entry must match the entry under 
+                                         Company  Name  in Use in the  General 
+                                         Ledger TABS file.  An EOF error  will 
+                                         occur if this is not the case.
+                                         
+2       Reference Number       10   N    This  entry must be other  than  zero 
+                                         (0).   It  can  be  used  as  a  sort 
+                                         parameter if desired.
+
+3       Name                   24   A    This  entry  is a name for  reference 
+                                         purposes   only.   It  need  not   be 
+                                         entered.
+
+4       Company                24   A    This  is the Company  Name.  It  will 
+                                         appear  as  the  FIRST  line  in  all 
+                                         report headings.
+
+5       Address                24   A    This  is  the  Company  address.   It 
+                                         appears  as  the SECOND line  in  all 
+                                         report headings.
+
+6       City                   17   A    This is the City.  It appears as part 
+                                         of  the  THIRD  line  in  all  report 
+                                         headings.
+
+7       State                  2    A    Enter   a   2   letter   state   name 
+                                         abbreviation.  It will appear as part 
+                                         of  the  THIRD  line  in  all  report 
+                                         headings.
+
+8       Zip Code               5    A    Enter  a  5 digit Zip Code.  It  will 
+                                         appear  as part of the third line  in 
+                                         all report headings.
+
+9       Telephone              14   A    We  suggest the form (nnn)  nnn  nnnn 
+                                         but   you  are  not  forced  to  this 
+                                         format.  This  is NOT printed in  the 
+                                         headings.
+10      Federal Tax ID #       20   A    This number is used in printing  Form 
+                                         941 and W2's.
+
+11      State Tax ID #         20   A    This   number  may  be  used  in  the 
+                                         printing of state tax return forms.
+
+
+                       ******************
+
+THE  TAG  NUMBER USED SHOULD BE RECORDED HERE OR  AT  SOME  OTHER 
+CONVENIENT  PLACE AS IT WILL BE ASKED FOR IN THE TAB  SETUPS.  IF 
+THE  TAG INSERTED HERE DOES NOT AGREE WITH THE  COMPANY NAME  TAG 
+ENTRY TO BE PLACED IN THE TAB FILE SHORTLY, THE SPACE ON HEADINGS 
+MAY BE LEFT BLANK.
+
+                       ******************
+.pa
+A SHORT GUIDE TO SETTING UP A CHART
+
+Step 1 Enter  the  information required in the forms provided  in 
+       the appendix.  This includes the actual chart of  accounts 
+       followed by the headings and subheadings.  These forms may 
+       not be required but they are provided as a convenience.
+
+Step 2 Create the necessary file allowing a few more records than 
+       needed   for  your  actual  numbered  accounts   - Assets, 
+       Liabilities,  Equity,  Sales  and  Expenses.  Enter  these 
+       account  numbers and descriptions remembering that the TAG 
+       must be some value other than zero (0).
+
+Step 3 Now sort the created file on account numbers and list  the 
+       file.  When finished, allow a reference file to be created 
+       by answering N to the question presented on exit.
+
+Step 4 Enter  the Company Name.  Record the TAG for entry in  the 
+       Tab file.
+
+Step 5 Enter the Heading and Subheadings paying careful attention 
+       to  the entry of first and last account numbers (range  of 
+       account numbers) in each category.
+
+Step 6 Enter the required dates.
+
+Step 7 Enter  the required page width,  tabs and company name  in 
+       use.
+
+       You are now ready to list your Chart of Accounts. Make one 
+       or   two  copies  for  a  record  of  the  Record  Numbers 
+       associated with each account.  These numbers appear at the 
+       left  side  of the listing and are asked  for  at  various 
+       times   in  various  programs.   Keep  a  copy  handy  for 
+       reference.
+.pa
+The General Ledger Journals
+        
+    The  BUSINESSMASTER  packages contain a  General  Journal,  a 
+Check Disbursement Journal, and a Check Receipts Journal.
+        
+    Other  parts of this package post to the General  Ledger  but 
+the  Journals  just  mentioned take care of a large part  of  the 
+daily posting volume.
+        
+The General Journal
+                             
+    The  General Journal is used to post asset  acquisitions  and 
+similar items to the General Ledger while maintaining a record of 
+such  postings.  Each  entry  can  be posted over as  many  as  7 
+accounts and using two or more records,  a posting could be  made 
+over 14 or more accounts. 
+        
+    After each record or group of records is created, they can be 
+listed and posted to the General Ledger. A listing should be made 
+for  a permanent record.  The posting operation will generate  an 
+audit  trail  record showing a General Ledger and a true  Journal 
+listing.
+
+GENERAL JOURNAL
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    This   entry   may  be  used   as   a 
+                                         sequential  record number or for  any 
+                                         other purpose desired.  It is one  of 
+                                         the sort parameters.
+
+2       Major Account Number   10   N    Normally a general journal is used to 
+                                         record   miscellaneous  purchases  of 
+                                         relatively high priced items that are 
+                                         NOT   postable  through   the   check 
+                                         disbursements   of   check   receipts 
+                                         journals. The major account number in 
+                                         the   case  of  the  purchase  of   a 
+                                         vehicle,  for  example,  would be the 
+                                         fixed asset account number associated 
+                                         with such a purchase.  This and  item 
+                                         #7   (Major  amount)  are  offset  by 
+                                         double entry postings to one or  more 
+                                         of the 6 allowable distributions.
+
+                                         For accounting convenience, we DO NOT 
+                                         FORCE  BALANCE.  Any  out of  balance 
+                                         amount  is  shown in  the  DIFFERENCE 
+                                         before  the  record  is  saved.  This 
+                                         allows  for  OUT-OF-BALANCE  POSTINGS 
+                                         which might be required for the entry 
+                                         of  existing balances.  It is also  a 
+                                         simple  matter to recall  and  modify 
+                                         the entry if desired.
+
+                                         All  account  numbers must  be  VALID 
+                                         account   numbers  or  they  will  be 
+                                         rejected during posting. In fact, the 
+                                         posting programs first do an  account 
+                                         number   validity  check   indicating 
+                                         invalid  account numbers by  printing 
+                                         them on the line printer. The posting 
+                                         program   is  then  aborted   without 
+                                         posting ANYTHING to allow the invalid 
+                                         account numbers to be corrected.
+
+3       Date                   8    A    The date is automatically inserted as 
+                                         the  current date from the dates file 
+                                         but  this date may be  overridden  if 
+                                         desired.
+
+4       To Record              24   A    This  is  the normal "to  record  the 
+                                         purchase  of a new truck" for example 
+                                         and    serves    as    an     account 
+                                         identification.
+
+5       Remarks                24   A    Additional    information   may    be 
+                                         recorded here.
+
+6       Not used               1    A    This   field   is   used   in   check 
+                                         disbursements  and check receipts  to 
+                                         indicate   that  checks  are  to   be 
+                                         printed  or  deposit slips are to  be 
+                                         made.  It is not used here but serves 
+                                         to keep entry operations and  posting 
+                                         operations consistent.
+
+7       Major amount           12   N    This  entry  is associated  with  the 
+                                         Major  account  number (item #2)  and 
+                                         should  be  entered as  98.24  for  a 
+                                         debit  or  -98.24 for a  credit.  ALL 
+                                         DEBITS   ARE  ENTERED   AS   POSITIVE 
+                                         AMOUNTS,   ALL  CREDITS  AS  NEGATIVE 
+                                         AMOUNTS   THROUGHOUT  THIS   SOFTWARE 
+                                         SYSTEM.
+
+8       #1 Account number      10   N    This   is  the  first  of  6  account 
+                                         numbers   to  which  offsetting   (or 
+                                         additional)  postings  may  be  made. 
+                                         This  item and item #9 are paired  as 
+                                         are 10/11,  12/13,  14/15, 16/17, and 
+                                         18/19.
+
+9       #1 Amount              12   N    The debit or credit amount associated 
+                                         with  the account number in  item  #8 
+                                         above.  These  amounts allow for  the 
+                                         posting     of    figures    up    to 
+                                         999,999,999.99 dollars.
+
+10      #2 Account number      10   N    See above.
+
+11      #2 Amount              12   N    See above.
+
+12      #3 Account number      10   N    See above.
+
+13      #3 Amount              12   N    See above.
+
+14      #4 Account number      10   N    See above.
+
+15      #4 Amount              12   N    See above.
+
+16      #5 Account number      10   N    See above.
+
+17      #5 Amount              12   N    See above.
+
+18      #6 Account number      10   N    See above.
+
+19      #6 Amount              12   N    See above.
+      
+The Check Disbursement Journal
+
+    One  of  the most onerous bookkeeping chores is  posting  and 
+distributing checks paid out by the business. This chore is taken 
+care of with the Check Disbursements Journal.  Posting and  audit 
+trail information are similar for all three journals. 
+
+    These  Journals and the Check Receipts journal,  use the bank 
+account  number  (General Ledger Account Number of  the  bank  on 
+which  the  check is drawn - or to which a Receipt is  deposited) 
+and  amount above the delimiter line for posting the  appropriate 
+general  ledger bank account.  Distribution can be made  over  as 
+many  as six additional accounts allowing posting to a total of 7 
+different accounts. Unlike the General Journal, the use of two or 
+more records is not recommended.
+     
+The Check Receipts Journal
+
+    This  journal  follows the same general rules  as  the  Check 
+Disbursements  journal but in this case the check amount will  be 
+positive indicating a DEBIT to the bank account.  Notice that all 
+General  Ledger  accounts  follow  the  accounting  principle  of 
+posting DEBIT balances as positive amounts and CREDIT balances as 
+negative amounts.
+        
+.pa      
+A sample Check Disbursement entry
+        
+    In  the  example  that follows,  a check to Western  Auto  is 
+distributed  to  two accounts in addition to  the  bank  account. 
+Notice  that  in  the original entry,  the AMOUNT  OF  CHECK  was 
+incorrectly  entered.  The difference shows up as  460.00.  After 
+correcting the amount to indicate a CREDIT (decrease) to the bank 
+balance, the difference is 0 indicating an in-balance entry.
+        
+RECORD NUMBER 1
+        
+                             ------
+CHECK #                    ? 101
+                             ----------
+BANK ACCT #                ? 102
+                             --------
+DATE                       ? 12-31-78
+                             ------------------------
+IN FAVOR OF                ? WESTERN AUTO
+                             ------------------------
+REMARKS                    ? NONE
+                             -
+PRINT CHECKS(Y/N)          ? N
+
+NUMBER OF DISTRIBUTIONS    ? 2
+                             ------------
+AMOUNT OF CHECK            ? 230
+                             ----------
+1ST ACCT #                 ? 806
+                             ------------
+1ST AMOUNT                 ? 200
+                             ----------
+2ND ACCT #                 ? 820
+                             ------------
+2ND AMOUNT                 ? 30
+     
+.pa
+
+
+        
+RECORD NUMBER 1               CHECK DISBURSEMENT ENTRY
+1 - CHECK  101      2 - BANK ACCT # 102          3 - DATE   12-31-78
+4 - IN FAVOR OF     WESTERN AUTO
+5 - REMARKS         NONE                         6 - PRINT CHECKS(Y/N)N
+7 - AMOUNT OF CHECK $          230.00
+=======================================================================
+POSTING # ACCT #                  DEBIT              CREDIT
+=======================================================================
+#1        8 - 806             9 - $          200.00
+#2        10- 820             11- $           30.00
+#3        12- 0               13-                    $             .00
+#4        14- 0               15-                    $             .00
+#5        16- 0               17-                    $             .00
+#6        18- 0               19-                    $             .00
+                                  =================  =================
+TOTALS                            $          230.00             230.00
+        
+DIFFERENCE                                           $          460.00
+        
+TO MAKE A CHANGE, TYPE THE APPROPRIATE #. IF NONE TYPE 20, RETURN
+? 7
+                              ------------
+AMOUNT OF CHECK             ? -230
+ANY MORE CHANGES? Y
+        
+.pa
+RECORD NUMBER 1               CHECK DISBURSEMENT ENTRY
+1 - CHECK  101      2 - BANK ACCT # 102          3 - DATE   12-31-78
+4 - IN FAVOR OF     WESTERN AUTO
+5 - REMARKS         NONE                         6 - PRINT CHECKS(Y/N)N
+7 - AMOUNT OF CHECK $         -230.00
+=======================================================================
+POSTING # ACCT #                  DEBIT              CREDIT
+=======================================================================
+#1        8 - 806             9 - $          200.00
+#2        10- 820             11- $           30.00
+#3        12- 0               13-                    $             .00
+#4        14- 0               15-                    $             .00
+#5        16- 0               17-                    $             .00
+#6        18- 0               19-                    $             .00
+                                  =================  =================
+TOTALS                            $          230.00            -230.00
+        
+DIFFERENCE                                           $             .00
+    General, Check and Cash Journals
+     
+
+.pa
+CHECK DISBURSEMENTS            
+
+Item #  Description            Size/Type Entry
+
+1       Check Number           8    N    This  number depends on  the  setting 
+                                         established by the system supervisor. 
+                                         If  properly set,  the number will be 
+                                         supplied  automatically otherwise  it 
+                                         must be entered manually.
+
+2       Bank Account Number    10   N    This  is the GENERAL  LEDGER  ACCOUNT 
+                                         NUMBER  of  the bank account  against 
+                                         which the check is drawn.  It will be 
+                                         requested on entering the program and 
+                                         the number entered at that point will 
+                                         be  automatically  included  in  this 
+                                         space.  It may be changed by exitting 
+                                         the  program and reentering from  the 
+                                         check disbursements menu call.
+
+3       Date                   8    A    This   date  will  automatically   be 
+                                         entered  as the current date but  may 
+                                         overridden if desired.
+
+4       In favor of            24   A    This  is  the  payee  that  will   be 
+                                         printed  on  the  check  and  in  the 
+                                         journal   and  ledger  created   when 
+                                         posting.  It  is the first entry  not 
+                                         created automatically by the system.
+
+5       Remarks                24   A    This  entry  can be used  to  include 
+                                         additional   information  about   the 
+                                         check.
+
+6       Print Check (Y/N)      1    A    This  entry is automatically set to Y 
+                                         to  save  entry  time.   It  can   be 
+                                         overridden  if  checks are to  be  or 
+                                         have  already  been written by  hand. 
+                                         The check printing program will  only 
+                                         write  checks  for a Y entry and  the 
+                                         check printing program will set  this 
+                                         field  to N once the check is written 
+                                         to prevent writing double checks.
+
+7       Amount of check        12   N    This amount will automatically be set 
+                                         to   a  credit  (reduces   the   bank 
+                                         balance) and requires ONLY the AMOUNT 
+                                         be entered without the - sign.
+
+8 through 19                   10/12     See GENERAL JOURNAL entries above.
+
+
+
+CHECK RECEIPTS
+
+Item #  Description            Size/Type Entry
+
+1       Customer TAG Number    4    N    The   TAG  number  of  the  remitting 
+                                         customer should be entered here as  a 
+                                         posting  reference to that  customers 
+                                         account.
+
+2       Deposit Account Number 10   N    This  should  be the  General  Ledger 
+                                         cash  in bank account number to which 
+                                         this remittance is to be debited  for 
+                                         deposit.
+
+3       Date                   8    A    The date will be included here.
+
+4       From                   24   A    The customer remitting payment should 
+                                         be entered here.
+
+5       For(remarks)           24   A    Additional    information   can    be 
+                                         included her.
+
+6       Deposit slip (Y/N)     1    A    This  entry  can be used to  indicate 
+                                         whether  a  deposit  slip  is  to  be 
+                                         printed by the computer.  The deposit 
+                                         slip printing program is left to  the 
+                                         user  since  deposit slip  will  vary 
+                                         widely   in  size,   content,   print 
+                                         positions etc.
+
+7       Amount of check        12   N    This  is  the  debit  amount  to   be 
+                                         entered in the General Ledger cash in 
+                                         bank account.
+
+8 through 19                   10/12     See General Journal.
+
+.pa
+*** GENERAL LEDGER - JOURNAL MENU ***
+
+1 - ENTER G/L ACCOUNTS - MAKE ADJUSTING ENTRIES
+
+2 - LIST THE CHART OF ACCOUNTS
+
+3 - ENTER DISBURSEMENT TRANSACTIONS
+
+4 - ENTER RECEIPT TRANSACTIONS
+
+5 - PRINT TRIAL BALANCE
+
+6 - PRINT BALANCE SHEET
+
+7 - PRINT INCOME STATEMENTS
+
+8 - PRINT BUDGET ANALYSIS
+
+9 - FINISHED
+.pa
+1 - We have covered this operation.
+
+2 - This menu call provides for the printing of a formatted Chart 
+    of Accounts.
+
+3 - This  menu call provides a secondary menu allowing  entry  of 
+    General Journal and Check Disbursement operations, posting of 
+    these items and a Disbursements Check printer.
+
+4 - This  menu call provides a secondary menu allowing entry  and 
+    posting of Check Receipts.
+
+5 - This  menu  call provides for printing a Trial  Balance  with 
+    summarys.
+
+6 - This menu call provides for the printing of Balance Sheets.
+
+7 - This   menu   call  provides  for  the  printing  of   Income 
+    Statements.
+
+8 - This  menu call provides for the printing of a  comprehensive 
+    budget analysis covering those items in the Chart of Accounts 
+    that have been given budget amounts.
+
+9 - This menu call returns to the Master menu.
+
+.pa
+
+                            SECTION 3
+
+                       Payroll Operations
+
+Introduction
+        
+    This  payroll  package  is  essentially  self-contained.  The 
+second  part  of  the  posting program is  interactive  with  the 
+General  Ledger and will post directly to it with an audit  trail 
+record showing the postings actually made.
+
+Initial Operations
+        
+    There  are several things that must be done to establish  the 
+payroll package. As it currently runs, only California income tax 
+is   provided  for  so  it  will  be  necessary  to   incorporate 
+information  in  the tax tables and in  the  payroll  calculation 
+program to accomodate other states.
+        
+    The  cutoff and percentage figures should be entered for your 
+particular  area.  The FICA cutoff and percentage is set  to  the 
+latest  figure  when we ship the package.  The  State  Disability 
+Insurance  figures are set for California and should be  changed, 
+if required, for your local area. The Federal Unemployment figure 
+and State Unemployment figures are for California...  here is the 
+rule....The  Federal  Unemployment figure is currently  (December 
+1978)  3.4%.  An  allowance of up to 2.7% is  allowed  for  State 
+Unemployment.  This means that if your state unemployment is OVER 
+2.7%,  Federal  Unemployment  will  be  0.7%.  To  determine  the 
+percentage   then,   simply   subtract  the  State   unemployment 
+percentage (if it is under 2.7%) from 3.4% to get the  percentage 
+for Federal Unemployment. Federal Unemployment tax return is Form 
+940. An accumulation of $100 or more, must be deposited.
+        
+    The  Federal and State unemployment is calculated and printed 
+on  the payroll summary but it is not stored in any file at  this 
+time. It will be necessary for you to maintain a running total on 
+the  payroll  summary  sheets by  totalling  each  weeks  payroll 
+figures for these amounts.
+
+
+PAYROLL CUTOFF AMOUNTS
+
+Item #  Description            Size/Type Entry
+
+1       FICA Cutoff            12   N    This  and  the following entries  set 
+                                         various  cutoffs and percentages  for 
+                                         payroll  operations.  In each case  a 
+                                         cutoff   followed  by  a   percentage 
+                                         figure  is allowed.  These should  be 
+                                         updated  once  a year  from  existing 
+                                         payroll information.
+
+2       FICA Percent           12   N    See above.
+3       SDI Cutoff             12   N    See above.
+                                         
+4       SDI Percent            12   N    See above.
+                                         
+5       Federal Unemployment   12   N    See above.
+        Cutoff
+
+6       FUTA Percent           12   N    See above.
+
+7       State Unemployment     12   N    See above.
+        Cutoff
+
+8       SUTA Percent           12   N    See above.
+
+.pa
+*** EMPLOYEE PAYROLL SYSTEM MENU ***
+
+1 - UPDATE EMPLOYEE RECORDS
+
+2 - ENTER EMPLOYEE TIME CARDS
+
+3 - CALCULATE EMPLOYEE PAYROLL
+
+4 - PRINT PAYROLL SUMMARY
+
+5 - PRINT EMPLOYEE CHECKS
+
+6 - POST PAYROLL OPERATIONS
+
+7 - RECORD FEDERAL DEPOSITS (501)
+
+8 - PRINT FEDERAL AND STATE TAX FORMS (941/W2, ETC)
+
+9 - FINISHED
+.pa
+        
+There are nine parts to the system. These are:
+        
+      
+1.  Update employee records.  This part of the program is used to 
+    update the unit records maintained for each employee. 
+        
+Entering  Employee Information
+        
+You will need the following information:
+   
+1. Employee's name, address, city, state and zip code.
+2. Employee's phone number.
+3. Employee's social security number.
+4. Employment date.
+5. Marital Status.
+6. Hourly or Salaried.
+7. Pay period (weekly, biweekly, semimonthly, or monthly).
+8. Number of exemptions.
+9. Pay rate.
+        
+    The following questions should be answered before payroll  is 
+    run each period.
+        
+      
+1.  Did any employee leave during this pay period?  (If yes,  get 
+    employee  #,  back  up the record in a history file  - delete 
+    from the active file).
+      
+2.  Have any employee's joined the company? (If yes, get required 
+    information,  make  a new employee record for both a  current 
+    and backup file).
+      
+3.  Has  there been any change in status for  any  employee?  (If 
+    yes, make appropriate changes in the employee records).
+   
+                         *** NOTICE ***
+        
+    If  you furnish an employee more that $50,000 Group-Term Life 
+    Insurance,  the  COST of such coverage over $50,000  must  be 
+    shown as extra income!!
+        
+    We strongly recommend that you update all employee records by 
+    running the package with proper entries from the beginning of 
+    the year.  In this way you will get complete records and have 
+    some practice running the package if it is obtained midyear.
+ 
+EMPLOYEE PAYROLL INFORMATION
+
+Item #  Description            Size/Type Entry
+
+1       Employee Number        8    N    This  entry should be used to  record 
+                                         an  employee  number of your  choice. 
+                                         The  entry is free form but  must  be 
+                                         non-zero.  It  is  a  sort  parameter 
+                                         which means that employee records may 
+                                         be   sorted   in   numerical   order. 
+                                         Although  the programs required would 
+                                         be  left  to  the  individual   used, 
+                                         proper  use  of this employee  number 
+                                         would  allow for the  development  of 
+                                         departmentalized payroll information.
+
+2       Account Number         10   N    This  entry can be used to  establish 
+                                         the  account  number in  the  general 
+                                         ledger  to which total payroll is  to 
+                                         be posted.
+
+3       Name                   24   A    The employee's name should be entered 
+                                         here. Suggested is last name first in 
+                                         upper  case  followed by a coma  then 
+                                         the  first  name  and  initial.  This 
+                                         would  allow for the  development  of 
+                                         search    programs   based   on   the 
+                                         employee's last name.
+
+4       Company                24   A    This field is immaterial but could be 
+                                         used  to  record  the  name  of   the 
+                                         company  for which the employee works 
+                                         where multiple companies are kept  on 
+                                         the same payroll.
+
+5       Address                24   A    This  entry should be used to  record 
+                                         the  employee's  street  address  for 
+                                         mailing purposes.
+
+6       City                   17   A    See above.
+
+7       State                  2    A    Enter  a 2 letter state abbreviation. 
+                                         See above.
+
+8       Zip Code               5    A    Enter  a 5 character  zip  code.  See 
+                                         above.
+
+9       Telephone              14   A    Enter  as a home telephone number  if 
+                                         desired  or  an extension.  Space  is 
+                                         provided  for  the format  (nnn)  nnn 
+                                         nnnn.
+
+10      Social Security Number 11   A    Enter  the Social Security Number  as 
+                                         nnn-nn-nnnn.
+
+11      Employment Date        8    A    This  is the date of  employment.  It 
+                                         should be recorded as mm/dd/yy or mm-
+                                         dd-yy.
+
+12      Termination Date       8    A    This  should  be the actual  date  of 
+                                         termination   and  should   only   be 
+                                         entered  after  the final payroll  is 
+                                         prepared. An entry here will stop all 
+                                         payroll even if time card entries are 
+                                         inadvertently made for the employee.
+
+13      Marital Status S/M/H   2    A    Record an "S" for a single  taxpayer, 
+                                         an "M" for a married taxpayer,  or an 
+                                         "H"  for  head of  household  status. 
+                                         This entry selects the proper payroll 
+                                         tables    for   payroll   calculation 
+                                         purposes.
+
+14      Hourly or Salaried     1    A    Enter   "H"  for  hourly,   "S"   for 
+                                         salaried.  Hourly  empoyees are  paid 
+                                         for the FULL number of hours  entered 
+                                         in   the  time  card  entry  program. 
+                                         Salaried employees are paid 40  hours 
+                                         for  a 40 hour work week EVEN if more 
+                                         or  less  hours  are  recorded.   The 
+                                         program  will carry the  total  hours 
+                                         for record purposes.
+
+15      Pay period W/B/S/M     1    A    Enter W for weekly, B for biweekly, S 
+                                         for semi-monthly or M for monthly.
+
+                                         W = 52 periods  7 days  40 hours
+                                         B = 26 periods 14 days  80 hours
+                                         S = 24 periods 15.2 days 86.66667 hrs
+                                         M = 12 periods 30.4 days 173.3333 hrs
+
+16      Number of exemptions   4    N    The  package  will  handle up  to  10 
+                                         exemptions.  Enter the number claimed 
+                                         here    for    payroll    calculation 
+                                         purposes.
+
+17      Hourly rate            6    N    All pay calculations are based on  an 
+                                         hourly  rate  which must  be  entered 
+                                         here  for proper payroll calculation. 
+                                         A daily, weekly, or other rate SHOULD 
+                                         NOT be entered!
+
+18      Hours this period      6    N    Actual  hours worked  are  maintained 
+                                         for  all employees.  These hours  are 
+                                         used   as   the  basis  for   payroll 
+                                         calculations for hourly employees but 
+                                         are  maintained  as totals  only  for 
+                                         salaried employees.  See above.  This 
+                                         figure  can  be  changed  when  first 
+                                         setting  up the package but  will  be 
+                                         maintained by the Time Card Entry and 
+                                         Posting programs from then on.
+
+                                         The   remaining   fields  are   self-
+                                         explanatory and are maintained by the 
+                                         Time  Card  Entry,   Calculation  and 
+                                         Posting programs.
+.pa
+2.  Enter  employee time cards.  This part of the program is used 
+    to enter time for each employee.  It allows for the entry  of 
+    time, time and one half, double time, sick time, holiday time 
+    and   vacation  time.   It  also  allows  for  the  entry  of 
+    miscellaneous  deductions  and  tips  or  other  income.  The 
+    program segment is directly related to the employee record in 
+    that it gets part of its information from that record.
+   
+Entering Employee's Time
+        
+    Employee's  time  is entered through the second part  of  the 
+    payroll menu.  When first creating the file, make it the same 
+    length as the employee data file.  The two programs  interact 
+    in  that  on entry,  the time card files are cleared  by  the 
+    program  and information copied from the employee records  to 
+    each  of  the  active  time records.  Thus  the  only  record 
+    retained is the listing forced on exit from the program.
+
+TIME CARD INFORMATION ENTRY
+
+Item #  Description            Size/Type Entry
+
+1       Employee Number        8    N    This  number is automatically  picked 
+                                         up from the employee record.
+
+2       Account Number         10   N    This account number is  automatically 
+                                         picked up from the employee record.
+
+3       Name                   24   A    The  name is automatically picked  up 
+                                         from the employee record.
+
+4       Pay period number      4    N    This   number  is  not  used  at  the 
+                                         present  time  but  can  be  used  to 
+                                         record   the  pay  period   for   the 
+                                         particular   time  card  entries   if 
+                                         desired.
+
+5       Reportable tips        12   N    Although  labeled  "reportable  tips" 
+                                         this  field can be used to record any 
+                                         type  of extra pay not issued  on  an 
+                                         hourly basis such as commissions.
+
+6       misc deductions        12   N    This  should  be  used  to  record  a 
+                                         composite of miscellaneous deductions 
+                                         such  as insurance,  union dues,  and 
+                                         others not recordable elsewhere.
+
+7 through 12                   4    N    These  entries are  self-explanatory. 
+                                         They  should  be used to  record  the 
+                                         appropriate hours for pay purposes.
+
+                                         Time  &  1/2 and  double  time  hours 
+                                         should  be  recorded as  total  hours 
+                                         worked in each category.  The program 
+                                         will apply a 1.5 or 2 multiplications 
+                                         factor  to  each  figure.   In  fact, 
+                                         entering  twice  the actual hours  in 
+                                         these  fields would allow for  triple 
+                                         or  quadruple  time if  such  premium 
+                                         periods were necessary.
+      
+3.  Calculate employee payroll. This part of the program actually 
+    does  the  payroll  calculations using stored copies  of  the 
+    annuallized federal and state tax tables. The algorithms used 
+    are  shown later in this manual.  A separate  table  (epcuts) 
+    establishes  the  cutoffs  and percentages  for  FICA,  State 
+    Disability   Insurance,   Federal  Unemployment   and   State 
+    Unemployment.  This  table is accessed for update through the 
+    initialization  routines  as are the federal  and  state  tax 
+    tables.
+   
+Calculating Payroll
+        
+    The  payroll is calculated and entered in the current records 
+    of  the employee file automatically.  For states  other  than 
+    California,  a  line  should  be entered in  the  calculation 
+    program to allow for the entry of state income tax  manually, 
+    or  a program should be developed to calculate such tax on  a 
+    temporary basis.
+        
+4.  Print  Payroll Summary.  This part of the program generates a 
+    comprehensive  payroll summary for each employee including  a 
+    total  summary of all payroll for the period.  It also  flags 
+    deposit requirements for federal 501 forms.
+      
+5.  Print  Employee checks.  This part of the programs  generates 
+    the  payroll  checks using the NEBS checks.  The address  for 
+    NEBS  (New  England Business Service) is shown  elsewhere  in 
+    this manual.
+      
+6.  Post payroll operations.  This part of the program posts  the 
+    employee records and the general ledger.
+      
+7.  Record Federal deposits.  This part of the program is used to 
+    create  a  week  by week record of tax liability  and  actual 
+    deposits made.  It is used during the preparation of Form 941 
+    and  should  be  filled  in week by  week  to  ensure  proper 
+    generation of Form 941.
+    
+FEDERAL DEPOSIT RECORD
+
+Item #  Description            Size/Type Entry
+
+                                         This file is automatically created to 
+                                         contain  48 records.  Each record  is 
+                                         used  to record the  particulars  for 
+                                         one 941 reporting period. The file is 
+                                         used  to  prepare 941s  and  to  keep 
+                                         track of actual deposits for you.
+
+1       Quarter (1,2,3,4)      1    N    Enter  the appropriate digit for  the 
+                                         applicable quarter.
+
+2       Month (1,2,3)          1    N    Enter  the  first,  second  or  third 
+                                         month of the quarter as appropriate.
+
+3       Period (1,2,3,4)       1    N    Enter  the appropriate 941  reporting 
+                                         period for the month.
+
+4       Tax liability          12   N    Enter  here the actual tax  liability 
+                                         for  the  period  from  your  payroll 
+                                         summary.
+
+5       Amount of deposit      12   N    Record  here the actual amount of the 
+                                         deposit made with your Form 501.
+
+6       Check Number           8    N    Record,  if desired, the check number 
+                                         of the deposit check.
+
+7       Date of deposit        8    A    Record the date of the deposit.
+   
+8.  Print Federal and State tax forms.  This calls a menu for the 
+    preparation of Form 941,  State forms of your design,  and W2 
+    (latest 1978) forms.
+
+9.  Return to the Master menu.
+   
+Payroll Calculation Algorithms
+        
+    Federal and state withholding tax calculations are made using 
+    the  Exact  Calculation  Method described  in  Circular  E  - 
+    Employer's Tax Guide.  The tables used for these calculations 
+    are in files EF and ES. These tables are loaded into matrices 
+    by  the  tax calculation program and used to calculate  taxes 
+    according to the algorithms shown below.
+        
+    All  calculations are done on an annualized  pay  basis.  For 
+    hourly  employee's,  the  hours entered are multiplied  by  a 
+    factor   determined  by  their  indicated  paydays   (weekly, 
+    biweekly, semimonthly, or monthly) as shown elsewhere in this 
+    manual.  Salaried  employee's hours are maintained but pay is 
+    only calculated on the number of hours corresponding to their 
+    paydays regardless of the number of hours entered.
+        
+    The  annualized  hours are multiplied by  the  payrate  which 
+    should be entered for each employee as an HOURLY rate!!! This 
+    annualized  figure is used for the calculation of Federal and 
+    State withholding tax. FICA, FUTA, and SUTA are calculated on 
+    the current pay. The calculated Federal and State withholding 
+    amounts are then divided by the appropriate figure to  obtain 
+    the current taxes.
+
+FICA, Federal Unemployment, and State Unemployment
+        
+    FICA,   Federal  Unemployment,  and  State  Unemployment  are 
+    calculated using figures obtained from the cutoff file (EPC). 
+    These   figures  can  be  entered  or  changed  through   the 
+    initialization  routines.  The  file  structure  and  current 
+    settings  are  shown  in the Business  software  manual.  The 
+    calculations  are comprehensive in that they test before  and 
+    after  the current pay for an over-cutoff condition and  only 
+    calculate  on that part of the current salary  that  actually 
+    comes up to the cutoff level.
+   
+ACTUAL PAYROLL CALCULATIONS
+      
+1.  HOURS.  - The  hours  contained in the time card  record  are 
+    read.  The  actual hours (H1) are developed by totalling  ALL 
+    hours.  The  hours  for payroll calculation are developed  by 
+    totalling  all hour but applying 1.5 and 2 times to time  and 
+    one/half and double-time hours respectively.  The figure  for 
+    ACTUAL  hours worked is stored for hourly employees while pay 
+    is  calculated  on  effective hours (H4)  to  compensate  for 
+    overtime.  Hours actually worked are also stored for salaried 
+    employees  but the figure calculated on is based  on  whether 
+    these  employees  are  weekly,   biweekly,   semimonthly,  or 
+    monthly.
+      
+2.  FICA. - FICA is calculated using the following algorithm:
+        
+    If y-t-d gross pay > cutoff then FICA = 0
+    If y-t-d gross pay + current gross pay > cutoff then
+    FICA = y-t-d gross + current gross - cutoff * percentage
+    If y-t-d gross + current gross <= cutoff then FICA =
+    current gross * percentage
+.pa
+                            SECTION 4
+
+             Accounts Receivable/Customer Operations
+
+    The  entire  accounts receivable system works in  conjunction 
+with  the  Inventory  and contains the Order  Entry  and  General 
+Ledger posting operations.
+
+    Generally  a  customer file is established as in  other  data 
+entry  operations.   Customer's  names,   shipping  and   billing 
+information  and  payment  information are all contained  in  the 
+customer records. Orders are entered via a separate entry program 
+that  calls  for  data  from both the  customer  record  and  the 
+Inventory records.
+
+    Up to 10 items may be entered for each order entry. A pair of 
+Invoice  printing  programs  then allow  for  the  generation  of 
+Invoices on either pre-printed (NEBS) Invoices or fully formatted 
+on blank paper.
+
+    As  each  Invoice  is generated,  the order entry  record  is 
+flagged  to  indicate this.  The LIST CUSTOMER ORDERS  creates  a 
+register of Invoices and this is also flagged in the order  entry 
+record. Additionally, posting and payment are flagged. These four 
+flags  allow  operations to continue on files which  contain  the 
+orders  from previous days without duplicating operations already 
+performed. They also allow for the generation of accrual or open-
+item billing.
+
+.pa
+*** SALES ORDER ENTRY / CUSTOMER RECEIVABLES MENU ***
+
+1 - ENTER NEW CUSTOMER INFORMATION
+
+2 - ENTER CUSTOMER ORDERS
+
+3 - LIST CUSTOMER ORDERS
+
+4 - PRINT PLAIN PAPER (FORMATTED) INVOICES
+
+5 - PRINT PRE-PRINTED INVOICES
+
+6 - POST ORDERS TO GENERAL LEDGER
+
+7 - PRINT AGED ACCOUNTS RECEIVABLE REPORT
+
+8 - PRINT CUSTOMER LABELS
+
+9 - FINISHED
+.pa
+
+#1 Enter New Customer Information
+
+    The  following  information should be used  in  entering  new 
+customer information. The customer records are necessary both the 
+the  process  of  order  entry and to the  printing  of  accounts 
+receivable reports.
+
+CUSTOMER RECEIVABLES
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    This  is used as a sort parameter and 
+                                         must be non-zero.
+
+2       Acct Number            10   N    This  should be set to  the  accounts 
+                                         receivable  account  number for  this 
+                                         customer.
+
+                                         The  following entries are  used  for 
+                                         label  printing  and for the SOLD  TO 
+                                         part of the Invoices and Statements.
+
+3       Name (attention)       24   A    See Above.
+
+4       Company                24   A    See Above.
+
+5       Address                24   A    See Above.
+
+6       City                   17   A    See Above.
+
+7       State                  2    A    See Above.
+
+8       Zip Code               5    A    See Above.
+
+9       Phone                  14   A    See Above.
+
+                                         The  following entries will  be  used 
+                                         for  the SHIPPING information in  all 
+                                         Invoices.   The   date  of  the  last 
+                                         payment  is recorded  during  posting 
+                                         operations.     All    entries    are 
+                                         Alphanumeric.
+
+10      Name (attention)       24   A    See Above.
+
+11      Company                24   A    See Above.
+
+12      Address                24   A    See Above.
+
+13      City                   17   A    See Above.
+
+14      State                  2    A    See Above.
+
+15      Zip Code               5    A    See Above.
+
+16      Phone                  14   A    See Above.
+
+17      Date of last pmnt      8    A    See Above.
+
+1       Amt of last pmnt       12   N    This  field records the amount of the 
+                                         last  payment received  against  this 
+                                         account.
+
+2       Total Y to Date pmnt   12   N    This  field records the total Year to 
+                                         Date  payments received against  this 
+                                         account.
+
+3       Current Charges        12   N    This is aging information.
+
+4       30-60 Days             12   N    This is aging information.
+
+5       61-90 Days             12   N    This is aging information.
+
+6       Over 90 Days           12   N    This is aging information.
+.pa
+*** SALES ORDER ENTRY / CUSTOMER RECEIVABLES MENU ***
+
+1 - ENTER NEW CUSTOMER INFORMATION
+
+2 - ENTER CUSTOMER ORDERS
+
+3 - LIST CUSTOMER ORDERS
+
+4 - PRINT PLAIN PAPER (FORMATTED) INVOICES
+
+5 - PRINT PRE-PRINTED INVOICES
+
+6 - POST ORDERS TO GENERAL LEDGER
+
+7 - PRINT AGED ACCOUNTS RECEIVABLE REPORT
+
+8 - PRINT CUSTOMER LABELS
+
+9 - FINISHED
+.pa
+#2 Enter Customer Orders
+
+    This  menu call allows the entry of orders for Invoicing  and 
+other operations.
+
+INVOICE REGISTER
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    8    N    This   Field   is  used  as  a   sort 
+                                         parameter.
+
+2       A/R Acct #             10   N    This   field   should   contain   the 
+                                         accounts  receivable  to  which  this 
+                                         invoice is to be recorded.
+
+3       Invoice #              10   N    This   number  is  supplied  by   the 
+                                         system.   A  program  called   INVENT 
+                                         allows the selection of either forced 
+                                         sequintial numbering or random manual 
+                                         numbering.
+
+4       Salesman               24   A    The  name can be up to 24  characters 
+                                         long  but will not be printed out  in 
+                                         its entirety during invoicing.
+
+5       Cust. Order #          24   A    This  field  can be  used  to  record 
+                                         Customer order number.
+
+6       Shipping Date          8    A    This  field  is  used to  record  the 
+                                         shipping date.
+
+7       Carrier (via)          8    A    This  field  is used  to  record  the 
+                                         carrier  for printing on the  invoice 
+                                         (UPS, mail, Etc.).
+
+8       FOB point              10   A    This  field is used for printing  the 
+                                         FOB point on the invoice.
+
+9       Terms                  10   A    This filed is used to enter the terms 
+                                         of  the sale.  The Numeral 1 in  this 
+                                         field  will  cause  "PREPAID"  to  be 
+                                         printed on the Invoice. The Numeral 2 
+                                         will cause "COD" to be printed on the 
+                                         invoice. The Numeral 3 will cause "1% 
+                                         10  net  30"  to be  printed  on  the 
+                                         invoice.  Any  other  entry  will  be 
+                                         printed as entered.
+
+10      Tax Code               1    A    This is a single character field.  It 
+                                         will  calculate and include 6%  State 
+                                         sales tax if a Y is entered.
+
+11      Post,Invoice,Register  4    A    This  field  should not  be  tampered 
+                                         with  since  entries are made by  the 
+                                         system to prevent double invoicing or 
+                                         double  posting.  If an  invoice  has 
+                                         been   cut,   posting  performed,   a 
+                                         register  made,  and the invoice  has 
+                                         been  paid  this field  will  contain 
+                                         PIRP.
+
+12      Customer Record #      4    N    This  entry  is used  to  select  the 
+                                         proper    customer   for   invoicing, 
+                                         posting, Etc.
+
+13      Shipping Charges       12   N    Enter  any  shipping  charges  to  be 
+                                         invoiced in this field.
+
+                                         The   following  entries  allow   for 
+                                         calling up to ten (10) finished goods 
+                                         inventory items to be included on the 
+                                         invoice.  The  finished goods  record 
+                                         number  is  followed by  the  quanity 
+                                         ordered   for   that   item.   During 
+                                         invoicing  the  items are  called  by 
+                                         record number from inventory and  the 
+                                         inventory  is depleted by the  number 
+                                         ordered.  Should  the quanity ordered 
+                                         exceed the quanity on hand,  only the 
+                                         items  on hand will  be  invoiced.  A 
+                                         back-order  quanity will be  included 
+                                         on the invoice and the inventory will 
+                                         be  zeroed...the  amount will not  go 
+                                         negative.   All  extensions  on   the 
+                                         invoice    and    all   totals    are 
+                                         automatically calculated.
+
+1-10    Finished Goods Rec. #  4    N    See Above.
+
+1-10    Quanity                10   N    See Above.
+
+.pa
+*** SALES ORDER ENTRY / CUSTOMER RECEIVABLES MENU ***
+
+1 - ENTER NEW CUSTOMER INFORMATION
+
+2 - ENTER CUSTOMER ORDERS
+
+3 - LIST CUSTOMER ORDERS
+
+4 - PRINT PLAIN PAPER (FORMATTED) INVOICES
+
+5 - PRINT PRE-PRINTED INVOICES
+
+6 - POST ORDERS TO GENERAL LEDGER
+
+7 - PRINT AGED ACCOUNTS RECEIVABLE REPORT
+
+8 - PRINT CUSTOMER LABELS
+
+9 - FINISHED
+.pa
+
+#3  This  menu call creates a complete list of orders  that  have 
+    not  been previously listed.  The listing operation makes use 
+    of  the customer records and inventory records to  achieve  a 
+    printed  record  of all orders generated by  the  system.  It 
+    automatically  updates  the proper flags in the  order  entry 
+    record so that double listing does not occur.
+
+#4  This  menu  call  prints  Invoices on  NEBS  continuous  form 
+    Invoices. The operation requires minimal supervision.
+
+#5  This menu call is for those who prefer not to use  continuous 
+    form invoices. Invoices are printed on plain paper.
+
+#6  This  menu call allows the posting of sales operations to the 
+    General Ledger.  On screen dialogue is used to prompt for the 
+    proper posting operations.
+
+#7  This  menu  call prints the aged accounts  receivable  report 
+    without intervention.
+
+#8  This  menu call allows for the printing of labels to be  used 
+    wherever needs in customer operations.
+.pa
+                            SECTION 5
+
+              Accounts Payable / Vendor Operations
+
+    The Accounts Payable is practically a reverse of the Accounts 
+Receivable.  It allows for the maintenance of Vendor  Information 
+records.   These  contain  similar  information  to  the  account 
+receivable but indicate payments made to vendors, aging of vendor 
+accounts and other vendor related information
+.pa
+*** PURCHASE ORDER ENTRY / VENDOR PAYABLES MENU ***
+
+1 - ENTER NEW VENDOR INFORMATION
+
+2 - ENTER PURCHASE ORDERS
+
+3 - LIST PURCHASE ORDERS
+
+4 - PRINT PLAIN PAPER (FORMATTED) PURCHASE ORDERS
+
+5 - PRINT PRE-PRINTED PURCHASE ORDERS
+
+6 - POST PURCHASE ORDERS TO GENERAL LEDGER
+
+7 - PRINT AGED ACCOUNTS PAYABLE REPORT
+
+8 - PRINT VENDOR LABELS
+
+9 - FINISHED
+.pa
+VENDORS PAYABLE FILE
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    Same as the customer file.
+
+2       Acct Number            10   N    Same as the customer file.
+
+3       Name (attention)       24   A    Same as the customer file.
+
+4       Company                24   A    Same as the customer file.
+
+5       Address                24   A    Same as the customer file.
+
+6       City                   17   A    Same as the customer file.
+
+7       State                  2    A    Same as the customer file.
+
+8       Zip Code               5    A    Same as the customer file.
+
+9       Phone                  14   A    Same as the customer file.
+
+SHIPPING
+
+10      Name (attention)       24   A    Same as the customer file.
+
+11      Company                24   A    Same as the customer file.
+
+12      Address                24   A    Same as the customer file.
+
+13      City                   17   A    Same as the customer file.
+
+14      State                  2    A    Same as the customer file.
+
+15      Zip Code               5    A    Same as the customer file.
+
+16      Phone                  14   A    Same as the customer file.
+
+17      Date of last pmnt      8    A    Same as the customer file.
+
+1       Amt of last pmnt       12   N    Same as the customer file.
+
+2       Total year to date     12   N    Same as the customer file.
+
+3       Current Charges        12   N    Same as the customer file.
+
+4       30-60 days             12   N    Same as the customer file.
+
+5       61-90 days             12   N    Same as the customer file.
+
+6       Over 90 days           12   N    Same as the customer file.
+.pa
+*** PURCHASE ORDER ENTRY / VENDOR PAYABLES MENU ***
+
+1 - ENTER NEW VENDOR INFORMATION
+
+2 - ENTER PURCHASE ORDERS
+
+3 - LIST PURCHASE ORDERS
+
+4 - PRINT PLAIN PAPER (FORMATTED) PURCHASE ORDERS
+
+5 - PRINT PRE-PRINTED PURCHASE ORDERS
+
+6 - POST PURCHASE ORDERS TO GENERAL LEDGER
+
+7 - PRINT AGED ACCOUNTS PAYABLE REPORT
+
+8 - PRINT VENDOR LABELS
+
+9 - FINISHED
+.pa
+PURCHASE ORDER REGISTER
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    Same as the invoice file.
+
+2       A/P Acct #             10   N    Same as the invoice file.
+
+3       Purchase order #       10   N    Same as the invoice file.
+
+4       Buyer                  24   A    Same as the invoice file.
+
+5       Our Order #            24   A    Same as the invoice file.
+
+6       Required Date          8    A    Same as the invoice file.
+
+7       Carrier (via)          8    A    Same as the invoice file.
+
+8       FOB Point              10   A    Same as the invoice file.
+
+9       Terms                  10   A    Same as the invoice file.
+
+10      Tax Code               1    A    Same as the invoice file.
+
+11      Post,invoice,register  4    A    Same as the invoice file.
+
+12      Vendor Tag #           4    N    Same as the invoice file.
+
+13      Shipping chgs          12   N    Same as the invoice file.
+
+1 - 10  Finished Goods Rec. #  4    N    Same as the invoice file.
+
+1 - 10  Quanity                10   N    Same as the invoice file.
+.pa
+                            SECTION 6
+
+              Inventory and Fixed Asset Operations
+
+    The Inventory section carries two inventory files.  These are 
+labelled FINISHED GOODS and RAW GOODS.
+
+    The  Finished  Goods  inventory  is  the  inventory  actually 
+accessed  by the Order Entry section of accounts  receivable.  By 
+properly  maintaining  this  inventory it will  serve  about  any 
+inventory accounting purpose desired. 
+
+    If  new  numbers are assigned to items when  purchase  prices 
+change  it  will serve as an exact value (as opposed to  LIFO  or 
+FIFO)  inventory  of all material in stock.  Also,  since  it  is 
+automatically decremented by the Order entry package,  it will be 
+a perpetual inventory.
+
+    Properly  maintained  with  manual  entries,  the  Raw  Goods 
+inventory  can serve the same purpose for all material  purchased 
+for use in manufacturing operations.
+
+    The report printed for both of these inventories gives  total 
+cost, total selling price, and a gross profit differential figure 
+for  use  in  administration.  The information contained  in  the 
+records  also  allows  for  the  calculation  of  economic  order 
+quantities. In fact programs could be written to do this job.
+
+    The  alert printed for each of these inventories  flags  both 
+over  maximum  and under minimum quantities printing  only  those 
+items which fall in these categories.
+.pa
+*** FINISHED / CAPITAL / RAW GOODS INVENTORY MENU ***
+
+1 - UPDATE FINISHED GOODS INVENTORY
+
+2 - UPDATE RAW GOODS INVENTORY
+
+3 - PRINT FINISHED GOODS REPORT
+
+4 - PRINT RAW GOODS REPORT
+
+5 - PRINT FINISHED GOODS ALERT
+
+6 - PRINT RAW GOODS ALERT
+
+7 - FIXED ASSET OPERATIONS
+
+8 - FINISHED
+.pa
+
+FINISHED GOODS INVENTORY
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    This   field   is  used  as  a   sort 
+                                         parameter  and  may be used  for  any 
+                                         purpose. It must be Non-Zero.
+
+2       Acct Number            10   N    This  field  should  be  set  to  the 
+                                         General  Ledger  account  number  for 
+                                         Inventory.This  field  must  be  Non-
+                                         Zero.
+
+3       Item #                 7    A    This field is used to record any form 
+                                         of  item  number you desire up  to  7 
+                                         characters long.
+
+4       Part #                 12   A    This field is used to record any form 
+                                         of  part  #  you  desire  up  to   12 
+                                         characters long.
+
+5       Description            24   A    This  field  can be used to  enter  a 
+                                         product   description  of  up  to  24 
+                                         characters.  It will also be used  on 
+                                         the invoice to describe the product.
+
+6       Location (shelf,bin)   24   A    This  field  can be used to record  a 
+                                         location  description  of  up  to  24 
+                                         characters.  This would be useful  in 
+                                         physical inventory operations.
+
+7       Date of last issue     8    A    This field is used to record the date 
+                                         this product was issued from stock.
+
+8       Date of last receipt   8    A    This field is used to record the date 
+                                         an  order  of this product  was  last 
+                                         received.
+
+9       Vendor Code            10   A    This  field  can be used to record  a 
+                                         vendor code of up to 10 characters.
+
+10      Vendor Tag #           4    N    The   vendor  tag  number   for   the 
+                                         supplier  of  this product should  be 
+                                         recorded here.
+
+11      Unit Cost              12   N    The  unit cost entered here  will  be 
+                                         used in the preparation and extension 
+                                         of purchase orders.
+
+12      Selling Price          12   N    The  selling price recorded here will 
+                                         be   used  in  the  preparation   and 
+                                         extension of invoices.
+
+13      Quan on Hand           8    N    This field is depleted by the invoice 
+                                         printer at the time of invoicing this 
+                                         product.   Receipt  of  fresh   stock 
+                                         should be added to this field.
+
+14      Quan on Order          8    N    This field should contain the quanity 
+                                         of any product currently on order but 
+                                         not received.
+
+15      Quan Issued m-t-d      10   N    This  entry  is  incremented  by  the 
+                                         number  of items invoiced as are  the 
+                                         next  two  entries.  The  maintenance 
+                                         program   will  zero  out  the  M-T-D 
+                                         amounts  during monthly  maintenance, 
+                                         leaving  quarter  and  year  to  date 
+                                         amounts   to  be  incremented   still 
+                                         further. In a similar manner the q-t-
+                                         d and y-t-d issues will be zeroed out 
+                                         during   those  maintenance   program 
+                                         runs.  Thus y-t-d issues will  always 
+                                         contain  the  total number  of  items 
+                                         issued for the current year, the q-t-
+                                         d issue will contain the total number 
+                                         of  items  issued during the  current 
+                                         quarter,  and  the  m-t-d  items  the 
+                                         total  issue for the  current  month. 
+                                         These  figures should prove useful in 
+                                         establishing  inventory  levels   and 
+                                         EOQs.
+
+16      Quan issued q-t-d      10   N    See Above.
+
+17      Quan issued y-t-d      10   N    See Above.
+
+18      Min quan (stock)       10   N    The  minimum  stock level to  mantain 
+                                         either  estimated  or  from   history 
+                                         should  be entered here.  This figure 
+                                         will  be compared to the  quanity  on 
+                                         hand   to  produce  an  output   when 
+                                         running  the inventory ALERT  program 
+                                         if  the quanity on hand is less  than 
+                                         the minimum.
+
+19      Max quan (stock)       10   N    The  maximum  stock level should  be 
+                                         entered  here.  The alert will  print 
+                                         out any items over maximum in stock.
+.pa
+RAW GOODS INVENTORY
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    See Finished Goods.
+
+2       Acct Number            10   N    See Finished Goods.
+
+3       Item #                 7    A    See Finished Goods.
+
+4       Part #                 12   A    See Finished Goods.
+
+5       Description            24   A    See Finished Goods.
+
+6       Location(shelf,bin)    24   A    See Finished Goods.
+
+7       Date of last issue     8    A    See Finished Goods.
+
+8       Date of last receipt   8    A    See Finished Goods.
+
+9       Vendor Code            10   A    See Finished Goods.
+
+10      Vendor Tag #           4    N    See Finished Goods.
+
+11      Unit Cost              12   N    See Finished Goods.
+
+12      Selling Price          12   N    See Finished Goods.
+
+13      Quan on hand           8    N    See Finished Goods.
+
+14      Quan on order          8    N    See Finished Goods.
+
+15      Quan issued m-t-d      10   N    See Finished Goods.
+
+16      Quan issued q-t-d      10   N    See Finished Goods.
+
+17      Quan issued y-t-d      10   N    See Finished Goods.
+
+18      Min quan (stock)       10   N    See Finished Goods.
+
+19      Max quan (stock)       10   N    See Finished Goods.
+.pa
+*** FINISHED / CAPITAL / RAW GOODS INVENTORY MENU ***
+
+1 - UPDATE FINISHED GOODS INVENTORY
+
+2 - UPDATE RAW GOODS INVENTORY
+
+3 - PRINT FINISHED GOODS REPORT
+
+4 - PRINT RAW GOODS REPORT
+
+5 - PRINT FINISHED GOODS ALERT
+
+6 - PRINT RAW GOODS ALERT
+
+7 - FIXED ASSET OPERATIONS
+
+8 - FINISHED
+
+.pa
+#3  This  menu  selection prints a comprehensive  finished  goods 
+    inventory report.
+
+#4  This menu selection prints a similar report for raw goods.
+
+#5  This  menu  selection prints an inventory alert  those  items 
+    that  are  either  over maximum or under minimum for  aid  in 
+    determining order requirements.
+
+#6  This menu selection prints the alert for raw goods.
+
+#7  This menu selection brings up the following menu.
+.pa
+*** FIXED ASSET ACCOUNTING MENU ***
+
+1 - ENTER OR MODIFY CAPITAL GOODS
+
+2 - CALCULATE YEARS DEPRECIATION
+
+3 - PRINT DEPRECIATION REPORT
+
+4 - PRINT IRS FORM 4562 - DEPRECIATION
+.pa
+    This Capital Goods,  Fixed Asset,  or Depreciation Accounting 
+package is designed to afford a means of calculating depreciation 
+for  either  Income Tax purposes or internal  purposes.  You  may 
+generate  one set of records for internal depreciation  of  fixed 
+assets  using  any method of depreciation you chose and a  second 
+set  which uses IRS approved depreciation methods  for  reporting 
+purposes.
+    
+This package allows for the following direct calculation methods:
+      
+1.  Straight Line                    SL
+2.  Sum-of-the-years-digits          SD
+3.  Declining Balance @
+    125%                             D1
+    150%                             D2
+    200%                             D3
+    
+and  affords  a  means  of applying  the  IRS  Class  Life  Asset 
+Depreciation Range (CLADR) System of determining useful life.  By 
+constructing  the  records correctly both Half Year  or  Modified 
+Half  Year elections can be made for the particular vintage  year 
+the  account  is  established.  See the RIA  Tax  Guide,  Revenue 
+Procedure  72-10,   or  Publication  534,   Tax  Information   on 
+Depreciation for additional details of this system.
+    
+    Because of the diversity of opinion and method in fixed asset 
+accounting, this package makes no provision for direct posting to 
+the   General   Ledger.   A  good  sourcebook  for  fixed   asset 
+(depreciation)  accounting and accounting theory is the  Handbook 
+of  Modern Accounting by Davidson and Weil published  by  McGraw-
+Hill.
+    
+This package allows for the following:
+    
+1.   The  recording  of individual or multiple assets in  records      
+     which  contain all current and historical data on the  asset      
+     with  the  ability  to  edit and  revise  these  entries  as 
+     desired.   These   accounts  may  be  carried  as   straight 
+     depreciation accounts or as Vintage accounts as described in 
+     the various references cited.
+    
+2.   The  calculation of depreciation each year using information 
+     contained  in  the  record using any  of  the  5  previously 
+     mentioned  IRS accepted calculation methods and allowing for 
+     the   treatment  of  each  record  as  either   a   standard 
+     depreciation or a CLADR vintage record.
+    
+3.   The  printing  of  a  condensed  depreciation  schedule  for      
+     internal use.
+    
+4.   The printing of IRS Form 4562  DEPRECIATION for inclusion in 
+     your tax return.
+    
+    It  will be necessary to post your General Ledger accounts as 
+required through the General Journal Posting routines.
+    
+    It is also possible, using duplicate files, to carry internal 
+depreciation one way and IRS depreciation another. A large number 
+of  methods for accounting for the costs incurred in the  use  of 
+fixed  assets are discussed in the Handbook of Modern Accounting. 
+Again  we stress that if you are NOT a qualified  accountant,  by 
+all means discuss this package WITH your accountant.
+    
+The address for the Research Institute of America is:
+    
+The Research Institute of America, Inc
+589 Fifth Avenue
+New York, NY  10017
+    
+    Another  very  extensive source of information  is  the  four 
+volume  subscription service offered by Commerce Clearing  House. 
+Their address is:
+    
+Commerce Clearing House, Inc
+Publishers of Topical Law Reports
+4025 W. Peterson Avenue
+Chicago, Illinois  60646
+.pa    
+The Capital Goods Entry Program
+    
+    This  program is the first menu call.  We will go through the 
+entries  one by one indicating any special effects they  have  on 
+the operation of the program.
+    
+1.   TAG - This can be used as an in-house identification number. 
+     It is shown as four bytes long but being a numeric entry, it 
+     can probably be longer without adversely affecting operation 
+     of the programs.
+    
+2.   FIXED  ASSET  ACCOUNT  # - This  number can  be used  as  an           
+     indicator for posting purposes.
+    
+3.   DEPRECIATION  ACCOUNT # - This number can also be used as an 
+     indicator for posting purposes.
+
+4.   DESCRIPTION - This entry can contain  both numeric and alpha 
+     data about the item in the record.  It could also contain an 
+     identifying number. It is currently 24 bytes long.
+
+5.   LOCATION  - This  is  another 24 byte  entry  specified  for 
+     location but can be used for whatever purpose you desire.
+    
+6.   NEW  OR USED - This entry is a  single byte.  It  should  be 
+     either N - new;  U - used; or V - Vintage. If the entry is N 
+     or  U,  the account entry will be treated as  a  non-vintage 
+     account  and  not subject to CLADR operations.  The  V  will 
+     signify Vintage and the DATE information that follows should 
+     be read carefully.
+    
+7.   DATE - The date has two uses. If the record contains an item 
+     or items subject to standard depreciation,  it should be the 
+     date entered in the form mm/dd/yy, where mm is the month, dd 
+     the  day,  and yy the year.  This date is compared with  the 
+     current date (in the regular date file). If the year part of 
+     the  date in the date file matches the date  acquired  date, 
+     the  item  is  treated as acquired during the  preceding  12 
+     months or less. The month and day are then used to calculate 
+     the  number  of  days  the asset has  been  owned  and  this 
+     fraction  is used for depreciation calculation.  The  actual 
+     calculation  program  should be run at the end of  the  year 
+     with  the current date in the date file set to 12/31/xx.  It 
+     can  be  run at other times of the year but  will  post  the 
+     depreciation records as though it were the year-end.  Month-
+     to-date  depreciation and quarter-to-date  depreciation  are 
+     not  precisely  what they seem.  They are set to 1/12th  and 
+     1/4th of the years depreciation.
+    
+     The  second  mutually exclusive use is as a vintage  account 
+     flag   when  the  record  is  being  run  under  IRS   CLADR 
+     depreciation.  If  using the Half-year convention,  the date 
+     should  be  set to H00xx where xx is the  vintage  year.  If 
+     using the Modified Half-year convention,  the date should be 
+     entered as M01xx or M02xx depending on whether the asset  is 
+     acquired  before or after the middle of the year.  01 is the 
+     first  half  year;  02 the second.  xx is still the  vintage 
+     date.  Using  CLADR  life and  the  above  conventions,  the 
+     calculation program will do CLADR depreciation.
+    
+8.   DEPRECIATION METHOD - For either depreciation  method above, 
+     the  following elections are possible - SL = straight  line; 
+     D1  = declining balance at 125%;  D2 = declining balance  at 
+     150%;  D3  = declining balance at 200% (maximum);  and SD  = 
+     Sum-of-the-years  digits.  The calculation program looks  at 
+     this entry to determine which depreciation program to use.
+    
+9.   COST OR BASIS - This is the initial depreciable  cost of the 
+     equipment.  This  entry is not changed by any program in the 
+     system and should match the entry in item 10 initially.
+
+10.  DEPRECIABLE  BASIS - This entry is used in  caculations  and 
+     posted  down during the calculation program to  reflect  the 
+     new basis after a years depreciation.
+    
+11.  PRIOR YEARS DEPRECIATION - This amount should, when added to 
+     item 10, be equal to item 9 at any point in the cycle.
+    
+12.  USEFUL  LIFE  - This entry  need not be present for  vintage 
+     accounts. It should be set to the useful life figure for the 
+     item for other methods of depreciation.
+    
+13.  REMAINING  LIFE  - This value should  be  entered  initially 
+     equal  to  item  12.  It  is posted down  1  each  time  the 
+     calculation program is run.
+    
+14,15   and   16  - These  are  posted  during  the  running   of 
+     calculations.
+    
+17.  SALVAGE VALUE - This  value whether 0 or positive is used to 
+     set the lower limit of depreciation.
+
+
+     It is possible to construct a sample set of records and  run 
+the  complete  cycle through to the end of the asset life to  see 
+the effect of various depreciation methods.
+    
+     The  election  of  a 20%  first-year  depreciation  is  also 
+provided for in the calculations part of this package.
+
+
+CAPITAL GOODS INVENTORY
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    This  field must be non-zero and  can 
+                                         be used as a sort parameter.
+
+2       Fixed Asset Acct #     10   N    This field should contain the General 
+                                         Ledger  account number for the  fixed 
+                                         asset category under which it falls.
+
+3       Depreciation Acct #    10   N    This  field  should contain  the  G/L 
+                                         acct  # for the Depreciation  account 
+                                         under which it falls.
+
+4       Description            24   A    This    field   should   contain    a 
+                                         description  of the item or items  as 
+                                         they will appear on the  depreciation 
+                                         report and Form 4562.
+
+5       Location               24   A    This  field is here as a  convenience 
+                                         to   the  user  to  mantain  location 
+                                         information.
+
+6       New or Used            1    A    This field should either be an N or a 
+                                         U.
+
+7       Date Acquired          8    A    The  format  used for entry  of  this 
+                                         field should be mm/dd/yy.  This  date 
+                                         will   be  used  to  compute  partial 
+                                         depreciation  from the date  acquired 
+                                         to  the end of the reporting  period. 
+                                         This  date is also compared with  the 
+                                         current year to determine eligibility 
+                                         for  first-year   depreciation.   One 
+                                         exception  exists...  if  this  is  a 
+                                         CLADR  vintage  account,   the  entry 
+                                         should  be in the form H1979 for half 
+                                         year   calculations  or   M1979   for 
+                                         modified   half  year  methods.   The 
+                                         program looks at the FIRST character. 
+                                         If  this  character is M or H  it  is 
+                                         treated  as  a  vintage  account  and 
+                                         depreciation      is       calculated 
+                                         accordingly.  If it is a numeral, the 
+                                         account  is  treated  as  a  standard 
+                                         account  and depreciation  calculated 
+                                         in the normal way.
+
+8       Depreciation Method    2    A    The  format  for the following  field 
+                                         MUST be SL for Straight Line,  D1 for 
+                                         Declining   Balance  125%,   D2   for 
+                                         Declining   Balance  150%,   D3   for 
+                                         Declining Balance 200%, or SD for sum 
+                                         of  the  years  digits.  Depreciation 
+                                         will be calculated accordingly.
+
+9       Cost or Basis          12   N    This   field   should   contain   the 
+                                         original cost or other basis on which 
+                                         depreciation is to be calculated.
+
+10      Depreciable Basis      12   N    This  field will be depleted  by  the 
+                                         program  to  form a  new  depreciable 
+                                         basis for each succeeding year.
+
+11      Prior Years Dep.       12   N    This field will be incremented by one 
+                                         for each years depreciation taken.
+
+12      Useful Life            4    N    You should enter here the useful life 
+                                         of the asset.
+
+13      Remaining Life         4    N    This  field will hold the  difference 
+                                         of   useful  life  and  prior   years 
+                                         depreciation.
+
+14      Month to date dep.     12   N    This field will be one twelfth (1/12) 
+                                         of   the  y-t-d   depreciation.   The 
+                                         calculation program calculates a full 
+                                         years   depreciation  and  will  then 
+                                         divide  by 4 to get q-t-d  and 12  to 
+                                         get m-t-d.  A copy of the file should 
+                                         be  made to run month or  quarter  to 
+                                         date depreciation and the master file 
+                                         run  through the calculation  program 
+                                         only once a year.
+
+15      Quarter to date dep.   12   N    See Above.
+
+16      Year to date dep.      12   N    See Above.
+
+17      Salvage Value          12   N    When  remaining value falls below the 
+                                         value  you enter  here,  depreciation 
+                                         calculations will be stopped on  this 
+                                         asset.
+
+.pa
+                            SECTION 7
+
+                     Mailing List Operations
+
+    This  group  of mailing list programs is designed to  provide 
+some   minimum  capabilities  in  the  maintenance  of   in-house 
+advertising  mailing  lists.  The packagealso  provides  for  the 
+printing of labels for customers, vendors, and employeesusing the 
+files associated with each of these.
+
+    Both the programs and the documentation are due for expansion 
+to provide additional features.
+
+    The  list,  once  entered  can  be sorted on  either  tag  or 
+reference number.  We suggest the zip code as a reference  number 
+for the startup of the system.
+.pa
+*** MAILING LIST MENU ***
+
+1 - UPDATE MAILING LIST
+
+2 - PRINT MAILING LABELS
+
+3 - PRINT CUSTOMER LABELS
+
+4 - PRINT VENDOR LABELS
+
+5 - PRINT EMPLOYEE LABELS
+
+6 - FINISHED
+.pa
+
+MAILING LIST FILE
+
+Item #  Description            Size/Type Entry
+
+1       Tag                    4    N    The    entry   program   will   allow 
+                                         automatic entry of the record  number 
+                                         if desired.
+
+2       Ref Number             10   N    The  entry program will allow the zip 
+                                         code    to    be    assigned     here 
+                                         automatically  (from  item #8  below) 
+                                         thus  allowing  zip  code  sort/merge 
+                                         operations.
+
+3       Name                   24   A    Self Explanatory.
+
+4       Company                24   A    Self Explanatory.
+
+5       Address                24   A    Self Explanatory.
+
+6       City                   17   A    Self Explanatory.
+
+7       State                  2    A    Self Explanatory.
+
+8       Zip Code               5    A    Self Explanatory.
+
+9       Telephone              14   A    Self Explanatory.
+.pa
+*** MAILING LIST MENU ***
+
+1 - UPDATE MAILING LIST
+
+2 - PRINT MAILING LABELS
+
+3 - PRINT CUSTOMER LABELS
+
+4 - PRINT VENDOR LABELS
+
+5 - PRINT EMPLOYEE LABELS
+
+6 - FINISHED
+.pa
+
+                    Using the label printers
+
+    Each  label  printer allows for the selection of from 1 to  5 
+labels across the page. A second selection determines the spacing 
+between labels.
+
+    If  the  number  of labels is set for  one  (1),  the  second 
+selection  will determine the distance over to the single  label, 
+allowing  the  printing of tipped  continuous-form  envelopes.  A 
+pause  could also be inserted to allow the printing  ofindividual 
+envelopes.
+
+    The  last  selection  indicates the  number  of  line  spaces 
+between labels.
+.pa
+.pa
+                            SECTION 8
+
+              Periodic File Maintenance Operations
+
+.pa
+*** PERIODIC MAINTENANCE MENU ***
+
+1 - DO MONTHLY FILE MAINTENANCE
+ 
+2 - DO QUARTERLY FILE MAINTENANCE
+
+3 - DO YEARLY FILE MAINTENANCE
+
+4 - FINISHED
+

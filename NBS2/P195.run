@@ -25,5 +25,8 @@ FOR DETAILED CRITERIA.
                                                                                 
 ABOUT TO ASSIGN TO A$ A QUOTED-STRING CONTAINING:                               
 ASTERISK, QUOTE, QUOTE, QUESTION-MARK.                                          
+A$=*"?                                                                          
                                                                                 
-ERROR in line 260: in bwb_exp(): incomplete expression.                         
+                               END TEST.                                        
+                                                                                
+END PROGRAM 195                                                                 

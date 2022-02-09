@@ -1,0 +1,132 @@
+           TELEPHONE DIRECTORY                                                  
+                                                                                
+THIS PROGRAM SETS UP AN INDEX OF TELEPHONE NUMBERS ALONG WITH                   
+THEIR OWNERS. EACH ENTRY CONSISTS OF A PHONE NUMBER, A PERSON,                  
+AND A COMMENT. THE PROGRAM MAKES PROVISIONS FOR RECALLING                       
+PHONE NUMBER BY NAME. WITH A 16K MACHINE THIS PROGRAM                           
+WILL HANDLE 200 NUMBERS. WITH MORE MEMORY MORE NAMES SHOULD                     
+FIT, THOUGH THE DIM STATEMENT IN THE PROGRAM WOULD HAVE TO BE                   
+CHANGED ACCORDINGLY.                                                            
+                                                                                
+TO FACILITATE RECALL WE SUGGEST ENTERING NAMES AS                               
+LASTNAME*FIRSTNAME E.G. SMITH*TOM. THE COMPUTER NEEDS A                         
+PERFECT MATCH TO FIND THE NAME. THE NAME COULD ALSO BE                          
+FOUND BY PRINTING A COMPLETE LIST.                                              
+PRESS ENTER TO CONTINUE?                                                        
+         NAME               PHONE NUMBER         COMMENT                        
+ARE DISK DRIVES ATTACHED(Y/N)? Y                                                
+            MENU                                                                
+                                                                                
+0.QUIT                                                                          
+1.SET UP NEW PHONE DIRECTORY                                                    
+2.ADD TO EXISTING DIRECTORY  ALREADY IN MEMORY                                  
+3.READ IN A DIRECTORY  ON CASSETTE                                              
+4.SAVE A DIRECTORY  ON CASSETTE                                                 
+5.READ IN A DIRECTORY  ON DISKETTE                                              
+6.SAVE A DIRECTORY  ON DISKETTE                                                 
+7.REVIEW A DIRECTORY                                                            
+8.MAKE CORRECTIONS                                                              
+9.FIND NAME & PHONE NUMBER                                                      
+                                                                                
+TYPE APPROPRIATE NUMBER AND ENTER? 1                                            
+LAST NAME*FIRST*NAME          ? MOUSE JERRY                                     
+A/C-PHONE # E.G.914-425-1535  ? 123-456-7890                                    
+COMMENT                       ? CARTOON                                         
+                                                                                
+PRESS 1 FOR MORE,0 TO RETURN TO MENU? 1                                         
+LAST NAME*FIRST*NAME          ? CAT TOM                                         
+A/C-PHONE # E.G.914-425-1535  ? 987-654-3210                                    
+COMMENT                       ? CARTOON                                         
+                                                                                
+PRESS 1 FOR MORE,0 TO RETURN TO MENU? 0                                         
+            MENU                                                                
+                                                                                
+0.QUIT                                                                          
+1.SET UP NEW PHONE DIRECTORY                                                    
+2.ADD TO EXISTING DIRECTORY  ALREADY IN MEMORY                                  
+3.READ IN A DIRECTORY  ON CASSETTE                                              
+4.SAVE A DIRECTORY  ON CASSETTE                                                 
+5.READ IN A DIRECTORY  ON DISKETTE                                              
+6.SAVE A DIRECTORY  ON DISKETTE                                                 
+7.REVIEW A DIRECTORY                                                            
+8.MAKE CORRECTIONS                                                              
+9.FIND NAME & PHONE NUMBER                                                      
+                                                                                
+TYPE APPROPRIATE NUMBER AND ENTER? 6                                            
+WRITE ONTO DISKETTE OPTION                                                      
+                                                                                
+PRESENT DISK FILE IS                                                            
+NEW DISK FILE(<ENTER> FOR NO CHANGE)? TELDIR.DAT                                
+THERE ARE  2  RECORDS                                                           
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+            MENU                                                                
+                                                                                
+0.QUIT                                                                          
+1.SET UP NEW PHONE DIRECTORY                                                    
+2.ADD TO EXISTING DIRECTORY  ALREADY IN MEMORY                                  
+3.READ IN A DIRECTORY  ON CASSETTE                                              
+4.SAVE A DIRECTORY  ON CASSETTE                                                 
+5.READ IN A DIRECTORY  ON DISKETTE                                              
+6.SAVE A DIRECTORY  ON DISKETTE                                                 
+7.REVIEW A DIRECTORY                                                            
+8.MAKE CORRECTIONS                                                              
+9.FIND NAME & PHONE NUMBER                                                      
+                                                                                
+TYPE APPROPRIATE NUMBER AND ENTER? 5                                            
+INPUT NAME OF DESIRED DISK FILE? TELDIR.DAT                                     
+                                                                                
+                                                                                
+ 2  RECORDS READ.                                                               
+PRESS ENTER TO CONTINUE?                                                        
+            MENU                                                                
+                                                                                
+0.QUIT                                                                          
+1.SET UP NEW PHONE DIRECTORY                                                    
+2.ADD TO EXISTING DIRECTORY  ALREADY IN MEMORY                                  
+3.READ IN A DIRECTORY  ON CASSETTE                                              
+4.SAVE A DIRECTORY  ON CASSETTE                                                 
+5.READ IN A DIRECTORY  ON DISKETTE                                              
+6.SAVE A DIRECTORY  ON DISKETTE                                                 
+7.REVIEW A DIRECTORY                                                            
+8.MAKE CORRECTIONS                                                              
+9.FIND NAME & PHONE NUMBER                                                      
+                                                                                
+TYPE APPROPRIATE NUMBER AND ENTER? 7                                            
+IS PRINTED OUTPUT DESIRED(Y/N)? Y                                               
+         NAME               PHONE NUMBER         COMMENT                        
+ MOUSE JERRY                123-456-7890     CARTOON                            
+ CAT TOM                    987-654-3210     CARTOON                            
+                                                                                
+PRESS ENTER TO RETURN TO MENU?                                                  
+            MENU                                                                
+                                                                                
+0.QUIT                                                                          
+1.SET UP NEW PHONE DIRECTORY                                                    
+2.ADD TO EXISTING DIRECTORY  ALREADY IN MEMORY                                  
+3.READ IN A DIRECTORY  ON CASSETTE                                              
+4.SAVE A DIRECTORY  ON CASSETTE                                                 
+5.READ IN A DIRECTORY  ON DISKETTE                                              
+6.SAVE A DIRECTORY  ON DISKETTE                                                 
+7.REVIEW A DIRECTORY                                                            
+8.MAKE CORRECTIONS                                                              
+9.FIND NAME & PHONE NUMBER                                                      
+                                                                                
+TYPE APPROPRIATE NUMBER AND ENTER? 9                                            
+NAME OF PERSON YOU WISH TO CHANGE? CAT TOM                                      
+ CAT TOM                    987-654-3210     CARTOON                            
+2 FOR WRONG NAME,0 TO RETURN TO MENU? 0                                         
+            MENU                                                                
+                                                                                
+0.QUIT                                                                          
+1.SET UP NEW PHONE DIRECTORY                                                    
+2.ADD TO EXISTING DIRECTORY  ALREADY IN MEMORY                                  
+3.READ IN A DIRECTORY  ON CASSETTE                                              
+4.SAVE A DIRECTORY  ON CASSETTE                                                 
+5.READ IN A DIRECTORY  ON DISKETTE                                              
+6.SAVE A DIRECTORY  ON DISKETTE                                                 
+7.REVIEW A DIRECTORY                                                            
+8.MAKE CORRECTIONS                                                              
+9.FIND NAME & PHONE NUMBER                                                      
+                                                                                
+TYPE APPROPRIATE NUMBER AND ENTER? 0                                            

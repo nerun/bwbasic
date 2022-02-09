@@ -27,4 +27,4 @@ DEFINITION OF FNP=3.14159
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF FNP.                                             
                                                                                 
-ERROR in line 250: *** Illegal Function Call (FNP) ***                          
+ERROR in line 250: Illegal Function Call (FNP)                                  

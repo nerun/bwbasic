@@ -1,0 +1,122 @@
+.pl 66
+                           APPENDIX C
+
+     Data File Diskette Set-up
+
+          The next step involves setting up data disks.  Normally 
+data  disk  run in drive B:.  The exceptions will be  where  some 
+posting  and  printing  require data disks in drives  A:  and  B: 
+simultaneously.  When this is required, an appropriate message is 
+built  into the system to advise you when to  change  disks.  The 
+basic Data diskette requirements are as follows:
+
+          All Data diskettes should be preformatted.
+
+1.   General Ledger File Diskette
+
+     Transfer  the  following files from the sample data disk  as 
+supplied. These can be modified later as required.
+
+     a.   NM        Company Name File
+     b.   DATE      File Containing 8 System Dates.
+     c.   GL        Sample General Ledger File.
+     d.   GLF       Numeric Formats File.
+     e.   GLT       General Ledger Tabs File.
+     f.   GLREF     General Ledger Account # Reference File.
+     g.   GLH       General Ledger Headings File.
+     h.   GLS       General Ledger Subheadings File.
+
+2.   Journal Files Diskette
+
+     This  must  be a separate diskette from the  General  Ledger 
+Diskette  above.  These  files  will be created by  the  user  as 
+required.
+
+     a.   GLJO      General Journal File.
+     b.   GLCD      Check DIsbursements File.
+     c.   GLCS      Cash Disbursment File.
+     d.   GLCK      Check Receipts File.
+     e.   GLCR      Cash Receipts File.
+.pa
+	Data File Diskette Set-up
+
+3.   Payroll File Diskette
+
+     Transfer the following files from the sample files diskette. 
+These can be modified later as required.
+
+     a.   NM        
+     b.   DATE
+     c.   GLF
+     d.   GLT
+     e.   EF        Federal Withholding Tables.
+     f.   ES        California Withholding Tables.
+     g.   EPC       Payroll Cutoffs and Percentages.
+     h.   EPT       Payroll Check Printing Tabs.
+
+     The following files will be created when appropriate
+     programs are run.
+
+     i.   EP        Employee Master Information File.
+
+     j.   TM        Time Card File.
+     k.   EDEP      Federal 501 Deposit File.
+
+4.   Customer Receivables Files Diskette
+
+     Transfer  the following files from the sample data diskette. 
+     These can be modified later as required.
+
+     a.   NM
+     b.   DATE
+     c.   GLF
+     d.   GLT
+
+     The  following  files  will  be  created  when   appropriate 
+programs are run.
+
+     e.   Customer Master Information File.
+
+5.   Invoice Register (Order Entry) File Diskette
+
+     Place the AR/AP runtime disk in drive A:.  Place the invoice 
+register disk in drive B:.
+     Type  ctrl.  "C"  (hold  the control key down and  type  the 
+letter C).
+     Type "CRUN2 INVENT". Creates INV (Invoice # File).
+     The system will prompt you to allow Invoice # set-up.
+     If you enter a "0", Invoices can be radomly numbered.
+     If you desire "Forced Sequintial" Invoice numbers,  type  in 
+the number of your first invoice.
+     
+     The  system will take care of the rest.  Other files will be 
+created when appropriate programs are run.
+
+     a.   IR        Invoice Register (Order) File.
+	Data File Diskette Set-up
+
+6.   Vendor Payables File Diskette
+
+     This is as #4 a through d
+
+     e.   VP        Vendor Master Information File.
+
+7.   Purchase Order Register Diskette
+
+     This  is the same as #5 but do CRUN2 POENT to  set  Purchase 
+order numbers. Creates POE.
+     
+     a.   PR        Purchase Order Register File.
+
+8.   Inventory / Finished Goods File Diskette
+
+     This  file,  if  under  50 records,  can be  placed  on  the 
+customer information diskette to speed order entry processing. If 
+more items are required, make a seperate diskette and include NM, 
+DATE, GLF, and GLT.
+
+9.   All Other Diskettes
+
+     All  other  diskettes  except the mailing  list  files  will 
+require at least NM, DATE, GLF, and GLT.
+

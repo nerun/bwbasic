@@ -1,0 +1,156 @@
+                                                                                
+THIS PROGRAM AS DESIGNED TO SELECT THE                                          
+PROPER VALUES OF RESISTANCE AND CAPA-                                           
+CITANCE FOR THE PROPER OPERATION OF THE                                         
+555 TIMER-OSCILLATOR.                                                           
+                                                                                
+ENTER THE DESIRED FREQUENCY OF OSCILLATION( hz )                                
+? 1000                                                                          
+                                                                                
+                                                                                
+                                                                                
+THE FOLLOWING VALUES OF RESISTANCE                                              
+AND CAPACITANCE DETERMINE THE FRE-                                              
+QUENCY OF  1000 HZ.                                                             
+              ---------------------                                             
+           1-| GND             VCC |-8                                          
+             |                     |                                            
+           2-| TRIGGER      DISCHG |-7 R(b) TO VCC                              
+             |      555-IC         |                                            
+           3-| OUTPUT     THRESHOLD|-6 R(a) TO 7, C1 TO GND                     
+             |                     |                                            
+           4-| RESET     CONT. VOLT|-5                                          
+              ---------------------                                             
+                                                                                
+                                                                                
+          SET 1 :                                                               
+R(A)= 470 OHMS                                                                  
+R(B)= 1200 OHMS                                                                 
+C= .501742 UF                                                                   
+                                                                                
+                                                                                
+                                                                                
+          SET 2 :                                                               
+R(A)= 560 OHMS                                                                  
+R(B)= 15000 OHMS                                                                
+C= 4.71204E-2 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 3 :                                                               
+R(A)= 620 OHMS                                                                  
+R(B)= 15000 OHMS                                                                
+C= 4.70281E-2 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 4 :                                                               
+R(A)= 1000 OHMS                                                                 
+R(B)= 220. OHMS                                                                 
+C= 1 UF                                                                         
+                                                                                
+                                                                                
+                                                                                
+          SET 5 :                                                               
+R(A)= 4700 OHMS                                                                 
+R(B)= 12000 OHMS                                                                
+C= 5.01742E-2 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 6 :                                                               
+R(A)= 1200 OHMS                                                                 
+R(B)= 120 OHMS                                                                  
+C= 1 UF                                                                         
+                                                                                
+                                                                                
+                                                                                
+          SET 7 :                                                               
+R(A)= 5600 OHMS                                                                 
+R(B)= 470 OHMS                                                                  
+C= .220183 UF                                                                   
+                                                                                
+                                                                                
+                                                                                
+          SET 8 :                                                               
+R(A)= 6200 OHMS                                                                 
+R(B)= 180 OHMS                                                                  
+C= .219512 UF                                                                   
+                                                                                
+                                                                                
+                                                                                
+          SET 9 :                                                               
+R(A)= 10000 OHMS                                                                
+R(B)= 2200 OHMS                                                                 
+C= .1 UF                                                                        
+                                                                                
+                                                                                
+                                                                                
+          SET 10 :                                                              
+R(A)= 47000 OHMS                                                                
+R(B)= 120000 OHMS                                                               
+C= 5.01742E-3 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 11 :                                                              
+R(A)= 12000 OHMS                                                                
+R(B)= 1200 OHMS                                                                 
+C= .1 UF                                                                        
+                                                                                
+                                                                                
+                                                                                
+          SET 12 :                                                              
+R(A)= 56000 OHMS                                                                
+R(B)= 4700 OHMS                                                                 
+C= 2.20183E-2 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 13 :                                                              
+R(A)= 62000 OHMS                                                                
+R(B)= 1800 OHMS                                                                 
+C= 2.19512E-2 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 14 :                                                              
+R(A)= 100000 OHMS                                                               
+R(B)= 22000 OHMS                                                                
+C= .01 UF                                                                       
+                                                                                
+                                                                                
+                                                                                
+          SET 15 :                                                              
+R(A)= 120000 OHMS                                                               
+R(B)= 12000 OHMS                                                                
+C= .01 UF                                                                       
+                                                                                
+                                                                                
+                                                                                
+          SET 16 :                                                              
+R(A)= 560000 OHMS                                                               
+R(B)= 47000 OHMS                                                                
+C= 2.20183E-3 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 17 :                                                              
+R(A)= 620000 OHMS                                                               
+R(B)= 18000 OHMS                                                                
+C= 2.19512E-3 UF                                                                
+                                                                                
+                                                                                
+                                                                                
+          SET 18 :                                                              
+R(A)= 1.E+6 OHMS                                                                
+R(B)= 220000. OHMS                                                              
+C= .001 UF                                                                      
+                                                                                
+                                                                                
+                                                                                
+          SET 19 :                                                              
+R(A)= 1.2E+6 OHMS                                                               
+R(B)= 120000 OHMS                                                               
+C= .001 UF                                                                      
+                                                                                

@@ -1,0 +1,35 @@
+.pl 66
+                           APPENDIX A
+
+     Handling the Diskettes
+
+(1)  To load the diskette,  remove it from its protective jacket. 
+     Insert  the diskette with label up and the slot exposing the 
+     magnetic  surface into the drive first.  After the  diskette 
+     "clicks" into place, gently close the compartment door.
+
+(2)  Always  place the diskette back in its  protective  envelope 
+     after use. NEVER place your fingers or thumb on the diskette 
+     through the window slot exposing the magnetic surface.
+
+(3)  Do  not  leave the diskette lying  around.  Dirt,  dust,  or 
+     stains on the diskette could cause the loss of  data.  Never 
+     leave  the  diskette  lying  on the video unit  or  near  an 
+     electric motor,  since the presence of a magnetic field  may 
+     also cause loss or scrambling of data.
+
+(4)  Use  a  felt-tip pen to make any notes on the label  of  the 
+     diskette.  Using  a ballpoint pen or pencil could damage the 
+     diskette inside the envelope.
+
+(5)  Never load the diskette with the disk drive off.
+
+(6)  Never  remove the diskette from the disk  drive  compartment 
+     with the red "BUSY" light on.
+
+(7)  Never  insert a diskette into the drive before powering  the 
+     drive  up;  also never power the drive down while a diskette 
+     is still inserted.
+
+(8)  Keep  the  disks stored at a temputure of 10 to  52  degrees 
+     centigrade or 50 to 125 degrees fahrenheit.

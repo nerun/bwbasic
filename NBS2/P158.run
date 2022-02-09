@@ -29,4 +29,4 @@ SETTING X$ = 'ABC'
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF FND(X$).                                         
                                                                                 
-ERROR in line 340: *** Illegal Function Call (FND) ***                          
+ERROR in line 340: Illegal Function Call (FND)                                  

@@ -14,4 +14,4 @@ OF CONTROL MAY PASS THROUGH OPTION AND DIM STATEMENTS.
                                                                                 
                  BEGIN TEST                                                     
                                                                                 
-ERROR in line 550: SUBSCRIPT OUT OF RANGE E(14)                                 
+ERROR in line 550: Subscript out of range                                       

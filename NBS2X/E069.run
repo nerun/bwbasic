@@ -1,0 +1,53 @@
+ 1                                                                              
+a              b              c                                                 
+ 1              1              1                                                
+I= 1                                                                            
+I= 2                                                                            
+I= 1                                                                            
+I= 2                                                                            
+I= 1                                                                            
+I= 2                                                                            
+I= 1                                                                            
+I= 2                                                                            
+I= 1                                                                            
+I= 2                                                                            
+Correct                                                                         
+I= 1                                                                            
+Good 1                                                                          
+Good 1                                                                          
+I= 2                                                                            
+Good 2                                                                          
+Good 2                                                                          
+I= 3                                                                            
+Good 3                                                                          
+Good 3                                                                          
+good 4                                                                          
+[d    ]                                                                         
+[      e]                                                                       
+[d          e]                                                                  
+[1234567890]                                                                    
+Before SUB definition                                                           
+After SUB definition                                                            
+X1 <= Y1        1 <= 2                                                          
+X1 > Y1         2 > 1                                                           
+X2 < Y2         1 < 2                                                           
+X2 >= Y2        5 >= 1                                                          
+X2 >= Y2        10 >= 3                                                         
+Z= 7                                                                            
+A$=1234567890                                                                   
+B$=1234567890                                                                   
+A$="1234567890"                                                                 
+firing...                                                                       
+caught...                                                                       
+Throw                                                                           
+Caught                                                                          
+------------------------------------------------------------                    
+     SYNTAX: HELP name                                                          
+DESCRIPTION: Provides help on the specified 'name' which is a                   
+             command name or function name.                                     
+FNA= 9                                                                          
+X(22)= 2                                                                        
+A$=abcd12ghijklmnop                                                             
+A$=abcd123456789nop                                                             
+6033:                                                                           
+Ok                                                                              

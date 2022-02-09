@@ -1,8 +1,0 @@
-DAY BETWEEN TWO DATES                                                           
-                                                                                
-USE MM,DD,YYYY                                                                  
-FIRST DATE? 01,01,2015                                                          
-SECOND DATE? 01,31,2015                                                         
-DIFFERENCE = 30 DAYS                                                            
-                                                                                
-MORE DATA (1=YES, 0=NO)? 0                                                      

@@ -1,0 +1,453 @@
+.pl 66
+                           APPENDIX E
+
+          COMPILATION OF PROGRAMS FOR BUSINESSMASTER II
+
+              Creating a set of "RUNTIME" programs
+
+CPMUG note:   The SUB files mentioned below were NOT contributed, 
+and are NOT part of the CPMUG volumes.   Each volume 87-90  which 
+contains  .SUB programs DOES contain a COMPILE.BAS,  which may be 
+used via symbolic parameter substitution.   Each line of the file 
+contains lines like:
+
+$1 $2EPTABS.BAS $3 $4
+
+$1   is the compiler name (e.g. CBASIC2)
+$2   is the disk containing the .BAS programs, (e.g. B:)
+$3   is the output disk for the INT file (e.g. C:)
+$4   is for the options, such as $b.  
+
+To compile only, $3 may be "$BC" 
+
+Thus to compile all the .BAS files on a volume in your B:  drive, 
+placing  the .INT files on the C:  drive,  and suppress  listing, 
+type:
+
+submit b:compile cbasic2 b: c: $b
+
+If  you have a two disk system,  you will have to make  a  system 
+disk   which  contains  the  minimal   necessities:   SUBMIT.COM, 
+CBASIC2.COM, etc.
+
+Also  note the split-out of files by disk does not exactly  match 
+the documentation below.
+
+Here is the original appendix E information:
+
+----------------------------------------------------------------
+
+Your  Businessmaster  II software is supplied on  five  diskettes 
+(North  Star  single  density requires 22  diskettes.  SUB  files 
+should  be edited accordingly on each  diskette).  Each  diskette 
+contains  .BAS  files plus six auxiliary .SUB files.  A  separate 
+diskette contains sample data files.
+
+     The .SUB files are:
+
+1. COPYA-B.SUB      Copies program files from Drive A to Drive B.
+
+2. COPYB-A.SUB      Copies program files from Drive B to Drive A.
+
+3. PIPPRN.SUB       Allows the batch printing of all .BAS files.
+
+4. XREFPRN.SUB      Allows the  batch  application of the  CBASIC 
+   XREF to all .BAS files.
+
+5. COMPILE.SUB      Allows the  batch compilation of all programs 
+   on the diskette using CBAS2 aaaaaaaa B:  $B. The diskette with 
+   the  .BAS  files  must  be in Drive  A  along  with  CBAS2.  A 
+   preformatted diskette must be in Drive B.
+
+6. COMPILEP.SUB     Allows the  above  operation but with a hard-
+   copy print-out of the compilation. Uses CBAS2 aaaaaaaa B: $BF.
+
+
+
+   Tables 1 through 5 list the files contained on each diskette.
+
+A  Word of caution - in all the following operations,  always use 
+the "verify" function with PIP.  i.e. PIP A:aaaaaaaa.xxx = B:[v]. 
+This gives some degree of file integrity regardless of rumors  to 
+the contrary. 
+
+
+
+bizmii.bas
+master1.bas
+master11.bas
+master12.bas
+glentry.bas
+glsort.bas
+gljotran.bas
+gljosort.bas
+gljopost.bas
+glcdtran.bas
+glcdsort.bas
+glcdpost.bas
+glcktran.bas
+glcksort.bas
+glckpost.bas
+glchart.bas
+gltbal.bas
+glbalsht.bas
+glincome.bas
+gcincome.bas
+glbudget.bas
+gdchecks.bas
+glclear.bas
+format.bas
+control.bas
+readfile.bas
+all.bas
+check.bas
+copyb-a.sub
+copya-b.sub
+compile.sub
+compilep.sub
+pipprn.sub
+xrefprn.sub
+
+
+
+
+
+                             Table 1
+
+epentry.bas
+tmentry.bas
+epjotran.bas
+epsumary.bas
+epjopost.bas
+epchecks.bas
+eplist.bas
+epsort.bas
+fed941pr.bas
+w2print.bas
+epdposit.bas
+epclear.bas
+master5.bas
+master14.bas
+bizmii.bas
+format.bas
+control.bas
+readfile.bas
+all.bas
+check.bas
+copyb-a.sub
+copya-b.sub
+compile.sub
+compilep.sub
+pipprn.sub
+xrefprn.sub
+
+
+
+
+
+                             Table 2
+.pa
+
+crentry.bas
+crsort.bas
+crjotran.bas
+crjolist.bas
+crjopost.bas
+crfminv.bas
+crppinv.bas
+crrpt.bas
+invent.bas
+crlabels.bas
+vpentry.bas
+vpsort.bas
+vpjotran.bas
+vpjolist.bas
+vpjopost.bas
+vpfmpo.bas
+vppppo.bas
+vprpt.bas
+poent.bas
+vplabels.bas
+master2.bas
+master3.bas
+bizmii.bas
+format.bas
+control.bas
+readfile.bas
+all.bas
+check.bas
+copyb-a.sub
+copya-b.sub
+compile.sub
+compilep.sub
+pipprn.sub
+xrefprn.sub
+
+
+
+
+                             Table 3
+
+maentry.bas
+masort.bas
+malabels.bas
+crlabels.bas
+vplabels.bas
+eplabels.bas
+fgentry.bas
+fgsort.bas
+rgentry.bas
+rgsort.bas
+fgrpt.bas
+rgrpt.bas
+fgalert.bas
+rgalert.bas
+cgentry.bas
+cgsort.bas
+cgdepcal.bas
+cgfm4562.bas
+cgrpt.bas
+master4.bas
+master16.bas
+master6.bas
+bizmii.bas
+format.bas
+control.bas
+readfile.bas
+all.bas
+check.bas
+copyb-a.sub
+copya-b.sub
+compile.sub
+compilep.sub
+pipprn.sub
+xrefprn.sub
+
+
+
+
+                             Table 4
+
+namentry.bas
+nmsort.bas
+glhentry.bas
+glhsort.bas
+glsentry.bas
+glssort.bas
+daentry.bas
+taentry.bas
+fmtentry.bas
+eptabs.bas
+epcuts.bas
+efentry.bas
+esentry.bas
+mmaint.bas
+qmaint.bas
+ymaint.bas
+bizmii.bas
+master7.bas
+master8.bas
+master9.bas
+master15.bas
+format.bas
+control.bas
+readfile.bas
+all.bas
+check.bas
+copyb-a.sub (*)
+copya-b.sub (*)
+compile.sub
+compilep.sub (*)
+pipprn.sub (*)
+xrefprn.sub (*)
+nm
+date
+gl
+glref
+glh
+gls
+glt
+glf
+ef
+es
+epc
+ept
+ma0
+
+(*) Not on CPMUG disks.
+
+
+
+                             Table 5
+.pa
+    Here is a step-by-step list of the operations necessary to get your
+system up and running:
+
+1.  Make backup copies of the diskettes supplied.
+
+2.  Put a "system" on each copied diskette using SYSGEN.
+
+3.  PIP a copy of PIP.COM and SUBMIT.COM to each copied diskette.
+
+4.  PIP a copy of CBAS2.COM and XREF.COM to each copied diskette.
+
+5.  Place the copied Program diskette #1 in Drive A.
+
+6.  Place  a  preformatted  diskette labeled "Diskette #1  - .INT 
+    files" in Drive B.
+
+7.  Type "SUBMIT COMPILE <cr>" to start the  batch compilation of 
+    all  .BAS  files on the disk.  Although  the  operation  will 
+    proceed  without  your intervention,  it is a  good  idea  to 
+    monitor  the operation to catch any erroneous compilations or 
+    disk  failures.  Note any errors and recompile  any  programs 
+    that fail to compile correctly the first time.
+
+8.  Repeat steps 4,  5,  and 6 for  diskettes 2 through 5.  Label 
+    each .INT diskette with its proper number.
+
+9.  Now SYSGEN a "system" to each .INT  diskette. Also PIP a copy 
+    of CRUN2 to each diskette.
+
+10. You now have an operational  set of program diskettes.  These 
+    diskettes  will always be run in Drive A and are  started  up 
+    with  CRUN2 BIZMII.  You must ALWAYS start from BIZMII  which 
+    sets  up  several variables and the %CHAIN function  for  the 
+    rest of the programs.
+
+The  next  step involves creating DATA diskettes for the  system. 
+Normally DATA diskettes will run in Drive B.  The exceptions will 
+be  where  some  posting  and  printing  programs  require   DATA 
+diskettes  in  Drive A and Drive B simultaneously.  When this  is 
+required,  an  appropriate  message is built into the  system  to 
+advise you. The basic DATA diskette requirements are as follows:
+
+           All DATA diskettes should be preformatted.
+
+1.  GENERAL LEDGER FILE DISKETTE
+
+    PIP  the following files from diskette #5 as supplied.  These 
+    can be modified later as required.
+
+    a.  NM	Company name file
+    b.  DATE	File containing 8 system dates.
+    c.  GL	Sample General Ledger file.
+    d.  GLF	Numeric Formats file.
+    e.  GLT	General Ledger Tabs file.
+    f.  GLREF	General Ledger Account # Reference file.
+    g.  GLH	General Ledger HEADINGs file.
+    h.  GLS	General Ledger SUBHEADINGs file.
+
+
+2.  JOURNAL FILES DISKETTE
+
+    This  must  be a separate diskette from  the  GENERAL  LEDGER 
+    DISKETTE  above.  These files will be created by the user  as 
+    required.
+
+    a.  GLJO	General Journal file.
+    b.  GLCD	Check Disbursements file.
+    c.  GLCK	Check Receipts file.
+
+
+3.  PAYROLL FILE DISKETTE
+
+    PIP  the  following  files from diskette  #5.  These  can  be 
+    modified later as required.
+
+    a.  NM
+    b.  DATE
+    c.  GLF
+    d.  GLT
+    e.  EF	Federal Withholding Tables.
+    f.  ES	California Withholding Tables.
+    g.  EPC	Payroll Cutoffs and percentages.
+    h.  EPT	Payroll Check Printing Tabs.
+
+    The following files will be created when appropriate programs 
+    are run.
+
+    i.  EP	Employee Master Information file.
+    j.  TM	Time Card file.
+    k.  EDEP	Federal 501 Deposit file.
+
+
+4.  CUSTOMER RECEIVABLES FILE DISKETTE
+
+    PIP  the  following  files from diskette  #5.  These  can  be 
+    modified later as required.
+
+    a.  NM
+    b.  DATE
+    c.  GLF
+    d.  GLT
+
+    The following files will be created when appropriate programs 
+    are run.
+
+    e.  CR	Customer Master Information file.
+
+
+5.  INVOICE REGISTER (ORDER ENTRY) FILE DISKETTE
+
+    Place  program  diskette  #3 in Drive A.  Place  the  INVOICE 
+    REGISTER diskette in Drive B.
+
+    Issue a Control C (hold control key and type letter C).
+
+    Type "CRUN2 INVENT". Creates INV (Invoice # file).
+    
+    The system will prompt you to allow Invoice # set-up.
+    
+    If you enter a "0", invoices can be randomly numbered.
+
+    If  you desire "forced sequential" Invoice numbers,  type  in 
+    the number of your first invoice.
+
+    The  system will take care of the rest.  Other files will  be 
+    created when appropriate programs are run.
+
+    a.  IR	Invoice Register (Order) file.
+
+
+6.  VENDOR PAYABLES FILE DISKETTE
+
+    This is as #4, Customer diskette.
+
+    e.  VP	Vendor Master Information file.
+
+
+
+7.  PURCHASE ORDER REGISTER DISKETTE
+
+    This is as #5 but do CRUN2 POENT to set number. Creates POE.
+    a.  PR	Purchase Order Register file.
+
+
+8.  INVENTORY / FINISHED GOODS FILE DISKETTE
+
+    This file, if under 50 records, can be placed on the Customer 
+    Information diskette to speed order entry processing. If more 
+    items are required,  make a separate diskette and include NM, 
+    DATE, GLF, and GLT.
+
+
+9.  ALL OTHER DISKETTES
+
+    All  other  diskettes  except  the mailing  list  files  will 
+    require at least NM, DATE, GLF, and GLT.
+
+
+
+
+                       *** N O T I C E ***
+
+In all of the following operations, the first two entries labeled 
+TAG and REFERENCE # or ACCOUNT #, must be NON-ZERO.
+
+If the TAG is zero (0),  the record is assumed to be deleted  and 
+is ignored.
+
+If  the REFERENCE # or ACCOUNT # is zero (0),  the system  treats 
+that record as the last record in the file (end-of-file).
+

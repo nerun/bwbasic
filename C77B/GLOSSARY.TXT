@@ -1,0 +1,135 @@
+.pl 66
+                    GLOSSARY OF TERMS
+
+Alphanumeric             A set of characters consisting of
+                         either the letters A through Z, the
+                         digits 0 through 9, special symbols,
+                         or a combination of all of these. For
+                         example, the set of characters, MISC. 
+                         #2, is alphanumeric
+
+Backup                   Stored data files which can be used if
+                         the original files are lost or incorrect.
+
+BASIC                    BASIC is an acronym which stands for
+                         Beginners All-purpose Symbolic
+                         Instruction Code. Basic is the
+                         computer programming language used
+                         with user-oriented computers.
+
+Character                One of a set of elements which may be
+                         arranged in ordered groups to express
+                         information. Characters include the 
+                         letters A through Z, the digits 0
+                         through 9, punctuation marks, and 
+                         other special symbols.
+
+Data                     Information in the form of letters,
+                         numbers, symbols, etc., which the
+                         computer processes or produces.
+
+Default Value            A value assigned automatically by the
+                         computer when the operator does not
+                         enter any information before pressing
+                         the RETURN or ENTER key.
+
+Disk Cartridge           A large volume data storage device
+                         which consists of a rigid platter with
+                         a  magnetic  coating.  Sometimes one  or 
+                         more of these platters are enclosed in a
+                         plastic cartridge.  A disk cartridge  is 
+                         also called a hard disk.
+
+
+Diskette                 A data storage device which is coated
+                         with magnetic recording material and
+                         looks like a 45-rpm phonograph record
+                         enclosed in a plastic envelope. The
+                         diskette and plastic envelope are
+                         inserted into the disk drive together.
+                         A diskette is also called a floppy
+                         disk or a flexible disk.
+
+Disk Unit or             The electronic machine and housing
+Disk Drive               used to store and retrieve information
+                         on a disk cartridge or diskette. When
+                         several disk units are used simultane-
+                         ously, each one is assigned a number
+                         beginning with 0, 1, 2, etc, or in CP/M,
+			 A:, B:, C:, etc.
+
+Field                    A single item of information. For
+                         example, a field within the general 
+                         ledger would be the Description. 
+                         Another field in this file would be the
+                         Tag.
+
+File                     A group of related records on the 
+                         diskette. Each file has a name by which
+                         it is accessed. An example of this is 
+                         the General ledger file, which records
+                         all GL and Posting for print-out.
+
+FORMAT                   Format is a system related program used
+                         to prepare new diskette for use or an 
+                         old diskette for re-use. Formatting 
+                         DESTROYS all data on the diskette. For
+                         more information on formatting consult
+                         the system manual.
+
+Input                    Information which is entered into a
+                         computer from outside via the type-
+                         writer-like keyboard attached to the
+                         video unit.
+
+
+Memory                   A capacity for storage of programs and
+                         data being used by the computer.
+
+Menu                     A computer video display of options
+                         available to the operator.
+
+Numeric                  Description of numerical information.
+                         For example, the set of characters
+                         "012345" is numeric.
+
+Output                   Information transferred from the 
+                         computer memory to output devices such
+                         as a printer or video unit.
+
+Password                 A code word which must be entered 
+                         before the computer will allow the
+                         operator to perform tasks.
+
+Processing               The programmed computations and
+                         actions by which the computer uses
+                         input data to produce output data.
+
+Program                  A set of sequential instructions which
+                         direct the computer in performing the
+                         desired operations.
+
+Prompt                   A computer message on the video unit
+                         which indicates that the operator
+                         should key in response.
+
+Record                   Collected information fields which
+                         make up a file.
+
+Software                 The software portion of a computer 
+                         system includes programs, procedures
+                         and computer languages. Hardware refers
+                         to the mechanical devices used, such as
+                         the disk drive, printer, computer, and
+                         video unit.
+
+
+Tag                      Is a field used in this package it must
+                         be Non-zero or the record will be
+                         considered deleted. A suggestion is 
+                         make the tag equal to the Record number.
+
+Video Unit or            A device which has a T.V. like screen
+Terminal                 for displaying data and a typewriter-
+                         like keyboard for entering data.
+

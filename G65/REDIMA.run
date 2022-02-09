@@ -1,0 +1,6 @@
+----------------------------------------                                        
+MAT PRINT varname( ubound [,...] ) , 1 dimension                                
+----------------------------------------                                        
+MAT PRINT varname( ubound [,...] ) , 2 dimensions                               
+----------------------------------------                                        
+MAT PRINT varname( ubound [,...] ) , 3 dimensions                               

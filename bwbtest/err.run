@@ -1,5 +1,0 @@
-                                                                                
-ERROR in line 20: SUBSCRIPT OUT OF RANGE n(7)                                   
-                                                                                
-STACK TRACE:                                                                    
-20:print n(7)                                                                   

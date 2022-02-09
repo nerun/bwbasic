@@ -1,0 +1,47 @@
+ABS(-2.2):  2.2                                                                 
+DATE$: <01/21/2016>                                                             
+TIME$: <20:51:36>                                                               
+ATN(-2.2): -1.14417                                                             
+COS(-2.2): -.588501                                                             
+LOG(2.2):  .788457                                                              
+SIN(-2.2): -.808496                                                             
+SQR(2.2):  1.48324                                                              
+TAN(-2.2):  1.37382                                                             
+SGN(-2.2): -1                                                                   
+INT(-2.2): -3                                                                   
+Paused? c                                                                       
+RND(-2.2):  .396465                                                             
+CHR$(&h60): `                                                                   
+TAB(52): <                                         >                            
+SPC(5): <     >                                                                 
+SPACE$(5): <     >                                                              
+STRING$(5,X): <XXXXX>                                                           
+MID$(0123456789, 5, 4): <4567>                                                  
+LEFT$(0123456789, 5): <01234>                                                   
+RIGHT$(0123456789, 5): <56789>                                                  
+TIMER:  75096                                                                   
+Paused? A                                                                       
+VAL(X):  0                                                                      
+ERR:  0                                                                         
+ERL:  0                                                                         
+LEN(0123456789):  10                                                            
+CSNG(-2.2): -2.2                                                                
+EXP(-2.2):  .110803                                                             
+INSTR(0123456789, 234):  3                                                      
+STR$(-2.2): <-2.2>                                                              
+HEX$(27): <1B>                                                                  
+Paused? B                                                                       
+OCT$(27): <33>                                                                  
+CINT(-2.2): -2                                                                  
+ASC(0123456789):  48                                                            
+ENVIRON$(PATH): <                                                               
+/data/data/com.pdaxrom.cctools/root/cctools/sbin:/data/data/com.pdaxrom.cctools/
+root/cctools/bin:/system/xbin:/system/bin:/data/data/com.pdaxrom.cctools/root/cc
+tools/bin:/data/data/com.pdaxrom.cctools/root/cctools/sbin:/sbin:/vendor/bin:/sy
+stem/sbin:/system/bin:/system/xbin>                                             
+MKD$(17): <>                                                                    
+MKI$(17): < >                                                                   
+MKS$(17): <>                                                                    
+CVD(MKD$(17)):  17                                                              
+CVS(MKS$(17)):  17                                                              
+CVI(MKI$(17)):  17                                                              

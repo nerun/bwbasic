@@ -33,4 +33,4 @@ HAVE ASSIGNED  20  TO A( 0 ).
                                                                                 
 ABOUT TO ASSIGN TO A(-1 ).*** EXCEPTION SHOULD OCCUR NOW ***                    
                                                                                 
-ERROR in line 280: SUBSCRIPT OUT OF RANGE A(-1)                                 
+ERROR in line 280: Subscript out of range                                       

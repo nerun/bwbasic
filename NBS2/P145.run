@@ -25,4 +25,4 @@ FOR DETAILED CRITERIA.
                                                                                 
 ABOUT TO ATTEMPT INVOCATION OF RND.                                             
                                                                                 
-ERROR in line 250: *** Illegal Function Call (RND) ***                          
+ERROR in line 250: Illegal Function Call (RND)                                  

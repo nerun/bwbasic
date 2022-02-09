@@ -1,0 +1,5 @@
+Trace is ON                                                                     
+[ 10 REM 'FLOW' TEST PROGRAM ][ 20 GOTO 50 ][ 50 PRINT "FLOW TRACES EACH LINE" ]
+[ 60 GOTO 30 ][ 30 PRINT "OF THIS TEST PROGRAM." ]OF THIS TEST PROGRAM.         
+[ 40 GOTO 70 ][ 70 PRINT "END OF TEST PROGRAM." ]END OF TEST PROGRAM.           
+[ 99 END ]                                                                      
