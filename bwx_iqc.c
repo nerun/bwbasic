@@ -66,7 +66,7 @@ static int iqc_setpos( void );
 
 ***************************************************************/
 
-void
+int
 main( int argc, char **argv )
    {
 #if MS_CMDS
@@ -115,6 +115,7 @@ main( int argc, char **argv )
       bwb_mainloop();
       }
 
+   return (0);
    }
 
 /***************************************************************

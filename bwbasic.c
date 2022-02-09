@@ -51,7 +51,7 @@
 char *bwb_ebuf;				/* error buffer */
 static char *read_line;
 int bwb_trace = FALSE;
-FILE *errfdevice = stderr;              /* output device for error messages */
+FILE *errfdevice;              /* output device for error messages */
 
 #if HAVE_LONGJUMP
 jmp_buf mark;
@@ -133,6 +133,7 @@ bwb_init( argc, argv )
    static char end_buf[] = "\0";
 #endif
 
+   errfdevice = stderr;
 #if INTENSIVE_DEBUG
    prn_xprintf( stderr, "Memory Allocation Statistics:\n" );
    prn_xprintf( stderr, "----------------------------\n" );

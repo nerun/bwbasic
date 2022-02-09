@@ -39,7 +39,7 @@
 #include "bwbasic.h"
 #include "bwb_mes.h"
 
-#if UNIX_CMDS
+#if HAVE_SYSSTAT
 #include <sys/stat.h>
 #endif
 

@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.20 patch level 2"          /* Current version number */
+#define VERSION         "2.30"          /* Current version number */
 
 /***************************************************************
 
@@ -63,6 +63,27 @@
 #define IMP_IQC         FALSE    /* IBM PC, Microsoft QuickC Compiler */
 #define IMP_NCU         FALSE    /* Linux, ncurses */
 #define ALLOW_RENUM     TRUE     /* Added by JBV */
+
+/* Make function names 8-character unique for systems like MVS */
+#define var_findnval vf_nval
+#define var_findsval vf_sval
+#define fnc_timer f_timer
+#define bwb_elseif b_elseif
+#define bwb_caseif b_caseif
+#define find_endif f_endif
+#define find_endselect f_endselect
+#define find_endsub f_endsub
+#define fslt_findl fsf_l
+#define fslt_findf fsf_f
+#define bwb_loopuntil bl_until
+#define bwb_exitfor bexfor
+#define bwb_exitdo bexdo
+#define bwb_endselect be_select
+#define bwb_endsub be_endsub
+#define fslt_addcallvar fa_callvar
+#define fslt_addlocalvar fa_localvar
+#define CALLOC calloc2
+#define FREE free2
 
 #if IMP_TTY
 #include "bwx_tty.h"
@@ -89,7 +110,7 @@
 
 ***************************************************************/
 
-#ifdef MSDOS
+#ifdef __STDC__
 #define HAVE_RAISE TRUE
 #define HAVE_STRING TRUE
 #define HAVE_STDLIB TRUE
@@ -128,13 +149,13 @@
 #endif
 
 #ifdef __STDC__
-#define HAVE_SYSTYPES	TRUE
+#define HAVE_SYSTYPES	FALSE
 #else
 #define HAVE_SYSTYPES	TRUE	/* Compiler has <sys/types.h> header */
 #endif
 
 #ifdef __STDC__
-#define HAVE_SYSSTAT	TRUE
+#define HAVE_SYSSTAT	FALSE
 #else
 #define HAVE_SYSSTAT	TRUE	/* Compiler has <sys/stat.h> header */
 #endif
@@ -428,7 +449,11 @@
 #define DEFVNAME_COLORS "BWB.COLORS"    /* default variable name for COLORS */
 #define DEFVNAME_IMPL   "BWB.IMPLEMENTATION$" /* default variable name for IMPLEMENTATION */
 #define ERRFILE         "err.out"       /* Filename for redirected error messages */
+#if defined(__MVS__)
+#define PROFILENAME "dd:profile"
+#else
 #define PROFILENAME	"profile.bas"	/* Filename for profile execution */
+#endif
 #define	TASKS		4		/* number of tasks available */
 #define MAXARGSIZE      128             /* maximum size of argument */
 #define MAXREADLINESIZE 256             /* size of read_line buffer */

@@ -66,7 +66,7 @@ extern jmp_buf mark;
 ***************************************************************/
 
 #if ANSI_C
-void
+int
 main( int argc, char **argv )
 #else
 main( argc, argv )
@@ -93,6 +93,7 @@ main( argc, argv )
       bwx_terminate();			/* allow ^D (Unix) exit with grace */
 
 
+   return (0);
    }
 
 /***************************************************************

@@ -467,6 +467,7 @@ main(argc, argv)
    fclose(fdout);
    sprintf(tempstr, "mv editfl %s\0", f9str);
    system(tempstr);
+   return (0);
 }
 
 

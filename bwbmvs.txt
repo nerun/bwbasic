@@ -1,0 +1,14 @@
+BWBASIC for MVS
+---------------
+
+To compile BWBASIC on MVS, run the following commands:
+
+zipall
+bwbasic3
+subjobs
+
+after taking a look at what they do and seeing if they
+are appropriate to your environment.
+
+Or just run "allbwb" which will do all of that.
+

@@ -1009,7 +1009,7 @@ bwb_kill( l )
    /* try to delete the specified file */
 
    str_btoc( atbuf, &( e->sval ) );
-   r = unlink( atbuf );
+   r = remove( atbuf );
 
    /* detect error */
 
