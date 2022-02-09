@@ -28,6 +28,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -153,7 +158,8 @@ bwb_init( argc, argv )
    /* Memory allocation */
    /* eXecute TeXT stack */
 
-   if ( ( xtxts = calloc( XTXTSTACKSIZE, sizeof( struct xtxtsl ) ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( xtxts = CALLOC( XTXTSTACKSIZE, sizeof( struct xtxtsl ), "bwb_init") ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_init(): failed to find memory for xtxts" );
@@ -164,7 +170,8 @@ bwb_init( argc, argv )
 
    /* expression stack */
 
-   if ( ( exps = calloc( ESTACKSIZE, sizeof( struct exp_ese ) ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( exps = CALLOC( ESTACKSIZE, sizeof( struct exp_ese ), "bwb_init") ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_init(): failed to find memory for exps" );
@@ -175,7 +182,8 @@ bwb_init( argc, argv )
 
    /* EXEC stack */
 
-   if ( ( excs = calloc( EXECLEVELS, sizeof( struct exse ) ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( excs = CALLOC( EXECLEVELS, sizeof( struct exse ), "bwb_init") ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_init(): failed to find memory for excs" );
@@ -197,8 +205,8 @@ bwb_init( argc, argv )
    exsc = -1;
    expsc = 0;
    xtxtsc = 0;
-   bwb_start.position = 1;
-   bwb_l = &bwb_start;
+   bwb_start.position = 0;
+   bwb_l = &bwb_start; 
 
    var_init( 0 );
    fnc_init( 0 );
@@ -208,7 +216,8 @@ bwb_init( argc, argv )
 
    /* character buffers */
 
-   if ( ( bwb_ebuf = calloc( MAXSTRINGSIZE + 1, sizeof(char) ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( bwb_ebuf = CALLOC( MAXSTRINGSIZE + 1, sizeof(char), "bwb_init") ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_init(): failed to find memory for bwb_ebuf" );
@@ -216,7 +225,8 @@ bwb_init( argc, argv )
       bwb_error( err_getmem );
 #endif
       }
-   if ( ( read_line = calloc( MAXREADLINESIZE + 1, sizeof(char) ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( read_line = CALLOC( MAXREADLINESIZE + 1, sizeof(char), "bwb_init") ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_init(): failed to find memory for read_line" );
@@ -248,7 +258,8 @@ bwb_init( argc, argv )
    /* assign memory for the device table */
 
 #if COMMON_CMDS
-   if ( ( dev_table = calloc( DEF_DEVICES, sizeof( struct dev_element ) ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( dev_table = CALLOC( DEF_DEVICES, sizeof( struct dev_element ), "bwb_init") ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_init(): failed to find memory for dev_table" );
@@ -399,9 +410,9 @@ bwb_init( argc, argv )
    ++program_run;
    if (( argc > 1 ) && ( program_run == 1 ))
       {
-      if ( ( input = fopen( argv[ 1 ], "r" )) == NULL )
+      strcpy( CURTASK progfile, argv[ 1 ] ); /* JBV */
+      if ( ( input = fopen( CURTASK progfile, "r" )) == NULL ) /* JBV */
          {
-         strcpy( CURTASK progfile, argv[ 1 ] );
          strcat( CURTASK progfile, ".bas" );
          if ( ( input = fopen( CURTASK progfile, "r" )) == NULL )
             {
@@ -412,7 +423,7 @@ bwb_init( argc, argv )
          }
       if ( input != NULL )
          {
-         strcpy( CURTASK progfile, argv[ 1 ] );
+         /* strcpy( CURTASK progfile, argv[ 1 ] ); */  /* Removed by JBV */
 #if INTENSIVE_DEBUG
          sprintf( bwb_ebuf, "in main(): progfile is <%s>.", CURTASK progfile );
          bwb_debug( bwb_ebuf );
@@ -442,6 +453,7 @@ bwb_interact( void )
 bwb_interact()
 #endif
    {
+   char tbuf[ MAXSTRINGSIZE + 1 ]; /* JBV */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_interact(): ready to read from keyboard" );
@@ -451,6 +463,7 @@ bwb_interact()
    /* take input from keyboard */
 
    bwb_gets( read_line );
+   bwb_stripcr( read_line ); /* JBV */
 
    /* If there is no line number, execute the line as received */
 
@@ -458,6 +471,17 @@ bwb_interact()
       {
       bwb_xtxtline( read_line );
       }
+
+   /*-----------------------------------------------------------------*/
+   /* Another possibility: if read_line is a numeric constant, delete */
+   /* the indicated line number (JBV)                                 */
+   /*-----------------------------------------------------------------*/
+   else if ( is_numconst( read_line ) == TRUE )
+   {
+       strcpy(tbuf, read_line);
+       sprintf(read_line, "delete %s\0", tbuf);
+       bwb_xtxtline( read_line );
+   }
 
    /* If there is a line number, add the line to the file in memory */
 
@@ -553,7 +577,9 @@ bwb_ladd( buffer, replace )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( s_buffer = calloc( (size_t) MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( s_buffer = CALLOC( (size_t) MAXSTRINGSIZE + 1, sizeof( char ), "bwb_ladd" )) == NULL )
 	 {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_ladd(): failed to find memory for s_buffer" );
@@ -571,7 +597,8 @@ bwb_ladd( buffer, replace )
 
    /* get memory for this line */
 
-   if ( ( l = (struct bwb_line *) calloc( (size_t) 1, sizeof( struct bwb_line ) )) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( l = (struct bwb_line *) CALLOC( (size_t) 1, sizeof( struct bwb_line ), "bwb_ladd")) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in bwb_ladd(): failed to find memory for new line" );
@@ -648,7 +675,7 @@ bwb_ladd( buffer, replace )
 
       /* replace a previously existing line */
 
-      if ( ( l->xnum == TRUE )
+      if ( ( l->xnum == (char) TRUE ) /* Better recast this one (JBV) */
          && ( previous->number == l->number )
 	 && ( replace == TRUE )
 	 )
@@ -666,7 +693,10 @@ bwb_ladd( buffer, replace )
 
          /* free the current line */
 
-         free( l );
+         /* Revised to FREE pass-thru calls by JBV */
+         /* if (l->buffer != NULL) FREE( l->buffer, "bwb_ladd" ); */
+         /* FREE( l, "bwb_ladd" ); */
+         bwb_freeline( l ); /* JBV */
 
          /* and return */
 
@@ -724,8 +754,10 @@ bwb_ladd( buffer, replace )
 
    /* attempt to link line number has failed; free memory */
 
-   free( l->buffer );
-   free( l );
+   /* Revised to FREE pass-thru calls by JBV */
+   /* if (l->buffer != NULL) FREE( l->buffer, "bwb_ladd" ); */
+   /* FREE( l, "bwb_ladd" ); */
+   bwb_freeline( l ); /* JBV */
 
    sprintf( bwb_ebuf, ERR_LINENO );
    bwb_error( bwb_ebuf );
@@ -810,14 +842,16 @@ bwb_xtxtline( buffer )
    bwb_debug( bwb_ebuf );
 #endif
 
-   if ( CURTASK xtxts[ CURTASK xtxtsc ].l.buffer != NULL )
-      {
-#if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in bwb_xtxtline(): freeing buffer memory" );
-      bwb_debug( bwb_ebuf );
-#endif
-      free( CURTASK xtxts[ CURTASK xtxtsc ].l.buffer );
-      }
+/* Removed by JBV (no longer needed, done by ln_asbuf) */
+/*   if ( CURTASK xtxts[ CURTASK xtxtsc ].l.buffer != NULL )
+      { */
+/* #if INTENSIVE_DEBUG */
+/*      sprintf( bwb_ebuf, "in bwb_xtxtline(): freeing buffer memory" );
+      bwb_debug( bwb_ebuf ); */
+/* #endif */
+        /* Revised to FREE pass-thru call by JBV */
+/*      FREE( CURTASK xtxts[ CURTASK xtxtsc ].l.buffer, "bwb_xtxtline" );
+      } */
 
    /* copy the whole line to the line structure buffer */
 
@@ -938,8 +972,10 @@ bwb_decexec()
    if ( CURTASK excs[ CURTASK exsc ].code == EXEC_ON )
       {
 
-      free( CURTASK excs[ CURTASK exsc ].while_line->buffer );
-      free( CURTASK excs[ CURTASK exsc ].while_line );
+      /* Revised to FREE pass-thru calls by JBV */
+      /* FREE( CURTASK excs[ CURTASK exsc ].while_line->buffer, "bwb_decexec" ); */
+      /* FREE( CURTASK excs[ CURTASK exsc ].while_line, "bwb_decexec" ); */
+      bwb_freeline( CURTASK excs[ CURTASK exsc ].while_line ); /* JBV */
 
       bwb_decexec();
       }
@@ -1236,14 +1272,18 @@ ln_asbuf( l, s )
 #endif
    {
 
-#if DONTDOTHIS			/* but why not? */
+/* Reinstated by JBV */
+/* #if DONTDOTHIS */		/* but why not? */
    if ( l->buffer != NULL )
       {
-      free( l->buffer );
+      /* Revised to FREE pass-thru call by JBV */
+      FREE( l->buffer, "ln_asbuf" );
+      l->buffer = NULL; /* JBV */
       }
-#endif
+/* #endif */
 
-   if ( ( l->buffer = calloc( strlen( s ) + 2, sizeof( char ) ) )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( l->buffer = CALLOC( strlen( s ) + 2, sizeof( char ), "ln_asbuf") )
       == NULL )
       {
 #if PROG_ERRORS
@@ -1341,7 +1381,9 @@ break_mes( x )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( tmp_buffer = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tmp_buffer = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "break_mes")) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in break_mes(): failed to find memory for tmp_buffer" );
@@ -1448,3 +1490,50 @@ is_ln( buffer )
    }
 
 
+/***************************************************************
+
+	FUNCTION:       CALLOC()
+
+	DESCRIPTION:    Pass-thru function to calloc() for debugging
+			purposes.  Added by JBV 10/95
+
+***************************************************************/
+
+void *
+#if ANSI_C
+CALLOC( size_t nelem, size_t elsize, char *str )
+#else
+CALLOC( nelem, elsize, str )
+   size_t nelem;
+   size_t elsize;
+   char *str;
+#endif
+{
+    void *ptr;
+
+    ptr = calloc(nelem, elsize);
+    /* printf("%x %x\n", ptr, mallocblksize(ptr)); */
+    return ptr;
+}
+
+/***************************************************************
+
+	FUNCTION:       FREE()
+
+	DESCRIPTION:    Pass-thru function to free() for debugging
+			purposes.  Added by JBV 10/95
+
+***************************************************************/
+
+void
+#if ANSI_C
+FREE( void *ptr, char *str )
+#else
+FREE( ptr, str )
+   void *ptr;
+   char *str;
+#endif
+{
+    /* printf("%x\n", ptr); */
+    free(ptr);
+}

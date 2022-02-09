@@ -23,6 +23,11 @@
 
 ****************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -52,6 +57,7 @@ static int op_or( int level, int precision );
 static int op_and( int level, int precision );
 static int op_not( int level, int precision );
 static int op_xor( int level, int precision );
+static int op_negation( int level, int precision ); /* JBV */
 static int op_islevelstr( int level );
 static int op_getprecision( int level );
 static int op_isoperator( int operation );
@@ -76,6 +82,7 @@ static int op_or();
 static int op_and();
 static int op_not();
 static int op_xor();
+static int op_negation(); /* JBV */
 static int op_islevelstr();
 static int op_getprecision();
 static int op_isoperator();
@@ -312,6 +319,10 @@ op_oplevel( level )
             op_exponent( level, precision );
             break;
 
+         case OP_NEGATION: /* JBV */
+            op_negation( level, precision );
+            break;
+
          default:
 #if PROG_ERRORS
             sprintf( bwb_ebuf, "PROGRAMMING ERROR: operator <%d> not (yet) supported.", CURTASK exps[ level ].operation );
@@ -395,8 +406,10 @@ op_add( level, precision )
 #endif
    {
    int error_condition;
+   static bstring b; /* JBV */
 
    error_condition = FALSE;
+   b.rab = FALSE; /* JBV */
 
    switch( precision )
       {
@@ -435,8 +448,15 @@ op_add( level, precision )
             bwb_debug( bwb_ebuf );
 #endif
 
-            str_cat( exp_getsval( &( CURTASK exps[ level - 1 ] ) ), 
-               exp_getsval( &( CURTASK exps[ level + 1 ] ) ) );
+            /* Removed by JBV (incomplete, modifies wrong string variable!) */
+            /* str_cat( exp_getsval( &( CURTASK exps[ level - 1 ] ) ), 
+               exp_getsval( &( CURTASK exps[ level + 1 ] ) ) ); */
+
+            /* Added by JBV */
+            str_btob( &b, exp_getsval( &( CURTASK exps[ level - 1 ] ) ) );
+            str_cat( &b, exp_getsval( &( CURTASK exps[ level + 1 ] ) ) );
+            str_btob( &( CURTASK exps[ level - 1 ].sval ), &b );
+            CURTASK exps[ level - 1 ].operation = CONST_STRING;
 
 #if INTENSIVE_DEBUG
             sprintf( bwb_ebuf, "in op_add(): str_cat() returns <%d>-byte string to level <%d>",
@@ -730,11 +750,7 @@ op_assign( level, precision )
 
       case NUMBER:
          * var_findnval( CURTASK exps[ level - 1 ].xvar, 
-#ifdef OLDWAY
-	    CURTASK exps[ level - 1 ].xvar->array_pos )  =
-#else
-	    CURTASK exps[ level - 1 ].array_pos )  =
-#endif
+            CURTASK exps[ level - 1 ].array_pos ) =
             CURTASK exps[ level - 1 ].nval = 
             exp_getnval( &( CURTASK exps[ level + 1 ] ) );
          break;
@@ -1522,7 +1538,7 @@ op_intdiv( level, precision )
 	FUNCTION:       op_or()
 
 	DESCRIPTION:    This function compares two integers and
-			performs a logical NOT on them.
+			performs a logical OR on them.
 
 ***************************************************************/
 
@@ -1579,7 +1595,7 @@ op_or( level, precision )
 	FUNCTION:       op_and()
 
 	DESCRIPTION:    This function compares two integers and
-			performs a logical NOT on them.
+			performs a logical AND on them.
 
 ***************************************************************/
 
@@ -1636,8 +1652,8 @@ op_and( level, precision )
 
 	FUNCTION:       op_not()
 
-	DESCRIPTION:    This function compares two integers and
-			performs a logical NOT on them.
+	DESCRIPTION:    This function performs a logical NOT on
+			the integer to the right.
 
 ***************************************************************/
 
@@ -1682,7 +1698,7 @@ op_not( level, precision )
 
 #if INTENSIVE_DEBUG
          sprintf( bwb_ebuf, "in op_not(): result is <%d>, precision <%c>",
-            (int) r, precision );
+            (unsigned int) exp_getnval( &( CURTASK exps[ level ] )), precision );
          bwb_debug( bwb_ebuf );
 #endif
 
@@ -1713,7 +1729,7 @@ op_not( level, precision )
 	FUNCTION:       op_xor()
 
 	DESCRIPTION:    This function compares two integers and
-			performs a logical NOT on them.
+			performs a logical XOR on them.
 
 ***************************************************************/
 
@@ -1760,6 +1776,83 @@ op_xor( level, precision )
    /* decrement the stack twice */
 
    op_pulldown( 2 );
+
+   return TRUE;
+
+   }
+
+/***************************************************************
+
+	FUNCTION:       op_negation()
+
+	DESCRIPTION:    This function performs a negation on the
+			element to the right.
+			Added by JBV 10/95
+
+***************************************************************/
+
+#if ANSI_C
+static int
+op_negation( int level, int precision )
+#else
+static int
+op_negation( level, precision )
+   int level;
+   int precision;
+#endif
+   {
+
+   switch( precision )
+      {
+      case STRING:
+
+
+         /* both sides of the operation should be numbers for
+            logical comparison; if not, report an error */
+
+#if PROG_ERRORS
+         sprintf( bwb_ebuf, "Strings cannot be compared logically." );
+         bwb_error( bwb_ebuf );
+#else
+         bwb_error( err_mismatch );
+#endif
+
+         break;
+
+      default:
+
+#if INTENSIVE_DEBUG
+         sprintf( bwb_ebuf, "in op_negation(): argument is <%f>, precision <%c>",
+            exp_getnval( &( CURTASK exps[ level + 1 ] )), precision );
+         bwb_debug( bwb_ebuf );
+#endif
+
+         CURTASK exps[ level ].nval = (bnumber)
+            -( exp_getnval( &( CURTASK exps[ level + 1 ] )) );
+
+#if INTENSIVE_DEBUG
+         sprintf( bwb_ebuf, "in op_negation(): result is <%f>, precision <%c>",
+            exp_getnval( &( CURTASK exps[ level ] )), precision );
+         bwb_debug( bwb_ebuf );
+#endif
+
+         break;
+      }
+
+   /* set variable type to requested precision (JBV) */
+
+   CURTASK exps[ level ].type = (char) precision;
+   CURTASK exps[ level ].operation = NUMBER;
+
+   /* decrement the stack once */
+
+   op_pulldown( 1 );
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in op_negation(): CURTASK expsc <%d>, level <%d> result <%f>",
+      CURTASK expsc, level, CURTASK exps[ CURTASK expsc ].nval );
+   bwb_debug( bwb_ebuf );
+#endif
 
    return TRUE;
 
@@ -1903,8 +1996,18 @@ op_pulldown( how_far )
    while ( CURTASK expsc >= ( level + how_far ) )
       {
 
+      /*------------------------------------------------------*/
+      /* But before memcpy, deallocate sbuffer for level, and */
+      /* afterwards, set sbuffer for level + how_far to NULL! */
+      /* Else konfusion reigns the next time around... (JBV)  */
+      /*------------------------------------------------------*/
+
+      if( CURTASK exps[ level ].sval.sbuffer != NULL ) /* JBV */
+         FREE( CURTASK exps[ level ].sval.sbuffer, "op_pulldown" );
       memcpy( &CURTASK exps[ level ], &CURTASK exps[ level + how_far ],
          (size_t) ( sizeof( struct exp_ese )) );
+      CURTASK exps[ level + how_far ].sval.sbuffer = NULL; /* JBV */
+
       ++level;
 
       }

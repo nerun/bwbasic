@@ -23,6 +23,10 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
 
 #ifndef TRUE
 #define TRUE    -1
@@ -37,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.10"          /* Current version number */
+#define VERSION         "2.20"          /* Current version number */
 
 /***************************************************************
 
@@ -50,10 +54,14 @@
 			It is the most minimal, but the most
 			universal hardware implementation.
 
+			If you pick IMP_TTY then check the settings
+			in bwx_tty.h for your system.
+
 ***************************************************************/
 
 #define IMP_TTY         TRUE     /* simple TTY-style interface using stdio */
 #define IMP_IQC         FALSE    /* IBM PC, Microsoft QuickC Compiler */
+#define ALLOW_RENUM     TRUE     /* Added by JBV */
 
 #if IMP_TTY
 #include "bwx_tty.h"
@@ -109,6 +117,11 @@
 #define HAVE_STDLIB	FALSE	/* Compiler has <stdlib.h> header */
 #endif
 
+/* configure sets this (section added by JBV) */
+#ifndef HAVE_UNISTD
+#define HAVE_UNISTD	FALSE	/* Compiler has <unistd.h> header */
+#endif
+
 #ifdef __STDC__
 #define HAVE_SYSTYPES	TRUE
 #else
@@ -149,8 +162,8 @@
 
 #if CFG_CUSTOM
 #define COMMAND_SHELL   TRUE		/* allow command shell processing */
-#define PROFILE         FALSE           /* interpret profile at beginning */
-#define NUMBER_DOUBLE	FALSE		/* define BASIC number as double: default is float*/
+#define PROFILE         TRUE            /* interpret profile at beginning */
+#define NUMBER_DOUBLE	TRUE		/* define BASIC number as double: default is float*/
 #define MULTISEG_LINES  TRUE            /* allow multi-segment lines delimited by ':' */
 #define PARACT		FALSE		/* Implement PARallen ACTion (Multi-tasking) interpreter */
 #define INTERACTIVE	TRUE		/* interactive programming environment and related commands */
@@ -191,10 +204,13 @@
 
 			You can specify debugging options here.
 
+			Defining DEBUG true provides some useful commands:
+			CMDS, VARS, FNCS
+
 ***************************************************************/
 
-#define DEBUG           FALSE		/* current debugging */
-#define PROG_ERRORS     FALSE  		/* identify serious programming errors */
+#define DEBUG           FALSE  	/* current debugging */
+#define PROG_ERRORS     FALSE  	/* identify serious programming errors */
 					/* and print extensive error messages */
 					/* This will override messages defined in */
 					/* bwb_mes.h, and almost all messages will be in English */
@@ -212,7 +228,11 @@
 
 	bwbasic.h:	This ends the section of definitions that
 			users of bwBASIC will normally need to
-			specify. The following are internally defined
+			specify. The following are internally defined.
+
+			Note that you may need to set up the default
+			FILES command and the default editor below.
+			See Part I-G
 
 ***************************************************************/
 
@@ -297,6 +317,11 @@
 #include <stdlib.h>
 #endif
 
+/* Section added by JBV */
+#if HAVE_UNISTD
+#include <unistd.h>
+#endif
+
 #if HAVE_SYSTYPES
 #include <sys/types.h>
 #endif
@@ -319,7 +344,7 @@
 #define CMDS_DIR	0
 #endif
 #if COMMON_CMDS
-#define CMDS_COMMON	24
+#define CMDS_COMMON	25 /* Was 24 (JBV) */
 #else
 #define CMDS_COMMON	0
 #endif
@@ -376,9 +401,22 @@
 /* ERROR:  MULTISEG_LINES and STRUCT_CMDS cannot be defined together! */
 #endif
 
-#define DEF_EDITOR      ""              /* default editor */
-#define DEF_FILES       ""              /* default "files" command */
-#define DEF_COLORS      0               /* default # of colors */
+/***************************************************************
+
+	bwbasic.h:	Part I-G: Define User Defaults
+
+			Defining your default editor and files commands
+			is a good idea. You must supply the file name
+			for the editor to use.  These defaults can be
+			changed from inside the program or in your profile
+			program by setting the appropriate variables
+			shown below.
+
+***************************************************************/
+
+#define DEF_EDITOR      "vi"            /* default editor */
+#define DEF_FILES       "ls -Fx"         /* default "files" command */
+#define DEF_COLORS      256             /* default # of colors */
 #define DEFVNAME_EDITOR "BWB.EDITOR$"   /* default variable name for EDITOR */
 #define DEFVNAME_PROMPT "BWB.PROMPT$"   /* default variable name for PROMPT */
 #define DEFVNAME_FILES  "BWB.FILES$"    /* default variable name for FILES */
@@ -400,9 +438,9 @@
 #define MAX_DIMS	64		/* maximum # of dimensions */
 #define ESTACKSIZE      64              /* elements in expression stack */
 #define XTXTSTACKSIZE   16              /* elements in eXecute TeXT stack */
-#define N_OPERATORS     24              /* number of operators defined */
+#define N_OPERATORS     25              /* number of operators defined */
 #define N_ERRORS	25		/* number of errors defined */
-#define MAX_PRECEDENCE  19              /* highest (last) level of precedence */
+#define MAX_PRECEDENCE  20              /* highest (last) level of precedence */
 #define MININTSIZE      -32767          /* minimum integer size */
 #define MAXINTSIZE       32767          /* maximum integer size */
 #define DEF_SUBSCRIPT   11              /* default subscript */
@@ -622,6 +660,7 @@ struct dev_element
    int reclen;                          /* record length for random access */
    int next_record;			/* next record to read/write */
    int loc;				/* location in file */
+   int lof;				/* length of file in bytes (JBV) */
    char filename[ MAXFILENAMESIZE + 1 ];/* filename */
    FILE *cfp;                           /* C file pointer for this device */
    char *buffer;			/* pointer to character buffer for random access */
@@ -783,6 +822,8 @@ extern struct bwb_op exp_ops[ N_OPERATORS ]; /* the table itself, filled in in b
 ***************************************************************/
 
 #if ANSI_C
+extern void *CALLOC(size_t nelem, size_t elsize, char *str); /* JBV */
+extern void FREE(void *ptr, char *str); /* JBV */
 extern void bwb_init( int argc, char **argv );
 extern int bwb_fload( FILE *file );
 extern int bwb_ladd( char *buffer, int replace );
@@ -853,6 +894,7 @@ extern struct bwb_line *bwb_ddbl( struct bwb_line *l );
 extern struct bwb_line *bwb_dint( struct bwb_line *l );
 extern struct bwb_line *bwb_dsng( struct bwb_line *l );
 extern struct bwb_line *bwb_dstr( struct bwb_line *l );
+extern struct bwb_line *bwb_mid( struct bwb_line *l );
 extern struct bwb_line *bwb_clear( struct bwb_line *l );
 extern struct bwb_line *bwb_erase( struct bwb_line *l );
 extern struct bwb_line *bwb_swap( struct bwb_line *l );
@@ -941,6 +983,7 @@ extern int prn_precision( struct bwb_variable *v );
 extern int * prn_getcol( FILE *f );
 extern int prn_getwidth( FILE *f );
 extern int prn_xprintf( FILE *f, char *buffer );
+extern int prn_xxprintf( FILE *f, char *buffer ); /* JBV */
 extern int bwb_strtoupper( char *buffer );
 extern int getcmdnum( char *cmdstr );
 
@@ -1008,12 +1051,16 @@ extern struct bwb_line *bwb_renum( struct bwb_line *l );
 #endif
 
 #if UNIX_CMDS
+#if !HAVE_UNISTD /* Not needed if one has <unistd.h> (JBV) */
 extern int rmdir( char *path );
 extern int chdir( char *path );
+#endif
+#if !HAVE_SYSSTAT /* Not needed if one has <sys/stat.h> (JBV) */
 #if MKDIR_ONE_ARG
 extern int mkdir( char *path );
 #else
 extern int mkdir( char *path, unsigned short permissions );
+#endif /* JBV */
 #endif
 #endif
 
@@ -1081,6 +1128,8 @@ extern struct bwb_variable *fnc_test( int argc, struct bwb_variable *argv, int u
 
 #else                                   /* ANSI_C */
 
+extern void *CALLOC(); /* JBV */
+extern void FREE(); /* JBV */
 extern void bwb_init();
 extern int bwb_fload();
 extern int bwb_ladd();
@@ -1151,6 +1200,7 @@ extern struct bwb_line *bwb_ddbl();
 extern struct bwb_line *bwb_dint();
 extern struct bwb_line *bwb_dsng();
 extern struct bwb_line *bwb_dstr();
+extern struct bwb_line *bwb_mid();
 extern struct bwb_line *bwb_clear();
 extern struct bwb_line *bwb_erase();
 extern struct bwb_line *bwb_swap();
@@ -1238,6 +1288,7 @@ extern int prn_precision();
 extern int * prn_getcol();
 extern int prn_getwidth();
 extern int prn_xprintf();
+extern int prn_xxprintf(); /* JBV */
 extern int bwb_strtoupper();
 extern int getcmdnum();
 

@@ -23,6 +23,11 @@
 
 ****************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -154,8 +159,9 @@ fnc_core( argc, argv, unique_id  )
    switch( unique_id )
       {
       case F_ABS:
+         /* Added double recast here (JBV) */
 	 * var_findnval( &nvar, nvar.array_pos ) =
-	    (bnumber) fabs( var_getnval( &( argv[ 0 ] ) ) );
+	    (bnumber) fabs( (double) var_getnval( &( argv[ 0 ] ) ) );
 	 break;
       case F_ATN:
 	 * var_findnval( &nvar, nvar.array_pos )
@@ -166,8 +172,9 @@ fnc_core( argc, argv, unique_id  )
 	    = (bnumber) cos( (double) var_getnval( &( argv[ 0 ] ) ) );
 	 break;
       case F_EXP:
+         /* Added double recast here (JBV) */
 	 * var_findnval( &nvar, nvar.array_pos )
-	    = (bnumber) exp( var_getnval( &( argv[ 0 ] ) ) );
+	    = (bnumber) exp( (double) var_getnval( &( argv[ 0 ] ) ) );
 	 break;
       case F_INT:
 	 * var_findnval( &nvar, nvar.array_pos )
@@ -178,7 +185,9 @@ fnc_core( argc, argv, unique_id  )
 	    = (bnumber) log( (double) var_getnval( &( argv[ 0 ] ) ) );
 	 break;
       case F_RND:
-	 * var_findnval( &nvar, nvar.array_pos ) = (float) rand() / RAND_MAX;
+         /* Added bnumber recast here (JBV) */
+	 * var_findnval( &nvar, nvar.array_pos )
+	    = (bnumber) ( (float) rand() / RAND_MAX );
 	 break;
       case F_SGN:
 	 nval = var_getnval( &( argv[ 0 ] ));
@@ -296,8 +305,9 @@ fnc_abs( argc, argv, unique_id  )
    bwb_debug( bwb_ebuf );
 #endif
 
+   /* Added double recast here (JBV) */
    * var_findnval( &nvar, nvar.array_pos ) = 
-      (bnumber) fabs( var_getnval( &( argv[ 0 ] ) ) );
+      (bnumber) fabs( (double) var_getnval( &( argv[ 0 ] ) ) );
 
    return &nvar;
 
@@ -339,7 +349,9 @@ fnc_rnd( argc, argv, unique_id  )
       var_make( &nvar, NUMBER );
       }
 
-   * var_findnval( &nvar, nvar.array_pos ) = (float) rand() / RAND_MAX;
+   /* Added bnumber recast here (JBV) */
+   * var_findnval( &nvar, nvar.array_pos )
+      = (bnumber) ( (float) rand() / RAND_MAX );
 
    return &nvar;
    }
@@ -987,8 +999,9 @@ fnc_exp( argc, argv, unique_id )
 
    /* assign values */
 
+   /* Added double recast here (JBV) */
    * var_findnval( &nvar, nvar.array_pos ) 
-      = (bnumber) exp( var_getnval( &( argv[ 0 ] ) ) );
+      = (bnumber) exp( (double) var_getnval( &( argv[ 0 ] ) ) );
 
    return &nvar;
    }
@@ -1030,7 +1043,9 @@ fnc_val( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, NUMBER );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_val" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_val(): failed to get memory for tbuf" );
@@ -1078,6 +1093,9 @@ fnc_val( argc, argv, unique_id )
    /* read the value */
 
    str_btoc( tbuf, var_getsval( &( argv[ 0 ] ) ));
+   if ( strlen( tbuf ) == 0 ) /* JBV */
+      *var_findnval( &nvar, nvar.array_pos ) = (bnumber) 0;
+   else
 #if NUMBER_DOUBLE
    sscanf( tbuf, "%lf",
        var_findnval( &nvar, nvar.array_pos ) );
@@ -1122,7 +1140,9 @@ fnc_str( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_str" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_str(): failed to get memory for tbuf" );
@@ -1203,7 +1223,9 @@ fnc_hex( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_hex" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_hex(): failed to get memory for tbuf" );
@@ -1278,7 +1300,9 @@ fnc_oct( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_oct" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_oct(): failed to get memory for tbuf" );
@@ -1314,7 +1338,9 @@ fnc_oct( argc, argv, unique_id )
 
    /* format as octal integer */
 
-   sprintf( tbuf, "%o", (int) var_getnval( &( argv[ 0 ] ) ) );
+   /* Revised by JBV */
+   /* sprintf( tbuf, "%o", (int) var_getnval( &( argv[ 0 ] ) ) ); */
+   sprintf( tbuf, "%o", (int) trnc_int( (bnumber) var_getnval( &( argv[ 0 ] )) ) );
    str_ctob( var_findsval( &nvar, nvar.array_pos ), tbuf );
    return &nvar;
    }
@@ -1388,6 +1414,7 @@ fnc_mki( argc, argv, unique_id  )
    for ( i = 0; i < sizeof( int ); ++i )
       {
       tbuf[ i ] = an_integer.the_chars[ i ];
+      tbuf[ i + 1 ] = '\0';
       }
    b = var_getsval( &nvar );
    b->length = sizeof( int );
@@ -1545,6 +1572,7 @@ fnc_mks( argc, argv, unique_id  )
    for ( i = 0; i < sizeof( float ); ++i )
       {
       tbuf[ i ] = a_float.the_chars[ i ];
+      tbuf[ i + 1 ] = '\0';
       }
    b = var_getsval( &nvar );
    b->length = sizeof( float );
@@ -1807,7 +1835,7 @@ fnc_cvs( argc, argv, unique_id  )
 	DESCRIPTION:    This C function implements the BASIC
 			function CSNG().  As implemented,
 			this is a pseudo-function, since
-			all bwBASIC numerial values have the
+			all bwBASIC numerical values have the
 			same precision.
 
 	SYNTAX:		CSNG( number )
@@ -1955,18 +1983,19 @@ trnc_int( x )
    bnumber x;
 #endif
    {
-   bnumber sign;
+   double sign; /* Was bnumber (JBV) */
 
    if ( x < (bnumber) 0.0 )
       {
-      sign = (bnumber) -1.0;
+      sign = (double) -1.0; /* Was bnumber (JBV) */
       }
    else
       {
-      sign = (bnumber) 1.0;
+      sign = (double) 1.0; /* Was bnumber (JBV) */
       }
 
-   return (bnumber) ( floor( fabs( x )) * sign );
+   /* Added double recast here (JBV) */
+   return (bnumber) ( floor( fabs( (double) x )) * sign );
    }
 
 /***************************************************************
@@ -1991,27 +2020,27 @@ round_int( x )
 
    if ( x < (bnumber) 0.00 )
       {
-      if ( (bnumber) fabs( (bnumber) floor( x ) - x ) < (bnumber) 0.500 )
+      /* Added double recasts here (JBV) */
+      if ( (bnumber) fabs( (bnumber) floor( (double) x ) - x ) < (bnumber) 0.500 )
 	 {
-	 return (bnumber) floor( x );
+	 return (bnumber) floor( (double) x );
 	 }
       else
 	 {
-	 return (bnumber) ceil( x );
+	 return (bnumber) ceil( (double) x );
 	 }
       }
    else
       {
-      if ( ( x - (bnumber) floor( x )) < (bnumber) 0.500 )
+      if ( ( x - (bnumber) floor( (double) x )) < (bnumber) 0.500 )
 	 {
-	 return (bnumber) floor( x );
+	 return (bnumber) floor( (double) x );
 	 }
       else
 	 {
-	 return (bnumber) ceil( x );
+	 return (bnumber) ceil( (double) x );
 	 }
       }
    }
 
 
-

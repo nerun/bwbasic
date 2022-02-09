@@ -23,6 +23,14 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 
@@ -85,7 +93,7 @@ adv_element( buffer, pos, element )
          case '=':
          case ' ':
          case '\t':
-         case '\0':
+         /* case '\0': */ /* Removed by JBV (found by DD) */
          case '\n':
          case '\r':
             if ( str_const == TRUE )
@@ -99,6 +107,15 @@ adv_element( buffer, pos, element )
                {
                return TRUE;
                }
+            break;
+
+         case '\0':                     /* Added by JBV (found by DD) */
+            if ( str_const == TRUE )    /* termination of string constant */
+               {
+               element[ e_pos ] = '\"';
+               element[ ++e_pos ] = '\0';
+               }
+            return TRUE;
             break;
 
          case '\"':                     /* string constant */
@@ -328,7 +345,9 @@ line_start( buffer, pos, lnpos, lnum, cmdpos, cmdnum, startpos )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "line_start")) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in line_start(): failed to get memory for tbuf" );
@@ -736,7 +755,9 @@ bwb_numseq( buffer, start, end )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_numseq")) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_numseq(): failed to find memory for tbuf" );
@@ -867,7 +888,14 @@ bwb_freeline( l )
 
    /* free arguments if there are any */
 
-   free( l );
+   /* Revised to FREE pass-thru calls by JBV */
+   if (l->buffer != NULL)
+   {
+       FREE( l->buffer, "bwb_freeline" );
+       l->buffer = NULL; /* JBV */
+   }
+   FREE( l, "bwb_freeline" );
+   l = NULL; /* JBV */
 
    return TRUE;
    }
@@ -952,4 +980,3 @@ is_eol( buffer, position )
 
    }
 
-

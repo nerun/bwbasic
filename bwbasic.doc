@@ -271,27 +271,27 @@ CONTENTS:
    bwBASIC recognizes the following operators, with their level
    of precedence given (1 = highest):
 
-      ^                 1       exponentiation
-      *                 2       multiplication
-      /                 2       division
-      \                 3       integer division
-      +                 5       addition
-      -                 5       subtraction
-      =                 6       equality or assignment
-      MOD               4       modulus (remainder) arithmetic
-      <>                7       inequality
-      <                 8       less than
-      >                 9       greater than
-      <=                10      less than or equal to
-      =<                10      less than or equal to
-      >=                11      greater than or equal to
-      =>                11      greater than or equal to
-      NOT               12      negation
-      AND               13      conjunction
-      OR                14      disjunction
-      XOR               15      exclusive or
-      IMP               16      implication
-      EQV               17      equivalence
+      ^ 		1 	exponentiation
+      *			2 	multiplication
+      /			2	division
+      \			3 	integer division
+      +			5 	addition
+      -			5 	subtraction
+      =			6 	equality or assignment
+      MOD		4	modulus (remainder) arithmetic
+      <>		7	inequality
+      <			8	less than
+      >			9	greater than
+      <=		10	less than or equal to
+      =<		10	less than or equal to
+      >=		11	greater than or equal to
+      =>		11	greater than or equal to
+      NOT		12	negation
+      AND		13	conjunction
+      OR		14	disjunction
+      XOR		15	exclusive or
+      IMP		16	implication
+      EQV		17	equivalence
 
    4.h. Numerical Precision (NOT)
 
@@ -312,30 +312,30 @@ CONTENTS:
    associated command or function to be implemented.  These flags
    are as follows:
 
-   (core)               Commands and Functions in any implementation of
-                        bwBASIC; these are the ANSI Minimal BASIC core
+   (core)		Commands and Functions in any implementation of
+   			bwBASIC; these are the ANSI Minimal BASIC core
 
-   INTERACTIVE          Commands supporting the interactive programming
-                        environment
+   INTERACTIVE		Commands supporting the interactive programming
+   			environment
 
-   COMMON_CMDS          Commands beyond ANSI Minimal BASIC which are common
-                        to Full ANSI BASIC and Microsoft BASICs
+   COMMON_CMDS		Commands beyond ANSI Minimal BASIC which are common
+   			to Full ANSI BASIC and Microsoft BASICs
 
-   COMMON_FUNCS         Functions beyond the ANSI Mimimal BASIC core, but
-                        common to both ANSI Full BASIC and Microsoft-style
-                        BASIC varieties
+   COMMON_FUNCS		Functions beyond the ANSI Mimimal BASIC core, but
+   			common to both ANSI Full BASIC and Microsoft-style
+   			BASIC varieties
 
-   UNIX_CMDS            Commands which require Unix-style directory and
-                        environment routines not specified in C
+   UNIX_CMDS		Commands which require Unix-style directory and
+   			environment routines not specified in C
 
-   STRUCT_CMDS          Commands related to structured programming; all
-                        of these are part of the Full ANSI BASIC standard
+   STRUCT_CMDS		Commands related to structured programming; all
+   			of these are part of the Full ANSI BASIC standard
 
-   ANSI_FUNCS           Functions unique to ANSI Full BASIC
+   ANSI_FUNCS		Functions unique to ANSI Full BASIC
 
-   MS_CMDS              Commands unique to Microsoft BASICs
+   MS_CMDS		Commands unique to Microsoft BASICs
 
-   MS_FUNCS             Functions unique to Microsoft BASICs
+   MS_FUNCS		Functions unique to Microsoft BASICs
 
 
    ------------------------------------------
@@ -379,7 +379,7 @@ CONTENTS:
    Description:  CASE introduces an element of a SELECT CASE statement
                  (see SELECT CASE). CASE IF introduces a conditional
                  SELECT CASE element, and CASE ELSE introduces a
-                 default SELECT CASE element.
+		 default SELECT CASE element.
 
    Dependencies: STRUCT_CMDS
 
@@ -548,8 +548,8 @@ CONTENTS:
                  As implemented under bwBASIC, DATE$ cannot be used for
                  assignment (i.e., to set the system date).
 
-   Note:         bwBASIC presently (v2.10) does not allow assignment
-                 to a function.
+   Note:	 bwBASIC presently (v2.10) does not allow assignment
+		 to a function.
 
    Dependencies: COMMON_FUNCS
 
@@ -783,7 +783,7 @@ CONTENTS:
    Command:      EXIT [FOR]
 
    Description:  EXIT by itself exits from a DO...LOOP loop;
-                 EXIT FOR exits from a FOR...NEXT loop.
+   		 EXIT FOR exits from a FOR...NEXT loop.
 
    Dependencies: STRUCT_CMDS
 
@@ -913,9 +913,9 @@ CONTENTS:
    Function:     INKEY$
 
    Description:  INKEY$ reads the status of the keyboard, and a single
-                 keypress, if available. If a keypress is not available,
-                 then INKEY$ immediately returns a null string ("").
-                 Currently (v2.10) implemented in bwx_iqc.c only.
+   		 keypress, if available. If a keypress is not available,
+   		 then INKEY$ immediately returns a null string ("").
+   		 Currently (v2.10) implemented in bwx_iqc.c only.
 
    Dependencies: IMP_IQC and IMP_CMDLOC
 
@@ -944,8 +944,8 @@ CONTENTS:
                  As implemented in bwBASIC, INSTR cannot be used for
                  assignments.
 
-   Note:         bwBASIC presently (v2.10) does not allow assignment
-                 to a function.
+   Note:	 bwBASIC presently (v2.10) does not allow assignment
+		 to a function.
 
    Dependencies: MS_FUNCS
 
@@ -1039,7 +1039,7 @@ CONTENTS:
    Command:      LOCATE line, column
 
    Description:  LOCATE addresses trhe curor to a specified line and
-                 column. Currently (v2.10) implemented in bwx_iqc.c only.
+		 column. Currently (v2.10) implemented in bwx_iqc.c only.
 
    Dependencies: IMP_IQC and IMP_CMDLOC
 
@@ -1237,29 +1237,29 @@ CONTENTS:
                  a number of formatting marks may appear in the format
                  string:
 
-                    !   prints the first character of a string
+                    !	prints the first character of a string
 
-                    \\  prints 2+x characters of a string, where x =
+                    \\	prints 2+x characters of a string, where x =
                         the number of spaces between the backslashes
 
-                    &   variable-length string field
+                    &	variable-length string field
 
-                    #   represents a single digit in output format for
-                        a number
+                    #	represents a single digit in output format for
+                    	a number
 
-                    .   decimal point in a number
+                    .	decimal point in a number
 
-                    +   sign of a number (will output + or -)
+                    +	sign of a number (will output + or -)
 
-                    -   trailing minus after a number
+                    -	trailing minus after a number
 
-                    **  fill leading spaces with asterisks
+                    **	fill leading spaces with asterisks
 
-                    $$  output dollar sign in front of a number
+                    $$	output dollar sign in front of a number
 
-                    ^^  output number in exponential format
+                    ^^	output number in exponential format
 
-                    _   output next character literally
+                    _	output next character literally
 
                  As currently implemented, the exponential format
                  will be that used by the C compiler.
@@ -1281,8 +1281,8 @@ CONTENTS:
    Command:      QUIT
 
    Description:  QUIT is a synonym for SYSTEM; with INTERACTIVE
-                 environment, it exits the program to the 
-                 operating system (or the calling program).
+		 environment, it exits the program to the 
+		 operating system (or the calling program).
 
    Dependencies: INTERACTIVE
 
@@ -1542,8 +1542,8 @@ CONTENTS:
                  As implemented under bwBASIC, TIME$ cannot be used for
                  assignment (i.e., to set the system time).
 
-   Note:         bwBASIC presently (v2.10) does not allow assignment
-                 to a function.
+   Note:	 bwBASIC presently (v2.10) does not allow assignment
+		 to a function.
 
    Dependencies: COMMON_FUNCS
 
@@ -1677,107 +1677,107 @@ CONTENTS:
    ting-system-specific functions or terminal-specific functions
    that cannot be universally provided. Some specific examples:
 
-   CLOAD        Relies on CP/M or MSDOS conventions for binary
+   CLOAD	Relies on CP/M or MSDOS conventions for binary
                 executable files. 
 
-   CONT         See RESUME below (programmer ignorance?).
+   CONT		See RESUME below (programmer ignorance?).
 
-   DEF USR      Relies on CP/M or MSDOS conventions for binary
+   DEF USR	Relies on CP/M or MSDOS conventions for binary
                 executable files. 
 
-   FRE()        The ability to report the amount of free memory
-                remaining is system-specific due to varying patterns
-                of memory allocation and access; consequently this
-                ability is not present in ANSI or earlier versions 
+   FRE()	The ability to report the amount of free memory
+		remaining is system-specific due to varying patterns
+		of memory allocation and access; consequently this
+		ability is not present in ANSI or earlier versions 
                 of C and this function is not available in bwBASIC.
 
-   INPUT$()     C by itself is not able to read unechoed keyboard 
-                input, and can read keyboard input only after a 
-                Carriage-Return has been entered.
+   INPUT$()	C by itself is not able to read unechoed keyboard 
+		input, and can read keyboard input only after a 
+		Carriage-Return has been entered.
 
-   INP          Calls to hardware ports, like machine-language
-                routines, are highly system-specific and cannot
-                be implemented in C alone.
+   INP		Calls to hardware ports, like machine-language
+   		routines, are highly system-specific and cannot
+   		be implemented in C alone.
 
-   LLIST        See LPRINT below.
+   LLIST	See LPRINT below.
 
-   LPOS         See LPRINT below.
+   LPOS		See LPRINT below.
 
-   LPRINT       and LLIST, etc., require access to a printer device,
-                and this varies from one system to another. Users
-                might try OPENing the printer device on their own
-                operating system (e.g., "/dev/lp" on Unix systems,
-                or "PRN" under DOS) and see if printing can be done
-                from bwBASIC in this way.
+   LPRINT	and LLIST, etc., require access to a printer device,
+   		and this varies from one system to another. Users
+   		might try OPENing the printer device on their own
+   		operating system (e.g., "/dev/lp" on Unix systems,
+   		or "PRN" under DOS) and see if printing can be done
+   		from bwBASIC in this way.
 
-   NULL         In this case, I am convinced that NULL is no longer
-                necessary, since very few printers now require NULLs
-                at the end of lines.
+   NULL		In this case, I am convinced that NULL is no longer
+		necessary, since very few printers now require NULLs
+		at the end of lines.
 
-   OUT          See INP above (calls to hardware ports).
+   OUT		See INP above (calls to hardware ports).
 
-   PEEK()       PEEK and POKE enabled earlier BASICs to address
-                particular memory locations. Although bwBASIC
-                could possibly implement this command (POKE) and
-                this function (PEEK()), the limitation would be
-                highly limited by the different systems for
-                memory access in different systems.
+   PEEK()	PEEK and POKE enabled earlier BASICs to address
+   		particular memory locations. Although bwBASIC
+   		could possibly implement this command (POKE) and
+   		this function (PEEK()), the limitation would be
+   		highly limited by the different systems for
+   		memory access in different systems.
 
-   POKE         see PEEK() above.
+   POKE		see PEEK() above.
 
-   RENUM        Since unnumbered lines can be entered and
-                executed under bwBASIC, it would not be
-                possible to implement a RENUM routine.
-                Instead, bwBASIC uses DO NUM and DO UNNUM.
+   RENUM	Since unnumbered lines can be entered and
+   		executed under bwBASIC, it would not be
+   		possible to implement a RENUM routine.
+   		Instead, bwBASIC uses DO NUM and DO UNNUM.
 
-   RESUME       Is this possible under C? If so, I
-                simply have failed to figure it out yet.
-                Mea culpa (but not maxima).
+   RESUME	Is this possible under C? If so, I
+   		simply have failed to figure it out yet.
+   		Mea culpa (but not maxima).
 
-   USR          See CALL and DEF USR above (machine language
-                subroutines).
+   USR		See CALL and DEF USR above (machine language
+   		subroutines).
 
-   VARPTR       See PEEK and POKE above.
+   VARPTR	See PEEK and POKE above.
 
-   WAIT         See INP and OUT above.
+   WAIT		See INP and OUT above.
 
    There are other commands, functions, and implementation details
    that I am working on, and which are on the agenda list for future
    versions of bwBASIC.  These agenda include:
 
-   PARACT       i.e., the ability to execute PARallel ACTions. This
-                is described in ANSI BASIC, although I have not seen it
-                implemented before.  It will offer a rough, non-
-                preemptive form of multitasking within the scope
-                of a BASIC program. Programmers will note points at which
-                there are already hooks for PARACT in bwBASIC.
+   PARACT	i.e., the ability to execute PARallel ACTions. This
+   		is described in ANSI BASIC, although I have not seen it
+   		implemented before.  It will offer a rough, non-
+   		preemptive form of multitasking within the scope
+   		of a BASIC program. Programmers will note points at which
+   		there are already hooks for PARACT in bwBASIC.
 
-   XMEM         PC-type computers need to be able to use extended
-                memory.  If we could use extended memory for program
-                lines, variables, and function defitions, we could
-                write much longer programs.  This would entail,
-                however, a fairly serious rewriting of the program
-                to utilize memory handles for these storage features
-                instead of direct memory pointers.
+   XMEM		PC-type computers need to be able to use extended
+   		memory.  If we could use extended memory for program
+   		lines, variables, and function defitions, we could
+   		write much longer programs.  This would entail,
+   		however, a fairly serious rewriting of the program
+   		to utilize memory handles for these storage features
+   		instead of direct memory pointers.
 
-   Windows      The addition of memory handles in addition to the
-                non-preemptive execution of program lines (in a
-                crude form, already present) will make it possible
-                to develop implementations for Windows and perhaps
-                for other graphical user interfaces.  But what form
-                should this take?  I have in mind presently a BASIC
-                that would run in the background, appearing only
-                as an icon in the GUI space, with pop-up editors
-                and output windows. Thus, the interpreted language
-                would serve a purpose something like 'cron' (a task
-                scheduler) under Unix systems. You may have some
-                reflections that would help me in this.
+   Windows	The addition of memory handles in addition to the
+   		non-preemptive execution of program lines (in a
+   		crude form, already present) will make it possible
+   		to develop implementations for Windows and perhaps
+   		for other graphical user interfaces.  But what form
+   		should this take?  I have in mind presently a BASIC
+   		that would run in the background, appearing only
+   		as an icon in the GUI space, with pop-up editors
+   		and output windows. Thus, the interpreted language
+		would serve a purpose something like 'cron' (a task
+		scheduler) under Unix systems. You may have some
+		reflections that would help me in this.
 
-   Graphics     Here we face fairly critical differences in different
-                styles and implementations of graphics, e.g., between
-                GWBASIC, ANSI BASIC, VisualBASIC, etc. But it's
-                possible that Graphics commands and functions could
-                be added. These would all be implementation-specific.
+   Graphics	Here we face fairly critical differences in different
+   		styles and implementations of graphics, e.g., between
+   		GWBASIC, ANSI BASIC, VisualBASIC, etc. But it's
+   		possible that Graphics commands and functions could
+   		be added. These would all be implementation-specific.
 
    The ANSI Standard for full BASIC does not specify which particular
    commands or functions must be implemented, and in fact the standard
@@ -1878,3 +1878,4 @@ CONTENTS:
 9. COMMUNICATIONS:
 
    email:  tcamp@delphi.com
+

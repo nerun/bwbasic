@@ -37,4 +37,3 @@
 #define MKDIR_ONE_ARG	TRUE		/* TRUE if your mkdir has but one argument;
 					   FALSE if it has two */
 #define PERMISSIONS	493		/* permissions to set in Unix-type system */
-

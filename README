@@ -1,13 +1,16 @@
 
 
-                        Bywater Software Announces
+                              README file for
 
 
-               Bywater BASIC Interpreter/Shell, version 2.10
+               Bywater BASIC Interpreter/Shell, version 2.20
                ---------------------------------------------
 
                     Copyright (c) 1993, Ted A. Campbell
                   for bwBASIC version 2.10, 11 October 1993
+
+               Version 2.20 modifications by Jon B. Volkoff,
+                             25 November 1995
 
 
 
@@ -29,40 +32,50 @@ DESCRIPTION:
    for information on which you should contact the author.
 
 
-IMPROVEMENTS OVER PREVIOUS VERSION (1.11):
+IMPROVEMENTS OVER PREVIOUS VERSION (2.10):
 
-   * now compilable on "stock" (older K&R specification) C compilers; 
+   * Plugged numerous memory leaks, resolved memory overruns and allocation
+     difficulties.
 
-   * implements ANSI-BASIC-style structured programming, with
-     called subroutines, multi-line functions, multi-line IF-THEN
-     ELSE statements, SELECT CASE statements, etc.;
+   * General cleanup and bug fixes, too many to list in detail here.
+     The major problem areas addressed were:
 
-   * new enhancements to the interactive environment, such as DO NUM
-     and DO UNNUM to number or unnumber all program lines;
+      - RUN command with file name argument
+      - nested and cascaded FOR-NEXT loops
+      - PRINT USING
+      - EOF, LOF functions
+      - string concatenation
+      - operator hierarchy
+      - multi-level expression evaluation
+      - hex constant interpretation
+      - hex and octal constants in INPUT and DATA statements
 
-   * addition of some hardware-specific commands such as CLS, LOCATE,
-     and INKEY$ (at present for IBM PC and compatibles, using the
-     Microsoft QuickC compiler), opening the way for more hardware-
-     specific commands and functions in the future; 
+   * Added a CLOSE all files feature (when no argument supplied).
 
-   * general improvements to reliability and portability, including
-     more extensive testing than previous versions; 
+   * Added a unary minus sign operator.
+
+   * Added a MID$ command to complement the MID$ function.
+
+   * Added a RENUM facility in a standalone program.
+
+   * Added checking in configure for unistd.h (important on Sun systems).
 
 
 OBTAINING THE SOURCE CODE:
 
-   The source code for bwBASIC 2.10 will be posted to network news
-   groups and is available immediately by anonymous ftp. To obtain
-   the source code, ftp to site ftp.eng.umd.edu, cd to pub/basic and
-   get the file bwbasic-2.10.tar.gz.
+   The source code for bwBASIC 2.20 is available immediately by
+   anonymous ftp. To obtain the source code, ftp to site ftp.netcom.com,
+   cd to pub/rh/rhn and get the file bwbasic-2.20.uu. Or you may receive
+   a copy by e-mail by writing to Jon Volkoff at eidetics@cerf.net.
 
 
 COMMUNICATIONS:
 
-   email:  tcamp@delphi.com
+   email:  tcamp@delphi.com  (for Ted Campbell)
+           eidetics@cerf.net (for Jon Volkoff)
 
 
-A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC 2.10:
+A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC 2.20:
 
    Be aware that many of these commands and functions will not be
    available unless you have set certain flags in the header files.
@@ -96,7 +109,7 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC 2.10:
    DIM variable(elements...)[variable(elements...)]...
    DO NUM|UNNUM
    DO [WHILE expression]
-   EDIT         (* depends on variable BWB.EDITOR$)
+   EDIT		(* depends on variable BWB.EDITOR$)
    ELSE
    ELSEIF
    END FUNCTION | IF | SELECT | SUB
@@ -110,7 +123,7 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC 2.10:
    EXIT FOR|DO
    EXP( number )
    FIELD [#] device-number, number AS string-variable [, number AS string-variable...]
-   FILES filespec$      (* depends on variable BWB.FILES$)
+   FILES filespec$	(* depends on variable BWB.FILES$)
    FOR counter = start TO finish [STEP increment]
    FUNCTION function-definition
    GET [#] device-number [, record-number]
@@ -156,6 +169,7 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC 2.10:
    RANDOMIZE number
    READ variable[, variable]...
    REM string
+   RENUM
    RESTORE line
    RETURN
    RIGHT$( string$, number-of-spaces )

@@ -24,6 +24,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 
 #include "bwbasic.h"
@@ -71,6 +76,7 @@ struct bwb_command bwb_cmdtable[ COMMANDS ] =
       { CMD_DEFINT,       bwb_dint },
       { CMD_DEFSNG,       bwb_dsng },
       { CMD_DEFSTR,       bwb_dstr },
+      { CMD_MID,          bwb_mid }, /* Added this extension (JBV) */
 #if IMP_CMDCLS
       { CMD_CLS,          bwb_cls },
 #endif
@@ -120,6 +126,7 @@ struct bwb_command bwb_cmdtable[ COMMANDS ] =
       { CMD_RSET,         bwb_rset },
       { CMD_FIELD,        bwb_field },
       { CMD_LINE,         bwb_line },
+      { CMD_RENUM,        bwb_renum }, /* Added this extension (JBV) */
 #endif
 
       /* The remainder are the core functions defined for ANSI Minimal BASIC */
@@ -243,30 +250,31 @@ struct bwb_function bwb_prefuncs[ FUNCTIONS ] =
 
 struct bwb_op exp_ops[ N_OPERATORS ] =
    {
-   { "NOT",     OP_NOT,         12 },   /* multiple-character operators */
+   { "NOT",     OP_NOT,         2  },   /* multiple-character operators */
    { "AND",     OP_AND,         13 },   /* should be tested first because */
    { "OR",      OP_OR,          14 },   /* e.g. a ">=" would be matched */
    { "XOR",     OP_XOR,         15 },   /* as "=" if the single-character */
    { "IMP",     OP_IMPLIES,     16 },   /* operator came first */
    { "EQV",     OP_EQUIV,       17 },
-   { "MOD",     OP_MODULUS,     4  },
-   { "<>",      OP_NOTEQUAL,    7  },
-   { "<=",      OP_LTEQ,        10 },
-   { "=<",      OP_LTEQ,        10 },   /* allow either form */
-   { ">=",      OP_GTEQ,        11 },
-   { "=>",      OP_GTEQ,        11 },   /* allow either form */
-   { "<",       OP_LESSTHAN,    8  },
-   { ">",       OP_GREATERTHAN, 9  },
+   { "MOD",     OP_MODULUS,     5  },
+   { "<>",      OP_NOTEQUAL,    8  },
+   { "<=",      OP_LTEQ,        11 },
+   { "=<",      OP_LTEQ,        11 },   /* allow either form */
+   { ">=",      OP_GTEQ,        12 },
+   { "=>",      OP_GTEQ,        12 },   /* allow either form */
+   { "<",       OP_LESSTHAN,    9  },
+   { ">",       OP_GREATERTHAN, 10 },
    { "^",       OP_EXPONENT,    0  },
-   { "*",       OP_MULTIPLY,    2  },
-   { "/",       OP_DIVIDE,      2  },
-   { "\\",      OP_INTDIVISION, 3  },
-   { "+",       OP_ADD,         5  },
-   { "-",       OP_SUBTRACT,    5  },
-   { "=",       OP_EQUALS,      6  },
-   { "=",       OP_ASSIGN,      6  },   /* don't worry: OP_EQUALS will be converted to OP_ASSIGN if necessary */
-   { ";",       OP_STRJOIN,     18 },
-   { ",",       OP_STRTAB,      19 }
+   { "*",       OP_MULTIPLY,    3  },
+   { "/",       OP_DIVIDE,      3  },
+   { "\\",      OP_INTDIVISION, 4  },
+   { "+",       OP_ADD,         6  },
+   { "-",       OP_SUBTRACT,    6  },
+   { "=",       OP_EQUALS,      7  },
+   { "=",       OP_ASSIGN,      18 },   /* don't worry: OP_EQUALS will be converted to OP_ASSIGN if necessary */
+   { ";",       OP_STRJOIN,     19 },
+   { ",",       OP_STRTAB,      20 },
+   { "-",       OP_NEGATION,    1  }    /* Right below exponentiation (JBV) */
    };
 
 /* Error messages used more than once */
@@ -332,4 +340,3 @@ char *err_table[ N_ERRORS ] =
    };
 
 
-

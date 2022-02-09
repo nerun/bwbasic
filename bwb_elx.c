@@ -23,6 +23,14 @@
 
 ****************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -193,7 +201,8 @@ exp_strconst( expression )
 
    /* read the string up until the next double quotation mark */
 
-   while( expression[ e_pos ] != '\"' )
+   /* While yer at it, check for a null terminator too (JBV, found by DD) */
+   while(( expression[ e_pos ] != '\"') && ( expression[ e_pos ] != '\0' ))
       {
       CURTASK exps[ CURTASK expsc ].string[ s_pos ] = expression[ e_pos ];
       ++e_pos;
@@ -219,7 +228,11 @@ exp_strconst( expression )
 
    /* advance past last double quotation mark */
 
-   ++CURTASK exps[ CURTASK expsc ].pos_adv;
+   /*-------------------------------------------------------------*/
+   /* Of course, it doesn't hurt to make sure it's really a quote */
+   /* (JBV, found by DD)                                          */
+   /*-------------------------------------------------------------*/
+   if ( expression[ e_pos ] == '\"' ) ++CURTASK exps[ CURTASK expsc ].pos_adv;
 
    /* return */
 
@@ -654,6 +667,8 @@ exp_numconst( expression )
                case 'd':
                case 'E':
                case 'e':
+               case 'F': /* Don't forget these! (JBV) */
+               case 'f':
                   CURTASK exps[ CURTASK expsc ].string[ s_pos ] = expression[ CURTASK exps[ CURTASK expsc ].pos_adv ];
 
                   ++CURTASK exps[ CURTASK expsc ].pos_adv;  /* advance to next character */
@@ -718,7 +733,8 @@ exp_function( expression )
    int paren_level;
    int n_args;
    struct bwb_variable *v;
-   struct bwb_variable argv[ MAX_FARGS ];
+   /* struct bwb_variable argv[ MAX_FARGS ]; */ /* Removed by JBV */
+   struct bwb_variable *argv; /* Added by JBV */
    bstring *b;
 #if INTENSIVE_DEBUG
    char tbuf[ MAXSTRINGSIZE + 1 ];
@@ -727,6 +743,18 @@ exp_function( expression )
       expression );
    bwb_debug( bwb_ebuf );
 #endif
+
+   /*-----------------------------------------------------------*/
+   /* Added by JBV                                              */
+   /* Required because adding a simple "static" modifier in the */
+   /* argv declaration doesn't work for recursive calls!        */
+   /*-----------------------------------------------------------*/
+   if ( ( argv = (struct bwb_variable *) CALLOC( MAX_FARGS,
+      sizeof( struct bwb_variable ), "exp_function" )) == NULL )
+      {
+      bwb_error( err_getmem );
+      return NULL;
+      }
 
    /* assign pointers to argument stack */
 
@@ -1014,6 +1042,13 @@ exp_function( expression )
    v = CURTASK exps[ CURTASK expsc ].function->vector ( n_args, &( argv[ 0 ] ),
       CURTASK exps[ CURTASK expsc ].function->id );
 
+   /*-------------------------------------------------*/
+   /* Now free the argv memory                        */
+   /* (some other less fortunate routine may need it) */
+   /* JBV, 10/95                                      */
+   /*-------------------------------------------------*/
+   FREE( argv, "exp_function" );
+
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in exp_function(): return from function vector, type <%c>",
       v->type );
@@ -1117,7 +1152,7 @@ exp_variable( expression )
       {
 #if INTENSIVE_DEBUG
       sprintf( bwb_ebuf, "in exp_variable(): variable <%s> has 1 dimension",
-	 CURTASK exps[ CURTASK expsc ].xvar->name );
+         CURTASK exps[ CURTASK expsc ].xvar->name );
       bwb_debug( bwb_ebuf );
 #endif
       pos = strlen( v->name );
@@ -1128,10 +1163,8 @@ exp_variable( expression )
    else
       {
 #if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in exp_variable(): level <%d> variable <%s> has <%d> dimensions",
-	 CURTASK expsc,
-	 v->name,
-	 v->dimensions );
+      sprintf( bwb_ebuf, "in exp_variable(): variable <%s> has > 1 dimensions",
+         CURTASK exps[ CURTASK expsc ].xvar->name );
       bwb_debug( bwb_ebuf );
 #endif
       dim_getparams( expression, &pos, &n_params, &pp );
@@ -1144,25 +1177,18 @@ exp_variable( expression )
       }
 
 #if INTENSIVE_DEBUG
-   if ( v->dimensions > 1 )
+   for ( n = 0; n < v->dimensions; ++ n )
       {
-      sprintf( bwb_ebuf, "in exp_variable(): exec stack level <%d>",
-	 CURTASK exsc );
+      sprintf( bwb_ebuf, "in exp_variable(): var <%s> array_pos element <%d> is <%d>.",
+         v->name, n, v->array_pos[ n ] );
       bwb_debug( bwb_ebuf );
-      for ( n = 0; n < v->dimensions; ++n )
-	 {
-	 sprintf( bwb_ebuf, "   variable <%s> array_pos element <%d> is <%d>.",
-	    v->name, n, v->array_pos[ n ] );
-	 bwb_debug( bwb_ebuf );
-	 }
       }
 #endif
 
    /* assign the type and value at this level */
 
    CURTASK exps[ CURTASK expsc ].type = (char) v->type;
-   CURTASK exps[ CURTASK expsc ].xvar = v;
-
+   
    switch( v->type )
       {
       case STRING:
@@ -1180,7 +1206,7 @@ exp_variable( expression )
          break;
       default:
          CURTASK exps[ CURTASK expsc ].nval = var_getnval( v );
-	 break;
+         break;
       }
 
 #if INTENSIVE_DEBUG

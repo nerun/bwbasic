@@ -46,6 +46,14 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
@@ -710,7 +718,8 @@ bwb_on( l )
 
       /* get memory for line and buffer */
 
-      if ( ( oline = calloc( 1, sizeof( struct bwb_line ) ) ) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( oline = CALLOC( 1, sizeof( struct bwb_line ), "bwb_on") ) == NULL )
 	 {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_on(): failed to find memory for oline" );
@@ -718,7 +727,8 @@ bwb_on( l )
 	 bwb_error( err_getmem );
 #endif
 	 }
-      if ( ( oline->buffer = calloc( 1, MAXSTRINGSIZE + 1 ) ) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( oline->buffer = CALLOC( 1, MAXSTRINGSIZE + 1, "bwb_on") ) == NULL )
 	 {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_on(): failed to find memory for oline buffer" );
@@ -983,22 +993,27 @@ bwb_run( l )
          bwb_error( bwb_ebuf );
          }
       bwb_fload( input );		/* load program */
-      bwb_run( &CURTASK bwb_start );            /* and call bwb_run() recursively */
+
+      /* Next line removed by JBV (unnecessary recursion asks for trouble) */
+      /* bwb_run( &CURTASK bwb_start ); */         /* and call bwb_run() recursively */
+      current = &CURTASK bwb_start; /* JBV */
       }
 
    /* else if it is a line number, execute the program in memory
       at that line number */
 
-   else
-      {
+   /* Removed by JBV */
+   /* else
+      { */
 
-      if ( current == NULL )
+      /* Removed by JBV */
+      /* if ( current == NULL )
+         { */
+
+         /* Added expression type check and changed loop boundaries (JBV) */
+         if (( e != NULL ) && ( e->type != STRING ))
          {
-
-         if ( e != NULL )
-            {
             go_lnumber = (int) exp_getnval( e );
-            }
 
 #if INTENSIVE_DEBUG
          sprintf( bwb_ebuf, "in bwb_run(): element detected <%s>, lnumber <%d>",
@@ -1014,6 +1029,8 @@ bwb_run( l )
                }
             }
          }
+
+      /*    } */ /* Removed by JBV */
 
       if ( current == NULL )
          {
@@ -1037,7 +1054,7 @@ bwb_run( l )
       CURTASK exsc = 0;
       bwb_setexec( current, 0, EXEC_NORM );
 
-      }
+   /*    } */ /* Removed by JBV */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_run(): function complete." );
@@ -1178,6 +1195,7 @@ bwb_xload( l )
 #endif
    {
    FILE *loadfile;
+   struct exp_ese *e; /* JBV */
 
    /* Get an argument for filename */
 
@@ -1188,13 +1206,31 @@ bwb_xload( l )
       case '\n':
       case '\r':
       case ':':
+         bwb_error( err_nofn ); /* Added by JBV (bug found by DD) */
 
          return bwb_zline( l );
       default:
          break;
       }
 
-   bwb_const( l->buffer, CURTASK progfile, &( l->position ) );
+   /* Section added by JBV (bug found by DD) */
+   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
+   if ( e->type != STRING )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_xload(): Missing filespec" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( err_syntax );
+#endif
+
+      return bwb_zline( l );
+      }
+
+   /* This line removed by JBV (no longer required) */
+   /* bwb_const( l->buffer, CURTASK progfile, &( l->position ) ); */
+   str_btoc( CURTASK progfile, exp_getsval( e ) ); /* JBV */
+
    if ( ( loadfile = fopen( CURTASK progfile, "r" )) == NULL )
       {
       sprintf( bwb_ebuf, err_openfile, CURTASK progfile );
@@ -1214,7 +1250,7 @@ bwb_xload( l )
         FUNCTION:       bwb_save()
 
 	DESCRIPTION:    This C function implements the BASIC
-			LOAD command.
+			SAVE command.
 
    	SYNTAX:		SAVE file-name
 
@@ -1231,6 +1267,7 @@ bwb_save( l )
    {
    FILE *outfile;
    static char filename[ MAXARGSIZE ];
+   struct exp_ese *e; /* JBV */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_save(): entered function." );
@@ -1253,7 +1290,24 @@ bwb_save( l )
          break;
       }
 
-   bwb_const( l->buffer, filename, &( l->position ) );
+   /* Section added by JBV (bug found by DD) */
+   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
+   if ( e->type != STRING )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_save(): Missing filespec" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( err_syntax );
+#endif
+
+      return bwb_zline( l );
+      }
+
+   /* This line removed by JBV (no longer required) */
+   /* bwb_const( l->buffer, filename, &( l->position ) ); */
+   str_btoc( filename, exp_getsval( e ) ); /* JBV */
+
    if ( ( outfile = fopen( filename, "w" )) == NULL )
       {
       sprintf( bwb_ebuf, err_openfile, filename );
@@ -1476,7 +1530,7 @@ xl_line( file, l )
    if (( file == stdout ) || ( file == stderr ))
       {
 
-      if ( l->xnum == TRUE )
+      if ( l->xnum == (char) TRUE ) /* Better recast this one (JBV) */
 	 {
 	 sprintf( tbuf, "%7d: %s\n", l->number, l->buffer );
 	 }
@@ -1490,7 +1544,7 @@ xl_line( file, l )
    else
       {
 
-      if ( l->xnum == TRUE )
+      if ( l->xnum == (char) TRUE ) /* Better recast this one (JBV) */
 	 {
 	 fprintf( file, "%d %s\n", l->number, l->buffer );
 	 }
@@ -1556,7 +1610,8 @@ bwb_delete( l )
       {
       if ( current != l )
          {
-         if (( current->xnum == TRUE ) && ( current->number == s ))
+         /* Following line revised by JBV */
+         if (( current->xnum == (char) TRUE ) && ( current->number == s ))
             {
             f = TRUE;
             previous = p;
@@ -1589,7 +1644,8 @@ bwb_delete( l )
          {
          if ( current != l )
             {
-            if (( current->xnum == TRUE) &&  ( current->number == e ))
+            /* Following line revised by JBV */
+            if (( current->xnum == (char) TRUE) &&  ( current->number == e ))
                {
 #if INTENSIVE_DEBUG
 	       sprintf( bwb_ebuf, "in bwb_delete(): end line number is <%d>",
@@ -1989,7 +2045,9 @@ bwb_xnew( l )
       {
       if ( wait != TRUE )
          {
-         free( previous );
+         /* Revised to FREE pass-thru call by JBV */
+         FREE( previous, "bwb_xnew" );
+         previous = NULL; /* JBV */
          }
       wait = FALSE;
       previous = current;
@@ -2214,4 +2272,3 @@ bwb_zline( l )
    }
 
 
-

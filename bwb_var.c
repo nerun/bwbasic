@@ -29,6 +29,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -162,6 +167,8 @@ bwb_erase( l )
    struct bwb_variable *v;
    struct bwb_variable *p;		/* previous variable in linked list */
    char tbuf[ MAXSTRINGSIZE + 1 ];
+   bstring *sp; /* JBV */
+   register int n; /* JBV */
 
    /* loop while arguments are available */
 
@@ -200,17 +207,39 @@ bwb_erase( l )
 
       /* deallocate memory */
 
-      free( v->array_sizes );
-      free( v->array_pos );
+      /* Revised to FREE pass-thru calls by JBV */
+      FREE( v->array_sizes, "bwb_erase" );
+      v->array_sizes = NULL; /* JBV */
+      FREE( v->array_pos , "bwb_erase");
+      v->array_pos = NULL; /* JBV */
       if ( v->type == NUMBER )
 	 {
-	 free( v->memnum );
+         /* Revised to FREE pass-thru call by JBV */
+	 FREE( v->memnum, "bwb_erase" );
+	 v->memnum = NULL; /* JBV */
 	 }
       else
 	 {
-	 free( v->memstr );
+		/* Following section added by JBV */
+		sp = v->memstr;
+		for ( n = 0; n < (int) v->array_units; ++n )
+		{
+			if ( sp[ n ].sbuffer != NULL )
+			{
+                                /* Revised to FREE pass-thru call by JBV */
+				FREE( sp[ n ].sbuffer, "bwb_erase" );
+				sp[ n ].sbuffer = NULL;
+			}
+			sp[ n ].rab = FALSE;
+			sp[ n ].length = 0;
+		}
+         /* Revised to FREE pass-thru call by JBV */
+	 FREE( v->memstr, "bwb_erase" );
+	 v->memstr = NULL; /* JBV */
 	 }
-      free( v );
+      /* Revised to FREE pass-thru call by JBV */
+      FREE( v, "bwb_erase" );
+      v = NULL; /* JBV */
 
       /* check for comma */
 
@@ -412,7 +441,8 @@ bwb_clear( l )
                   {
 		  if ( sp[ n ].sbuffer != NULL )
 		     {
-		     free( sp[ n ].sbuffer );
+                     /* Revised to FREE pass-thru call by JBV */
+		     FREE( sp[ n ].sbuffer, "bwb_clear" );
 		     sp[ n ].sbuffer = NULL;
                      }
                   sp[ n ].rab = FALSE;
@@ -447,6 +477,8 @@ var_delcvars()
    {
    struct bwb_variable *v;
    struct bwb_variable *p;		/* previous variable */
+   bstring *sp; /* JBV */
+   register int n; /* JBV */
 
    p = &CURTASK var_start;
    for ( v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next )
@@ -462,15 +494,35 @@ var_delcvars()
 
             /* deallocate memory */
 
-            free( v->array_sizes );
-            free( v->array_pos );
+            /* Revised to FREE pass-thru calls by JBV */
+            FREE( v->array_sizes, "var_delcvars" );
+            v->array_sizes = NULL; /* JBV */
+            FREE( v->array_pos, "var_delcvars" );
+            v->array_pos = NULL; /* JBV */
 	    if ( v->type == NUMBER )
 	       {
-	       free( v->memnum );
+               /* Revised to FREE pass-thru call by JBV */
+	       FREE( v->memnum, "var_delcvars" );
+	       v->memnum = NULL; /* JBV */
 	       }
 	    else
 	       {
-	       free( v->memstr );
+		/* Following section added by JBV */
+		sp = v->memstr;
+		for ( n = 0; n < (int) v->array_units; ++n )
+		{
+			if ( sp[ n ].sbuffer != NULL )
+			{
+                                /* Revised to FREE pass-thru call by JBV */
+				FREE( sp[ n ].sbuffer, "var_delcvars" );
+				sp[ n ].sbuffer = NULL;
+			}
+			sp[ n ].rab = FALSE;
+			sp[ n ].length = 0;
+		}
+               /* Revised to FREE pass-thru call by JBV */
+	       FREE( v->memstr, "var_delcvars" );
+	       v->memstr = NULL; /* JBV */
 	       }
             }
 
@@ -480,7 +532,9 @@ var_delcvars()
 
          /* deallocate the variable itself */
 
-         free( v );
+         /* Revised to FREE pass-thru call by JBV */
+         FREE( v, "var_delcvars" );
+         v = NULL; /* JBV */
 
          }
 
@@ -610,6 +664,246 @@ bwb_dstr( l )
    /* call generalized DEF handler with STRING set */
 
    var_defx( l, STRING );
+
+   return bwb_zline( l );
+
+   }
+
+/***********************************************************
+
+        FUNCTION:	bwb_mid()
+
+	DESCRIPTION:    This function implements the BASIC
+			MID$ command.
+
+			Same as MID$ function, except it will set
+			the desired substring and not return its
+			value.  Added by JBV 10/95
+
+	SYNTAX:		MID$( string-variable$, start-position-in-string
+			[, number-of-spaces ] ) = expression
+
+***********************************************************/
+
+#if ANSI_C
+struct bwb_line *
+bwb_mid( struct bwb_line *l )
+#else
+struct bwb_line *
+bwb_mid( l )
+   struct bwb_line *l;
+#endif
+   {
+   char tbuf[ MAXSTRINGSIZE + 1 ];
+   char source_string[ MAXSTRINGSIZE + 1 ];
+   struct bwb_variable *v;
+   static int pos;
+   bstring *d;
+   int *pp;
+   int n_params;
+   int p;
+   register int n;
+   int startpos, numchars, endpos;
+   int source_counter, source_length, target_length;
+   int target_terminate;
+   struct exp_ese *e;
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in bwb_mid(): MID$ command" );
+   bwb_debug( bwb_ebuf );
+#endif
+
+   /* Get past left parenthesis */
+   adv_ws( l->buffer, &( l->position ) );
+   ++( l->position );
+   adv_ws( l->buffer, &( l->position ) );
+
+   /* Get variable name and find variable */
+   bwb_getvarname( l->buffer, tbuf, &( l->position ) );
+   v = var_find( tbuf );
+   if ( v == NULL )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_mid(): failed to find variable" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( err_syntax );
+#endif
+      }
+
+   if ( v->type != STRING )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_mid(): assignment must be to string variable" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( err_syntax );
+#endif
+      }
+
+   /* read subscripts */
+   pos = 0;
+   if ( ( v->dimensions == 1 ) && ( v->array_sizes[ 0 ] == 1 ))
+      {
+#if INTENSIVE_DEBUG
+      sprintf( bwb_ebuf, "in bwb_mid(): variable <%s> has 1 dimension",
+         v->name );
+     bwb_debug( bwb_ebuf );
+#endif
+      n_params = 1;
+      pp = &p;
+      pp[ 0 ] = dim_base;
+      }
+   else
+      {
+#if INTENSIVE_DEBUG
+      sprintf( bwb_ebuf, "in bwb_mid(): variable <%s> has > 1 dimensions",
+         v->name );
+      bwb_debug( bwb_ebuf );
+#endif
+      dim_getparams( l->buffer, &( l->position ), &n_params, &pp );
+      }
+
+   CURTASK exps[ CURTASK expsc ].pos_adv = pos;
+   for ( n = 0; n < v->dimensions; ++n )
+      {
+      v->array_pos[ n ] = pp[ n ];
+      }
+
+   /* get bstring pointer */
+   d = var_findsval( v, pp );
+
+   /* Get past next comma and white space */
+   adv_ws( l->buffer, &( l->position ) );
+   ++( l->position );
+   adv_ws( l->buffer, &( l->position ) );
+
+   /* Get starting position (expression) */
+   adv_element( l->buffer, &( l->position ), tbuf );
+   pos = 0;
+   e = bwb_exp( tbuf, FALSE, &pos );
+   startpos = (int) exp_getnval( e );
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in bwb_mid(): startpos <%d> buffer <%lX>",
+      startpos, (long) d->sbuffer );
+   bwb_debug( bwb_ebuf );
+#endif
+
+   /* Get past next comma and white space (if they exist) */
+   adv_ws( l->buffer, &( l->position ) );
+   if (l->buffer[l->position] == ',')
+      {
+      target_terminate = 0;
+      ++( l->position );
+      adv_ws( l->buffer, &( l->position ) );
+      adv_element( l->buffer, &( l->position ), tbuf );
+      pos = 0;
+      e = bwb_exp( tbuf, FALSE, &pos );
+      numchars = (int) exp_getnval( e );
+      if ( numchars == 0 )
+         {
+#if PROG_ERRORS
+         sprintf( bwb_ebuf, "in bwb_mid(): destination string no. of chars out of range" );
+         bwb_error( bwb_ebuf );
+#else
+         bwb_error( "Argument out of range" );
+#endif
+         }
+      }
+   else
+      {
+      target_terminate = 1;
+      numchars = 0;
+      }
+
+   if ( numchars < 0 )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_mid(): negative string length" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( "Negative string length" );
+#endif
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in bwb_mid(): numchars <%d> target_terminate <%d>", numchars, target_terminate );
+   bwb_debug( bwb_ebuf );
+#endif
+
+   /* Get past equal sign */
+   adv_ws( l->buffer, &( l->position ) );
+   if (l->buffer[l->position] == ')')
+      {
+      ++(l->position);
+      adv_ws( l->buffer, &( l->position ) );
+      }
+   ++(l->position);
+   adv_ws( l->buffer, &( l->position ) );
+
+   /* Evaluate string expression */
+   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
+   if ( e->type != STRING )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_mid(): assignment must be from string expression" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( err_syntax );
+#endif
+      }
+
+   /* Prepare to MID the string */
+   str_btoc( source_string, exp_getsval( e ) );
+   str_btoc( tbuf, d );
+   target_length = strlen( tbuf );
+   if ( startpos > ( target_length + 1 ) )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_mid(): non-contiguous string created" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( "Non-contiguous string created" );
+#endif
+      }
+
+   if ( startpos < 1 )
+      {
+#if PROG_ERRORS
+      sprintf( bwb_ebuf, "in bwb_mid(): destination string start position out of range" );
+      bwb_error( bwb_ebuf );
+#else
+      bwb_error( "Argument out of range" );
+#endif
+      }
+
+   source_length = strlen( source_string );
+   if ( numchars == 0 ) numchars = source_length;
+   endpos = startpos + numchars - 1;
+
+   /* MID the string */
+   if ( endpos < startpos ) tbuf[ startpos - 1 ] = '\0';
+   else
+      {
+      source_counter = 0;
+      for ( n = startpos - 1; n < endpos; ++n )
+         {
+         if ( source_counter < source_length )
+            tbuf[ n ] = source_string[ source_counter ];
+         else
+            tbuf[ n ] = ' ';
+         ++source_counter;
+         }
+      /* Terminate if indicated or characters were added */
+      if ( ( endpos > target_length ) || ( target_terminate == 1 ) )
+         tbuf[ endpos ] = '\0';
+      }
+   str_ctob( d, tbuf );
+
+#if MULTISEG_LINES
+   adv_eos( l->buffer, &( l->position ));
+#endif
 
    return bwb_zline( l );
 
@@ -886,6 +1180,7 @@ bwb_getvarname( lb, sb, n )
          case ';':
          case '(':              /* beginning of parameter list for dimensioned array */
          case '+':              /* add variables */
+         case '=':              /* Don't forget this one (JBV) */
             sb[ s ] = 0;
             return TRUE;
          default:
@@ -1029,7 +1324,8 @@ var_new( name )
 
    /* get memory for new variable */
 
-   if ( ( v = (struct bwb_variable *) calloc( 1, sizeof( struct bwb_variable ) ))
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( v = (struct bwb_variable *) CALLOC( 1, sizeof( struct bwb_variable ), "var_new" ))
       == NULL )
       {
       bwb_error( err_getmem );
@@ -1299,7 +1595,8 @@ bwb_dim( l )
 
          /* assign memory for parameters */
 
-         if ( ( newvar->array_sizes = (int *) calloc( n_params, sizeof( int )  )) == NULL )
+         /* Revised to CALLOC pass-thru call by JBV */
+         if ( ( newvar->array_sizes = (int *) CALLOC( n_params, sizeof( int ), "bwb_dim"  )) == NULL )
             {
 #if PROG_ERRORS
             sprintf( bwb_ebuf, "in line %d: Failed to find memory for array_sizes for <%s>",
@@ -1323,7 +1620,8 @@ bwb_dim( l )
 
          /* assign memory for current position */
 
-         if ( ( newvar->array_pos = (int *) calloc( n_params, sizeof( int ) )) == NULL )
+         /* Revised to CALLOC pass-thru call by JBV */
+         if ( ( newvar->array_pos = (int *) CALLOC( n_params, sizeof( int ), "bwb_dim" )) == NULL )
             {
 #if PROG_ERRORS
             sprintf( bwb_ebuf, "in line %d: Failed to find memory for array_pos for <%s>",
@@ -1364,8 +1662,13 @@ bwb_dim( l )
         	  (long) ( newvar->array_units + 1 ) * sizeof( bstring ));
                bwb_debug( bwb_ebuf );
 #endif
-	       if ( ( newvar->memnum = calloc( newvar->array_units, sizeof( bstring) )) == NULL )
-		  {
+               /*------------------------------------------------------*/
+               /* memnum, not memstr, was used here -- incorrect (JBV) */
+               /* Revised to CALLOC pass-thru call by JBV              */
+               /*------------------------------------------------------*/
+               if ( ( newvar->memstr = (bstring *)
+                  CALLOC( newvar->array_units, sizeof( bstring), "bwb_dim" )) == NULL )
+               {
 #if PROG_ERRORS
                   sprintf( bwb_ebuf, "in line %d: Failed to find memory for array <%s>",
                      l->number, newvar->name );
@@ -1385,8 +1688,10 @@ bwb_dim( l )
         	  (long) ( newvar->array_units + 1 ) * sizeof( double ));
                bwb_debug( bwb_ebuf );
 #endif
+
+               /* Revised to CALLOC pass-thru call by JBV */
                if ( ( np = (bnumber *)
-                  calloc( newvar->array_units, sizeof( bnumber ) )) == NULL )
+                  CALLOC( newvar->array_units, sizeof( bnumber ), "bwb_dim" )) == NULL )
                   {
 #if PROG_ERRORS
                   sprintf( bwb_ebuf, "in line %d: Failed to find memory for array <%s>",
@@ -1544,6 +1849,9 @@ dim_getparams( buffer, pos, n_params, pp )
    int x_pos, s_pos;
    struct exp_ese *e;
    char tbuf[ MAXSTRINGSIZE + 1 ];
+#if INTENSIVE_DEBUG
+   register int n;
+#endif
 
    /* set initial values */
 
@@ -1825,8 +2133,7 @@ var_findnval( v, pp )
    for ( n = 0; n < v->dimensions; ++n )
       {
       sprintf( bwb_ebuf,
-	 "in var_findnval(): dimensioned variable <%s> pos <%d> <%d>.",
-	 v->name,
+         "in var_findnval(): dimensioned variable pos <%d> <%d>.",
          n, pp[ n ] );
       bwb_debug( bwb_ebuf );
       }
@@ -1864,6 +2171,8 @@ var_findsval( v, pp )
    bstring *p;
 
 #if INTENSIVE_DEBUG
+   register int n;
+
    sprintf( bwb_ebuf, "in var_findsval(): entered, var <%s>", v->name );
    bwb_debug( bwb_ebuf );
 #endif
@@ -2014,6 +2323,8 @@ var_make( v, type )
    {
    size_t data_size;
    bstring *b;
+   bstring *sp; /* JBV */
+   register int n; /* JBV */
 #if TEST_BSTRING
    static int tnumber = 0;
 #endif
@@ -2032,9 +2343,48 @@ var_make( v, type )
 
    /* get memory for array */
 
+   /* First kleanup the joint (JBV) */
+   if (v->memnum != NULL)
+   {
+       /* Revised to FREE pass-thru call by JBV */
+       FREE(v->memnum, "var_make");
+       v->memnum = NULL;
+   }
+   if (v->memstr != NULL)
+   {
+       /* Remember to deallocate those far-flung branches! (JBV) */
+       sp = v->memstr;
+       for ( n = 0; n < (int) v->array_units; ++n )
+       {
+           if ( sp[ n ].sbuffer != NULL )
+           {
+               /* Revised to FREE pass-thru call by JBV */
+               FREE( sp[ n ].sbuffer, "var_make" );
+               sp[ n ].sbuffer = NULL;
+           }
+           sp[ n ].rab = FALSE;
+           sp[ n ].length = 0;
+       }
+       /* Revised to FREE pass-thru call by JBV */
+       FREE(v->memstr, "var_make");
+       v->memstr = NULL;
+   }
+   /* Revised to FREE pass-thru calls by JBV */
+   if (v->array_sizes != NULL)
+   {
+       FREE(v->array_sizes, "var_make");
+       v->array_sizes = NULL; /* JBV */
+   }
+   if (v->array_pos != NULL)
+   {
+       FREE(v->array_pos, "var_make");
+       v->array_pos = NULL; /* JBV */
+   }
+
    if ( v->type == NUMBER )
       {
-      if ( ( v->memnum = calloc( 2, sizeof( bnumber ) )) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( v->memnum = CALLOC( 2, sizeof( bnumber ), "var_make" )) == NULL )
 	 {
 	 bwb_error( err_getmem );
 	 return FALSE;
@@ -2042,7 +2392,8 @@ var_make( v, type )
       }
    else
       {
-      if ( ( v->memstr = calloc( 2, sizeof( bstring ) )) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( v->memstr = CALLOC( 2, sizeof( bstring ), "var_make" )) == NULL )
 	 {
 	 bwb_error( err_getmem );
 	 return FALSE;
@@ -2051,13 +2402,15 @@ var_make( v, type )
 
    /* get memory for array_sizes and array_pos */
 
-   if ( ( v->array_sizes = (int *) calloc( 2, sizeof( int ) )) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( v->array_sizes = (int *) CALLOC( 2, sizeof( int ), "var_make" )) == NULL )
       {
       bwb_error( err_getmem );
       return FALSE;
       }
 
-   if ( ( v->array_pos = (int *) calloc( 2, sizeof( int ) )) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( v->array_pos = (int *) CALLOC( 2, sizeof( int ), "var_make" )) == NULL )
       {
       bwb_error( err_getmem );
       return FALSE;

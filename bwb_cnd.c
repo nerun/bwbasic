@@ -23,6 +23,14 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
@@ -180,7 +188,11 @@ bwb_if( l )
          }
       else
          {
-         bwb_setexec( endif_line, 0, CURTASK excs[ CURTASK exsc ].code );
+         /* Following line incorrect, replaced by next two (bug found by DD) */
+         /* bwb_setexec( endif_line, 0, CURTASK excs[ CURTASK exsc ].code ); */
+
+         bwb_incexec(); /* JBV */
+         bwb_setexec( endif_line, 0, EXEC_IFFALSE ); /* JBV */
          endif_line->position = 0;
          return endif_line;
          }
@@ -265,13 +277,14 @@ bwb_if( l )
       if ( els != FALSE )
          {
          l->position = els + strlen( CMD_ELSE ) + 1;
-         bwb_setexec( l, els, EXEC_NORM );
+         /* bwb_setexec( l, els, EXEC_NORM ); */ /* Nope (JBV) */
+         bwb_setexec( l, els, CURTASK excs[ CURTASK exsc ].code ); /* JBV */
 	 return l;
 	 }
       }
 
    /* if neither then nor else were found, advance to next line */
-   /* DO NOT advance to next segment (only if TRUE should we do that */
+   /* DO NOT advance to next segment (only if TRUE should we do that) */
 
    l->next->position = 0;
    return l->next;
@@ -437,7 +450,13 @@ bwb_else( l )
    /* If the code is EXEC_NORM, then this is a continuation of a single-
       line IF...THEN...ELSE... statement and we should return */
 
-   if ( CURTASK excs[ CURTASK exsc ].code == EXEC_NORM )
+   /*----------------------------------------------------------------------*/
+   /* Well, not really... better to check for EXEC_IFTRUE or EXEC_IFFALSE, */
+   /* and if not equal, then blow entirely out of current line (JBV)       */
+   /*----------------------------------------------------------------------*/
+
+   /* Section removed by JBV */
+   /* if ( CURTASK excs[ CURTASK exsc ].code == EXEC_NORM )
       {
 
 #if INTENSIVE_DEBUG
@@ -446,6 +465,20 @@ bwb_else( l )
 #endif
 
       return bwb_zline( l );
+      } */
+
+   /* Section added by JBV */
+   if (( CURTASK excs[ CURTASK exsc ].code != EXEC_IFTRUE ) &&
+   ( CURTASK excs[ CURTASK exsc ].code != EXEC_IFFALSE ))
+      {
+
+#if INTENSIVE_DEBUG
+      sprintf( bwb_ebuf, "in bwb_else(): no EXEC_IFTRUE or EXEC_IFFALSE" );
+      bwb_debug( bwb_ebuf );
+#endif
+
+      l->next->position = 0;
+      return l->next;
       }
 
    endif_line = find_endif( l, &else_line );
@@ -1751,6 +1784,14 @@ bwb_for( l )
    bwb_debug( bwb_ebuf );
 #endif
 
+   /*--------------------------------------------------------------*/
+   /* Make sure we are in the right FOR-NEXT level!                */
+   /* If we aren't (which could happen for legit reasons), fix the */
+   /* exec stack.                                                  */
+   /* JBV, 9/20/95                                                 */
+   /*--------------------------------------------------------------*/
+   if (v == CURTASK excs[ CURTASK exsc].local_variable) bwb_decexec();
+
    /* at this point one should find an equals sign ('=') */
 
    adv_ws( l->buffer, &( l->position ) );
@@ -1972,9 +2013,7 @@ bwb_next( l )
 #endif
    {
    char tbuf[ MAXSTRINGSIZE + 1 ];
-#if INTENSIVE_DEBUG
-   struct bwb_variable *v;
-#endif
+   struct bwb_variable *v; /* Relocated from INTENSIVE_DEBUG (JBV) */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_next(): entered function, cmdnum <%d> exsc level <%d> code <%d>",
@@ -1997,19 +2036,34 @@ bwb_next( l )
 
    /* read the argument, if there is one */
 
+   /* Relocated from MULTISEG_LINES (JBV) */
+   exp_getvfname( &( l->buffer[ l->position ] ), tbuf );
+
+   if (strlen(tbuf) != 0)
+   {
+   /* Relocated from INTENSIVE_DEBUG (JBV) */
+   v = var_find( tbuf );
+
 #if MULTISEG_LINES                   /* not currently needed otherwise */
 
-   exp_getvfname( &( l->buffer[ l->position ] ), tbuf );
    l->position += strlen( tbuf );
 
 #if INTENSIVE_DEBUG
-   v = var_find( tbuf );
    sprintf( bwb_ebuf, "in bwb_next(): variable name detected <%s>.", v->name );
    bwb_debug( bwb_ebuf );
 #endif
 #endif
 
    /* decrement or increment the value */
+
+   /*--------------------------------------------------------------*/
+   /* Make sure we are in the right FOR-NEXT level!                */
+   /* If we aren't (which could happen for legit reasons), fix the */
+   /* exec stack.                                                  */
+   /* JBV, 9/20/95                                                 */
+   /*--------------------------------------------------------------*/
+   while (v != CURTASK excs[ CURTASK exsc].local_variable) bwb_decexec();
+   }
 
    var_setnval( CURTASK excs[ CURTASK exsc ].local_variable,
       var_getnval( CURTASK excs[ CURTASK exsc ].local_variable )
@@ -2077,12 +2131,14 @@ bwb_next( l )
       = CURTASK excs[ CURTASK exsc ].for_position;
    bwb_setexec( CURTASK excs[ CURTASK exsc ].for_line,
       CURTASK excs[ CURTASK exsc ].for_position, EXEC_FOR );
+
+   return CURTASK excs[ CURTASK exsc ].for_line; /* Added (JBV) */
 #else
    bwb_setexec( CURTASK excs[ CURTASK exsc - 1 ].line,
       CURTASK excs[ CURTASK exsc - 1 ].position, EXEC_FOR );
-#endif
 
-   return CURTASK excs[ CURTASK exsc - 1 ].line;
+   return CURTASK excs[ CURTASK exsc - 1 ].line; /* Relocated (JBV) */
+#endif
 
    }
 
@@ -2168,7 +2224,8 @@ bwb_exitfor( l )
    /* set the next line in the exec stack */
 
    next_line->position = 0;
-   bwb_setexec( next_line, 0, EXEC_NORM );
+   /* bwb_setexec( next_line, 0, EXEC_NORM ); */  /* WRONG (JBV) */
+   bwb_setexec( next_line, 0, CURTASK excs[ CURTASK exsc ].code ); /* JBV */
 
    return next_line;
 
@@ -2405,5 +2462,3 @@ var_setnval( v, i )
 
    }
 
-
-

@@ -23,6 +23,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 
 #include "bwbasic.h"
@@ -352,7 +357,7 @@ bwb_open( l )
       if ( e->type == STRING )
          {
 #if PROG_ERRORS
-         bwb_error( "String where number was expected for record length" );
+         bwb_error( "String where number was expected for dev number" );
 #else
          bwb_error( err_syntax );
 #endif
@@ -490,6 +495,9 @@ bwb_open( l )
 
    /* assign values to device table */
 
+   /* Random mode has a default record length (JBV) */
+   if (mode == DEVMODE_RANDOM && rlen == -1) rlen = 128;
+
    dev_table[ req_devnumber ].mode = mode;
    dev_table[ req_devnumber ].cfp = fp;
    dev_table[ req_devnumber ].reclen = rlen;
@@ -497,11 +505,17 @@ bwb_open( l )
    dev_table[ req_devnumber ].loc = 0;
    strcpy( dev_table[ req_devnumber ].filename, devname );
 
+   /* File length finding routine, added by JBV */
+   fseek( dev_table[ req_devnumber ].cfp, 0, SEEK_END );
+   dev_table[ req_devnumber ].lof = ftell( dev_table[ req_devnumber ].cfp );
+   fseek( dev_table[ req_devnumber ].cfp, 0, SEEK_SET );
+
    /* allocate a character buffer for random access */
 
    if (( mode == DEVMODE_RANDOM ) && ( previous_buffer != TRUE ))
       {
-      if ( ( dev_table[ req_devnumber ].buffer = calloc( rlen + 1, 1 )) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( dev_table[ req_devnumber ].buffer = CALLOC( rlen + 1, 1, "bwb_open" )) == NULL )
 	 {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_open(): failed to find memory for device buffer" );
@@ -552,14 +566,21 @@ bwb_close( l )
    {
    struct exp_ese *e;
    char atbuf[ MAXSTRINGSIZE + 1 ];
+   int blanket_close; /* JBV */
+   register int n; /* JBV */
+
+   blanket_close = -1; /* JBV */
+   req_devnumber = 0; /* JBV */
 
    /* loop to get device numbers to close */
 
    do
       {
 
+      if ( l->buffer[ l->position ] == ',' && blanket_close == 0)
+         ++( l->position); /* JBV */
       adv_ws( l->buffer, &( l->position ) );
-      if ( l->buffer[ l->position ] =='#' )
+      if ( l->buffer[ l->position ] == '#')
          {
          ++( l->position );
          }
@@ -579,7 +600,31 @@ bwb_close( l )
          return bwb_zline( l );
          }
 
-      req_devnumber = (int) exp_getnval( e );
+      /*-------------------------------------------------------------*/
+      /* Added the following section for blanket close feature (JBV) */
+      /*-------------------------------------------------------------*/
+      if (blanket_close == -1)
+      if (strlen(atbuf) != 0) blanket_close = 0;
+      else blanket_close = 1;
+
+      if (blanket_close == 0) req_devnumber = (int) exp_getnval( e );
+      else
+      {
+          ++req_devnumber;
+
+          /* Find the next device in use */
+          for (n = req_devnumber; n < DEF_DEVICES; ++n)
+          {
+              req_devnumber = -1;
+              if (( dev_table[ n ].mode != DEVMODE_CLOSED ) &&
+                 ( dev_table[ n ].mode != DEVMODE_AVAILABLE ) )
+              {
+                  req_devnumber = n;
+                  break;
+              }
+          }
+          if (req_devnumber == -1) break; /* Skidoo if no more to close */
+      }
 
 #if INTENSIVE_DEBUG
       sprintf( bwb_ebuf, "in bwb_close(): requested device number <%d>",
@@ -633,13 +678,20 @@ bwb_close( l )
 
       dev_table[ req_devnumber ].mode = DEVMODE_CLOSED;
 
+      /* Revised to FREE pass-thru call by JBV */
+      if ( dev_table[ req_devnumber ].buffer != NULL )
+      {
+          FREE( dev_table[ req_devnumber ].buffer, "bwb_close" ); /* JBV */
+          dev_table[ req_devnumber ].buffer = NULL; /* JBV */
+      }
+
       /* eat up any remaining whitespace */
 
       adv_ws( l->buffer, &( l->position ) );
 
       }
 
-   while ( l->buffer[ l->position ] == ',' );
+   while ( l->buffer[ l->position ] == ',' || blanket_close == 1); /* JBV */
 
    /* return next line number in sequence */
 
@@ -680,7 +732,9 @@ bwb_chdir( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( atbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( atbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_chdir" )) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_chdir(): failed to find memory for atbuf" );
@@ -758,7 +812,9 @@ bwb_rmdir( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( atbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( atbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_rmdir" )) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in rmdir(): failed to find memory for atbuf" );
@@ -835,7 +891,9 @@ bwb_mkdir( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( atbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( atbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_mkdir" )) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_mkdir(): failed to find memory for atbuf" );
@@ -916,7 +974,9 @@ bwb_kill( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( atbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( atbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_kill" )) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_kill(): failed to find memory for atbuf" );
@@ -998,7 +1058,9 @@ bwb_name( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( atbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( atbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_name" )) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_name(): failed to find memory for atbuf" );
@@ -1006,7 +1068,8 @@ bwb_name( l )
 	 bwb_error( err_getmem );
 #endif
 	 }
-      if ( ( btbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( btbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwb_name" )) == NULL )
 	 {
 #if PROG_ERRORS
 	 bwb_error( "in bwb_name(): failed to find memory for btbuf" );
@@ -1269,7 +1332,9 @@ bwb_field( l )
 #if DONTDOTHIS
       if ( b->sbuffer != NULL )
 	 {
-	 free( b->sbuffer );
+         /* Revised to FREE pass-thru call by JBV */
+	 FREE( b->sbuffer, "bwb_field" );
+	 b->sbuffer = NULL; /* JBV */
 	 }
 #endif
 
@@ -1281,7 +1346,7 @@ bwb_field( l )
 
 #if INTENSIVE_DEBUG
       sprintf( bwb_ebuf, "in bwb_field(): buffer <%lXh> var <%s> buffer <%lXh>",
-         (long) dev_table[ dev_number ].buffer, v->name, (long) b->buffer );
+         (long) dev_table[ dev_number ].buffer, v->name, (long) b->sbuffer );
       bwb_debug( bwb_ebuf );
 #endif
 
@@ -1466,7 +1531,7 @@ dio_lrset( l, rset )
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in dio_lrset(): startpos <%d> buffer <%lX>",
-      startpos, (long) d->buffer );
+      startpos, (long) d->sbuffer );
    bwb_debug( bwb_ebuf );
 #endif
 
@@ -1510,6 +1575,7 @@ bwb_get( l )
    register int i;
    struct exp_ese *e;
    char atbuf[ MAXSTRINGSIZE + 1 ];
+   long offset; /* JBV */
 
    /* first read device number */
 
@@ -1583,9 +1649,10 @@ bwb_get( l )
 
    /* wind the c file up to the proper point */
 
-   if ( fseek( dev_table[ dev_number ].cfp,
-      (long) (( rec_number - 1 ) * dev_table[ dev_number ].reclen ),
-      SEEK_SET ) != 0 )
+   /* Added by JBV */
+   offset = (long) (( rec_number - 1 ) * dev_table[ dev_number ].reclen);
+
+   if ( fseek( dev_table[ dev_number ].cfp, offset, SEEK_SET ) != 0 )
       {
 #if PROG_ERRORS
       sprintf( bwb_ebuf, "in bwb_get(): fseek() failed, rec number <%d> offset <%ld>",
@@ -1599,6 +1666,7 @@ bwb_get( l )
 
    /* read the requested bytes into the buffer */
 
+   dev_table[ dev_number ].loc = offset; /* Slight bug fix (JBV) */
    for ( i = 0; i < dev_table[ dev_number ].reclen; ++i )
       {
       dev_table[ dev_number ].buffer[ i ] =
@@ -1639,6 +1707,7 @@ bwb_put( l )
    register int i;
    struct exp_ese *e;
    char atbuf[ MAXSTRINGSIZE + 1 ];
+   long offset; /* JBV */
 
    /* first read device number */
 
@@ -1649,7 +1718,23 @@ bwb_put( l )
       }
 
    adv_element( l->buffer, &( l->position ), atbuf );
-   dev_number = atoi( atbuf );
+/*   dev_number = atoi( atbuf ); */  /* Not quite right (JBV) */
+
+   /* Added by JBV */
+   pos = 0;
+   e = bwb_exp( atbuf, FALSE, &pos );
+
+   if ( e->type != NUMBER )
+      {
+#if PROG_ERRORS
+      bwb_error( "in bwb_put(): Number was expected for device number" );
+#else
+      bwb_error( err_syntax );
+#endif
+      return bwb_zline( l );
+      }
+
+   dev_number = (int) exp_getnval( e );
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_put(): device <%d>", dev_number );
@@ -1709,9 +1794,10 @@ bwb_put( l )
 
    /* wind the c file up to the proper point */
 
-   if ( fseek( dev_table[ dev_number ].cfp,
-      (long) (( rec_number - 1 ) * dev_table[ dev_number ].reclen ),
-      SEEK_SET ) != 0 )
+   /* Added by JBV */
+   offset = (long) (( rec_number - 1 ) * dev_table[ dev_number ].reclen);
+
+   if ( fseek( dev_table[ dev_number ].cfp, offset, SEEK_SET ) != 0 )
       {
 #if PROG_ERRORS
       sprintf( bwb_ebuf, "in bwb_get(): fseek() failed, rec number <%d> offset <%ld>",
@@ -1732,6 +1818,7 @@ bwb_put( l )
 
    /* write the requested bytes to the file */
 
+   dev_table[ dev_number ].loc = offset; /* Slight bug fix (JBV) */
    for ( i = 0; i < dev_table[ dev_number ].reclen; ++i )
       {
       fputc( dev_table[ dev_number ].buffer[ i ],
@@ -1804,4 +1891,3 @@ dio_flush( dev_number )
 #endif				/* COMMON_CMDS */
 
 
-

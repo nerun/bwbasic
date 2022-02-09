@@ -1,5 +1,10 @@
 #               Unix Makefile for Bywater BASIC Interpreter
 
+##---------------------------------------------------------------##
+## NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, ##
+## 11/1995 (eidetics@cerf.net).                                  ##
+##---------------------------------------------------------------##
+
 srcdir = @srcdir@
 VPATH = @srcdir@
 
@@ -11,8 +16,12 @@ INSTALL_DATA = @INSTALL_DATA@
 
 DEFS = @DEFS@
 
-CFLAGS = -O
-LDFLAGS = -s
+# Revised by JBV
+#CFLAGS = -O
+CFLAGS = -g -ansi
+
+# Revised by JBV
+#LDFLAGS = -s
 
 prefix = /usr/local
 exec_prefix = $(prefix)
@@ -45,14 +54,20 @@ TESTFILES=	\
 	mlifthen.bas  on.bas	    onerr.bas	  onerrlbl.bas	ongosub.bas\
 	opentest.bas  option.bas    putget.bas	  random.bas	selcase.bas\
 	snglfunc.bas  stop.bas	    term.bas	  whilwend.bas	width.bas\
-	writeinp.bas
+	writeinp.bas  pascaltr.bas
 
 DISTFILES=	$(CFILES) $(HFILES) $(MISCFILES)
 
-all: bwbasic
+# Revised by JBV
+#all: bwbasic
+all: bwbasic renum
 
 bwbasic:	$(OFILES)
 		$(CC) $(OFILES) -lm -o $@ $(LDFLAGS)
+
+# Added by JBV
+renum:
+	$(CC) renum.c -o renum
 
 $(OFILES):      $(HFILES)
 
@@ -86,8 +101,9 @@ distclean: clean
 realclean: distclean
 	rm -f TAGS
 
+# Version number changed from 2.10 to 2.20 by JBV
 dist: $(DISTFILES)
-	echo bwbasic-2.10 > .fname
+	echo bwbasic-2.20 > .fname
 	rm -rf `cat .fname`
 	mkdir `cat .fname`
 	ln $(DISTFILES) `cat .fname`
@@ -98,4 +114,3 @@ dist: $(DISTFILES)
 
 # Prevent GNU make v3 from overflowing arg limit on SysV.
 .NOEXPORT:
-

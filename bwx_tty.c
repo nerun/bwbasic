@@ -28,17 +28,25 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 
 #include "bwbasic.h"
 #include "bwb_mes.h"
 
-#if HAVE_LONGJMP
+#if HAVE_LONGJUMP /* Revised by JBV (bug found by DD) */
 #include <setjmp.h>
 #endif
 
 extern int prn_col;
-#if HAVE_LONGJMP
+#if HAVE_LONGJUMP /* Revised by JBV (bug found by DD) */
 extern jmp_buf mark;
 #endif
 
@@ -69,7 +77,7 @@ main( argc, argv )
 
    bwb_init( argc, argv );
 
-#if HAVE_LONGJMP
+#if HAVE_LONGJUMP /* Revised by JBV (bug found by DD) */
 #if INTERACTIVE
    setjmp( mark );
 #endif
@@ -82,7 +90,8 @@ main( argc, argv )
       bwb_mainloop();
       }
 
-   bwx_terminate();			/* in case of ^D exit in Unix systems */
+      bwx_terminate();			/* allow ^D (Unix) exit with grace */
+
 
    }
 
@@ -267,9 +276,6 @@ void
 bwx_terminate()
 #endif
    {
-#if INTENSIVE_DEBUG
-   fprintf( stderr, "Normal Termination\n" );
-#endif
    exit( 0 );
    }
 
@@ -301,7 +307,9 @@ bwx_shell( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( s_buffer = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( s_buffer = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "bwx_shell" )) == NULL )
 	 {
 	 bwb_error( err_getmem );
 	 return FALSE;
@@ -425,9 +433,61 @@ bwb_edit( l )
    system( tbuf );
 #endif
 
+   /* open edited file for read */
+
+   if ( ( loadfile = fopen( CURTASK progfile, "r" )) == NULL )
+      {
+      sprintf( bwb_ebuf, err_openfile, CURTASK progfile );
+      bwb_error( bwb_ebuf );
+
+      return bwb_zline( l );
+      }
+
    /* clear current contents */
 
-   bwb_new( l );
+   bwb_new( l ); /* Relocated by JBV (bug found by DD) */
+
+   /* and (re)load the file into memory */
+
+   bwb_fload( loadfile );
+
+
+   return bwb_zline( l );
+   }
+
+/***************************************************************
+
+        FUNCTION:       bwb_renum()
+
+	DESCRIPTION:    This function implements the BASIC RENUM
+			command by shelling out to a default
+			renumbering program called "renum".
+			Added by JBV 10/95
+
+	SYNTAX:		RENUM
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_line *
+bwb_renum( struct bwb_line *l )
+#else
+struct bwb_line *
+bwb_renum( l )
+   struct bwb_line *l;
+#endif
+   {
+   char tbuf[ MAXSTRINGSIZE + 1 ];
+   FILE *loadfile;
+
+   sprintf( tbuf, "renum %s\0", CURTASK progfile );
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in bwb_renum(): command line <%s>", tbuf );
+   bwb_debug( bwb_ebuf );
+#else
+   system( tbuf );
+#endif
 
    /* open edited file for read */
 
@@ -438,6 +498,10 @@ bwb_edit( l )
 
       return bwb_zline( l );
       }
+
+   /* clear current contents */
+
+   bwb_new( l ); /* Relocated by JBV (bug found by DD) */
 
    /* and (re)load the file into memory */
 

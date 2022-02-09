@@ -24,6 +24,11 @@
 
 ****************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #define FSTACKSIZE      32
 
 #include <stdio.h>
@@ -130,7 +135,9 @@ fnc_find( buffer )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_find" )) == NULL )
          {
 #if PROG_ERRORS
 	 bwb_error( "in fnc_find(): failed to find memory for tbuf" );
@@ -314,7 +321,9 @@ fnc_date( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_date" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_date(): failed to get memory for tbuf" );
@@ -368,7 +377,9 @@ fnc_time( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_time" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_time(): failed to get memory for tbuf" );
@@ -516,7 +527,9 @@ fnc_len( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, NUMBER );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_len" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_len(): failed to get memory for tbuf" );
@@ -637,8 +650,9 @@ fnc_timer( argc, argv, unique_id  )
       }
 
    time( &now );
+   /* Following statement was (bnumber) (JBV) */
    * var_findnval( &nvar, nvar.array_pos )
-      = (float) fmod( (bnumber) now, (bnumber) (60*60*24));
+      = (float) fmod( (double) now, (double) (60*60*24));
 
    return &nvar;
    }
@@ -952,7 +966,9 @@ fnc_asc( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, NUMBER );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_asc" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_asc(): failed to get memory for tbuf" );
@@ -1046,7 +1062,9 @@ fnc_string( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_string" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_string(): failed to get memory for tbuf" );
@@ -1097,7 +1115,7 @@ fnc_string( argc, argv, unique_id )
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in fnc_string(): argument <%s> arg type <%c>, length <%d>",
-      argv[ 1 ].string, argv[ 1 ].type, length );
+      tbuf, argv[ 1 ].type, length );
    bwb_debug( bwb_ebuf );
    sprintf( bwb_ebuf, "in fnc_string(): type <%c>, c <0x%x>=<%c>",
       argv[ 1 ].type, c, c );
@@ -1320,7 +1338,9 @@ fnc_space( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &nvar, (int) STRING );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_space" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_space(): failed to get memory for tbuf" );
@@ -1513,7 +1533,7 @@ fnc_erl( argc, argv, unique_id )
 
         DESCRIPTION:    This C function implements the BASIC
 			LOC() function. As implemented here,
-			this only workd for random-acess files.
+			this only works for random-acess files.
 
 	SYNTAX:		LOC( device-number )
 
@@ -1611,6 +1631,7 @@ fnc_eof( argc, argv, unique_id )
    static struct bwb_variable nvar;
    static int init = FALSE;
    int dev_number;
+   int cur_pos, end_pos; /* JBV */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in fnc_loc(): received f_arg <%f> ",
@@ -1661,7 +1682,19 @@ fnc_eof( argc, argv, unique_id )
       bwb_error( err_devnum );
       * var_findnval( &nvar, nvar.array_pos ) = (bnumber) TRUE;
       }
-   else if ( feof( dev_table[ dev_number ].cfp ) == 0 )
+
+   /*------------------------------------------------------*/
+   /* feof() finds EOF when you read past the end of file. */
+   /* This is not how BASIC works, at least not GWBASIC.   */
+   /* The EOF function should return an EOF indication     */
+   /* when you are <at> the end of the file, not past it.  */
+   /* This routine was modified to reflect this.           */
+   /* (JBV, 10/15/95)                                      */
+   /*------------------------------------------------------*/
+
+   /*  else if ( feof( dev_table[ dev_number ].cfp ) == 0 ) */
+   else if ( ftell( dev_table[ dev_number ].cfp ) !=
+   dev_table [ dev_number ].lof )
       {
       * var_findnval( &nvar, nvar.array_pos ) = (bnumber) FALSE;
       }
@@ -1698,10 +1731,12 @@ fnc_lof( argc, argv, unique_id )
    static struct bwb_variable nvar;
    static int init = FALSE;
    int dev_number;
-#if UNIX_CMDS
+
+/* Following section no longer needed, removed by JBV */
+/* #if UNIX_CMDS
    static struct stat statbuf;
    int r;
-#endif
+#endif */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in fnc_lof(): received f_arg <%f> ",
@@ -1742,7 +1777,8 @@ fnc_lof( argc, argv, unique_id )
 
    /* stat the file */
 
-#if UNIX_CMDS
+/* Following section no longer needed, removed by JBV */
+/* #if UNIX_CMDS
 
    r = stat( dev_table[ dev_number ].filename, &statbuf );
 
@@ -1760,13 +1796,15 @@ fnc_lof( argc, argv, unique_id )
       return NULL;
       }
 
-   * var_findnval( &nvar, nvar.array_pos ) = (bnumber) statbuf.st_size;
+   * var_findnval( &nvar, nvar.array_pos ) = (bnumber) statbuf.st_size; */
 
-#else
+/* #else */  /* Removed by JBV, no longer needed */
 
-   * var_findnval( &nvar, nvar.array_pos ) = (bnumber) FALSE;
+   /* * var_findnval( &nvar, nvar.array_pos ) = (bnumber) FALSE; */
+   * var_findnval( &nvar, nvar.array_pos ) =
+      (bnumber) dev_table[ dev_number ].lof; /* JBV */
 
-#endif
+/* #endif */  /* Removed by JBV, no longer needed */
 
    return &nvar;
    }
@@ -1806,7 +1844,9 @@ fnc_test( argc, argv, unique_id )
       {
       init = TRUE;
       var_make( &rvar, NUMBER );
-      if ( ( tbuf = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( tbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ), "fnc_test" )) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in fnc_test(): failed to get memory for tbuf" );

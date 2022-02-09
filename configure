@@ -22,6 +22,10 @@
 # Ignores all args except --srcdir, --prefix, --exec-prefix, --no-create, and
 # --with-PACKAGE unless this script has special code to handle it.
 
+##---------------------------------------------------------------##
+## NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, ##
+## 11/1995 (eidetics@cerf.net).                                  ##
+##---------------------------------------------------------------##
 
 for arg
 do
@@ -213,6 +217,17 @@ if test -z "$err"; then
 fi
 rm -f conftest*
 
+# unistd.h checking added by JBV
+echo checking for unistd.h
+cat > conftest.c <<EOF
+#include <unistd.h>
+EOF
+err=`eval "$CPP $DEFS conftest.c 2>&1 >/dev/null"`
+if test -z "$err"; then
+  DEFS="$DEFS -DHAVE_UNISTD=1"
+fi
+rm -f conftest*
+
 echo checking for raise
 cat > conftest.c <<EOF
 #include <sys/types.h>
@@ -300,4 +315,3 @@ EOF
 chmod +x config.status
 test -n "$no_create" || ./config.status
 
-

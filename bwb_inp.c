@@ -29,6 +29,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -47,6 +52,7 @@ static int inp_assign( char *b, struct bwb_variable *v );
 static int inp_advws( FILE *f );
 static int inp_xgetc( FILE *f, int is_string );
 static int inp_eatcomma( FILE *f );
+static bnumber inp_numconst( char *expression ); /* JBV */
 #else
 static struct bwb_line *bwb_xinp();
 static struct bwb_line *inp_str();
@@ -55,10 +61,12 @@ static int inp_assign();
 static int inp_advws();
 static int inp_xgetc();
 static int inp_eatcomma();
+static bnumber inp_numconst(); /* JBV */
 #endif
 
 static char_saved = FALSE;
 static cs;
+static int last_inp_adv_rval = FALSE; /* JBV */
 
 /***************************************************************
 
@@ -621,7 +629,15 @@ bwb_input( l )
 
       /* advance past semicolon to beginning of variable */
 
-      suppress_qm = inp_adv( l->buffer, &( l->position ) );
+      /*--------------------------------------------------------*/
+      /* Since inp_const was just called and inp_adv is called  */
+      /* within that, it will have already noted and passed the */
+      /* comma by the time it gets here.  Therefore one must    */
+      /* refer instead to the last returned value for inp_adv!  */
+      /* (JBV, 10/95)                                           */
+      /*--------------------------------------------------------*/
+      /* suppress_qm = inp_adv( l->buffer, &( l->position ) ); */
+      suppress_qm = last_inp_adv_rval;
 
       /* print the prompt string */
 
@@ -772,7 +788,12 @@ bwb_xinp( l, f )
                tbuf );
             bwb_debug( bwb_ebuf );
 #endif
-            * var_findnval( v, v->array_pos ) = (bnumber) atof( tbuf );
+            /*------------------------------------------------------------*/
+            /* atof call replaced by inp_numconst, gets all input formats */
+            /* (JBV, 10/95)                                               */
+            /*------------------------------------------------------------*/
+            /* * var_findnval( v, v->array_pos ) = (bnumber) atof( tbuf ); */
+            * var_findnval( v, v->array_pos ) = inp_numconst( tbuf );
             break;
          }				/* end of switch for type-specific input */
 
@@ -801,7 +822,7 @@ bwb_xinp( l, f )
         FUNCTION:       inp_advws()
 
 	DESCRIPTION:    This C function advances past whitespace
-			inoput from a particular file or device.
+			input from a particular file or device.
 
 ***************************************************************/
 
@@ -1118,7 +1139,12 @@ inp_assign( b, v )
             }
          else
             {
-            *( var_findnval( v, v->array_pos )) = (bnumber) atof( b );
+            /*------------------------------------------------------------*/
+            /* atof call replaced by inp_numconst, gets all input formats */
+            /* (JBV, 10/95)                                               */
+            /*------------------------------------------------------------*/
+            /* *( var_findnval( v, v->array_pos )) = (bnumber) atof( b ); */
+            *( var_findnval( v, v->array_pos )) = inp_numconst( b );
             }
          break;
 
@@ -1178,8 +1204,10 @@ inp_adv( b, c )
          case '\0':		/* end of line */
          case ':': 		/* end of line segment */
             rval = TRUE;
+            last_inp_adv_rval = rval; /* JBV */
             return rval;
          default:
+            last_inp_adv_rval = rval; /* JBV */
             return rval;
          }
       }
@@ -1318,6 +1346,8 @@ bwb_line( l )
    FILE *inp_device;
    char tbuf[ MAXSTRINGSIZE + 1 ];
    char pstring[ MAXSTRINGSIZE + 1 ];
+   struct exp_ese *e; /* JBV */
+   int pos; /* JBV */
 
    /* assign default values */
 
@@ -1351,7 +1381,10 @@ bwb_line( l )
       ++l->position;
       adv_element( l->buffer, &( l->position ), tbuf );
       adv_ws( l->buffer, &( l->position ));
-      dev_no = atoi( tbuf );
+      /* dev_no = atoi( tbuf ); */  /* We really need more, added next (JBV) */
+      pos = 0;
+      e = bwb_exp( tbuf, FALSE, &pos );
+      dev_no = (int) exp_getnval( e );
 
 #if INTENSIVE_DEBUG
       sprintf( bwb_ebuf, "in bwb_line(): file number requested <%d>", dev_no );
@@ -1437,4 +1470,446 @@ bwb_line( l )
 
 #endif				/* COMMON_CMDS */
 
-
+/***************************************************************
+
+        FUNCTION:	inp_numconst()
+
+        DESCRIPTION:	This function interprets a numerical
+			constant.  Added by JBV 10/95
+
+***************************************************************/
+
+#if ANSI_C
+bnumber
+inp_numconst( char *expression )
+#else
+bnumber
+inp_numconst( expression )
+   char *expression;
+#endif
+   {
+   int base;                            /* numerical base for the constant */
+   static struct bwb_variable mantissa; /* mantissa of floating-point number */
+   static int init = FALSE;		/* is mantissa variable initialized? */
+   int exponent;                        /* exponent for floating point number */
+   int man_start;                       /* starting point of mantissa */
+   int s_pos;                           /* position in build string */
+   int build_loop;
+   int need_pm;
+   int i;
+   bnumber d;
+
+   /* Expression stack stuff */
+   char type;
+   bnumber nval;
+   char string[ MAXSTRINGSIZE + 1 ];
+   int pos_adv;
+
+   /* initialize the variable if necessary */
+
+#if INTENSIVE_DEBUG
+   strcpy( mantissa.name, "(mantissa)" );
+#endif
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &mantissa, NUMBER );
+      }
+
+   /* be sure that the array_pos[ 0 ] for mantissa is set to dim_base;
+      this is necessary because mantissa might be used before dim_base
+      is set */
+
+   mantissa.array_pos[ 0 ] = dim_base;
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in inp_numconst(): received <%s>, eval <%c>",
+      expression, expression[ 0 ] );
+   bwb_debug( bwb_ebuf );
+#endif
+
+   need_pm = FALSE;
+   nval = (bnumber) 0;
+
+   /* check the first character(s) to determine numerical base
+      and starting point of the mantissa */
+
+   switch( expression[ 0 ] )
+      {
+      case '-':
+      case '+':
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+      case '.':
+         base = 10;                     /* decimal constant */
+	 man_start = 0;                 /* starts at position 0 */
+	 need_pm = FALSE;
+         break;
+      case '&':                         /* hex or octal constant */
+         if ( ( expression[ 1 ] == 'H' ) || ( expression[ 1 ] == 'h' ))
+            {
+            base = 16;                  /* hexadecimal constant */
+            man_start = 2;              /* starts at position 2 */
+            }
+         else
+            {
+            base = 8;                   /* octal constant */
+            if ( ( expression[ 1 ] == 'O' ) || ( expression[ 1 ] == 'o' ))
+               {
+               man_start = 2;           /* starts at position 2 */
+               }
+            else
+               {
+               man_start = 1;           /* starts at position 1 */
+               }
+            }
+         break;
+      default:
+
+#if PROG_ERRORS
+         sprintf( bwb_ebuf, "expression <%s> is not a numerical constant.",
+            expression );
+         bwb_error( bwb_ebuf );
+#else
+         bwb_error( err_syntax );
+#endif
+         return (bnumber) 0;
+      }
+
+   /* now build the mantissa according to the numerical base */
+
+   switch( base )
+      {
+
+      case 10:                          /* decimal constant */
+
+         /* initialize counters */
+
+         pos_adv = man_start;
+         type = NUMBER;
+         string[ 0 ] = '\0';
+         s_pos = 0;
+         exponent = 0;
+         build_loop = TRUE;
+
+         /* loop to build the string */
+
+         while ( build_loop == TRUE )
+            {
+            switch( expression[ pos_adv ] )
+               {
+               case '-':                        /* prefixed plus or minus */
+               case '+':
+
+                  /* in the first position, a plus or minus sign can
+                     be added to the beginning of the string to be
+                     scanned */
+
+                  if ( pos_adv == man_start )
+                     {
+                     string[ s_pos ] = expression[ pos_adv ];
+                     ++pos_adv;  /* advance to next character */
+                     ++s_pos;
+                     string[ s_pos ] = '\0';
+                     }
+
+                  /* but in any other position, the plus or minus sign
+                     must be taken as an operator and thus as terminating
+                     the string to be scanned */
+
+                  else
+                     {
+                     build_loop = FALSE;
+                     }
+                  break;
+               case '.':                        /* note at least single precision */
+               case '0':                        /* or ordinary digit */
+               case '1':
+               case '2':
+               case '3':
+               case '4':
+               case '5':
+               case '6':
+               case '7':
+               case '8':
+               case '9':
+                  string[ s_pos ] = expression[ pos_adv ];
+                  ++pos_adv;  /* advance to next character */
+                  ++s_pos;
+                  string[ s_pos ] = '\0';
+                  break;
+
+	       case '#':                        /* Microsoft-type precision indicator; ignored but terminates */
+	       case '!':                        /* Microsoft-type precision indicator; ignored but terminates */
+		  ++pos_adv;  /* advance to next character */
+		  type = NUMBER;
+		  exponent = FALSE;
+		  build_loop = FALSE;
+		  break;
+
+	       case 'E':                        /* exponential, single precision */
+               case 'e':
+                  ++pos_adv;  /* advance to next character */
+                  type = NUMBER;
+		  exponent = TRUE;
+                  build_loop = FALSE;
+		  break;
+
+               case 'D':                        /* exponential, double precision */
+               case 'd':
+                  ++pos_adv;  /* advance to next character */
+                  type = NUMBER;
+		  exponent = TRUE;
+                  build_loop = FALSE;
+                  break;
+
+               default:                         /* anything else, terminate */
+                  build_loop = FALSE;
+                  break;
+               }
+
+            }
+
+         /* assign the value to the mantissa variable */
+         
+#if NUMBER_DOUBLE
+         sscanf( string, "%lf", var_findnval( &mantissa, mantissa.array_pos ));
+#else
+         sscanf( string, "%f", var_findnval( &mantissa, mantissa.array_pos ));
+#endif
+
+#if INTENSIVE_DEBUG
+         sprintf( bwb_ebuf, "in inp_numconst(): read mantissa, string <%s> val <%lf>",
+            string, var_getnval( &mantissa ) );
+         bwb_debug( bwb_ebuf );
+#endif
+
+         /* test if integer bounds have been exceeded */
+
+         if ( type == NUMBER )
+            {
+            i = (int) var_getnval( &mantissa );
+            d = (bnumber) i;
+            if ( d != var_getnval( &mantissa ))
+               {
+               type = NUMBER;
+#if INTENSIVE_DEBUG
+               sprintf( bwb_ebuf, "in inp_numconst(): integer bounds violated, promote to NUMBER" );
+               bwb_debug( bwb_ebuf );
+#endif               
+               }
+            }
+
+         /* read the exponent if there is one */
+
+         if ( exponent == TRUE )
+            {
+
+	    /* allow a plus or minus once at the beginning */
+
+	    need_pm = TRUE;
+
+	    /* initialize counters */
+
+            string[ 0 ] = '\0';
+            s_pos = 0;
+            build_loop = TRUE;
+
+            /* loop to build the string */
+
+            while ( build_loop == TRUE )
+               {
+               switch( expression[ pos_adv ] )
+                  {
+		  case '-':                        /* prefixed plus or minus */
+                  case '+':
+
+		     if ( need_pm == TRUE )        /* only allow once */
+			{
+			string[ s_pos ] = expression[ pos_adv ];
+			++pos_adv;  /* advance to next character */
+			++s_pos;
+			string[ s_pos ] = '\0';
+			}
+		     else
+			{
+			build_loop = FALSE;
+			}
+		     break;
+
+		  case '0':                        /* or ordinary digit */
+                  case '1':
+                  case '2':
+                  case '3':
+                  case '4':
+                  case '5':
+                  case '6':
+                  case '7':
+                  case '8':
+                  case '9':
+
+                     string[ s_pos ] = expression[ pos_adv ];
+                     ++pos_adv;  /* advance to next character */
+                     ++s_pos;
+		     string[ s_pos ] = '\0';
+		     need_pm = FALSE;
+                     break;
+
+                  default:                         /* anything else, terminate */
+                     build_loop = FALSE;
+                     break;
+                  }
+
+               }                                /* end of build loop for exponent */
+
+            /* assign the value to the user variable */
+
+#if NUMBER_DOUBLE
+            sscanf( string, "%lf", &nval );
+#else
+            sscanf( string, "%f", &nval );
+#endif
+
+#if INTENSIVE_DEBUG
+	    sprintf( bwb_ebuf, "in inp_numconst(): exponent is <%d>",
+               (int) nval );
+            bwb_debug( bwb_ebuf );
+#endif
+
+            }                           /* end of exponent search */
+
+         if ( nval == (bnumber) 0 )
+            {
+            nval = var_getnval( &mantissa );
+            }
+         else
+            {
+            nval = var_getnval( &mantissa )
+               * pow( (bnumber) 10.0, (bnumber) nval );
+            }
+
+         break;
+
+      case 8:                           /* octal constant */
+
+         /* initialize counters */
+
+         pos_adv = man_start;
+         type = NUMBER;
+         string[ 0 ] = '\0';
+         s_pos = 0;
+         exponent = 0;
+         build_loop = TRUE;
+
+         /* loop to build the string */
+
+         while ( build_loop == TRUE )
+            {
+            switch( expression[ pos_adv ] )
+               {
+               case '0':                        /* or ordinary digit */
+               case '1':
+               case '2':
+               case '3':
+               case '4':
+               case '5':
+               case '6':
+               case '7':
+                  string[ s_pos ] = expression[ pos_adv ];
+                  ++pos_adv;  /* advance to next character */
+                  ++s_pos;
+                  string[ s_pos ] = '\0';
+                  break;
+
+               default:                         /* anything else, terminate */
+                  build_loop = FALSE;
+                  break;
+               }
+
+            }
+
+         /* now scan the string to determine the number */
+
+         sscanf( string, "%o", &i );
+         nval = (bnumber) i;
+
+         break;
+
+      case 16:                          /* hexadecimal constant */
+
+         /* initialize counters */
+
+         pos_adv = man_start;
+         type = NUMBER;
+         string[ 0 ] = '\0';
+         s_pos = 0;
+         exponent = 0;
+         build_loop = TRUE;
+
+         /* loop to build the string */
+
+         while ( build_loop == TRUE )
+            {
+            switch( expression[ pos_adv ] )
+               {
+               case '0':                        /* or ordinary digit */
+               case '1':
+               case '2':
+               case '3':
+               case '4':
+               case '5':
+               case '6':
+               case '7':
+               case '8':
+               case '9':
+               case 'A':
+               case 'a':
+               case 'B':
+               case 'b':
+               case 'C':
+               case 'c':
+               case 'D':
+               case 'd':
+               case 'E':
+               case 'e':
+               case 'F': /* Don't forget these! (JBV) */
+               case 'f':
+                  string[ s_pos ] = expression[ pos_adv ];
+
+                  ++pos_adv;  /* advance to next character */
+                  ++s_pos;
+                  string[ s_pos ] = '\0';
+                  break;
+
+               default:                         /* anything else, terminate */
+                  build_loop = FALSE;
+                  break;
+               }
+
+            }
+
+         /* now scan the string to determine the number */
+
+         sscanf( string, "%x", &i );
+         nval = (bnumber) i;
+         break;
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in inp_numconst(): precision <%c> value <%lf>",
+      type, nval );
+   bwb_debug( bwb_ebuf );
+#endif
+
+   return nval;
+
+   }

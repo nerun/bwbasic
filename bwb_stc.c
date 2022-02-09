@@ -29,6 +29,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 
@@ -184,12 +189,22 @@ fslt_clear()
       while ( c != NULL )
          {
          n = c->next;
-         free( c );
+
+         /* Revised to FREE pass-thru call by JBV */
+         FREE( c, "fslt_clear" );
          c = n;
          }
 
       next = current->next;
-      free( current );
+
+      /* Revised to FREE pass-thru calls by JBV */
+      if (current->name != NULL)
+      {
+          FREE( current->name, "fslt_clear" ); /* JBV */
+          current->name = NULL; /* JBV */
+      }
+      FREE( current, "fslt_clear" );
+      current = NULL; /* JBV */
       }
 
    /* reset linkage */
@@ -360,6 +375,18 @@ scan_element( buffer, pos, element )
                }
             break;
 
+         case '(':                     /* MID$ command termination (JBV) */
+            /* If MID$ is here, get out */
+            if (strcmp(element, CMD_MID) == 0)
+               return TRUE;
+
+            /* else add it to the accumulation element */
+            element[ e_pos ] = buffer[ *pos ];
+            ++e_pos;
+            ++( *pos );
+            element[ e_pos ] = '\0';
+            break;
+
          default:
             element[ e_pos ] = buffer[ *pos ];
             ++e_pos;
@@ -428,7 +455,8 @@ fslt_add( line, position, code )
 
    /* get memory for name buffer */
 
-   if ( ( name = calloc( 1, strlen( tbuf ) + 1 ) ) == NULL )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( name = CALLOC( 1, strlen( tbuf ) + 1, "fslt_add" ) ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in fslt_add(): failed to get memory for name buffer" );
@@ -442,7 +470,7 @@ fslt_add( line, position, code )
 
    /* get memory for fslt structure */
 
-   if ( ( f = calloc( 1, sizeof( struct fslte ) ) ) == NULL )
+   if ( ( f = CALLOC( 1, sizeof( struct fslte ), "fslt_add" ) ) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in fslt_add(): failed to get memory for fslt structure" );
@@ -1898,7 +1926,7 @@ var_pos( firstvar, p )
 	FUNCTION:       fslt_addcallvar()
 
 	DESCRIPTION:    This function adds a calling variable
-			to the FUNCTION-SUB lookuop table at
+			to the FUNCTION-SUB lookup table at
 			a specific level.
 
 ***************************************************************/
@@ -1932,7 +1960,7 @@ fslt_addcallvar( v )
 
 /***************************************************************
 
-	FUNCTION:       expufnc()
+	FUNCTION:       exp_ufnc()
 
         DESCRIPTION:	This C function interprets a user-defined
 			function, returning its value at the current
@@ -2158,7 +2186,7 @@ exp_ufnc( expression )
 	FUNCTION:       fslt_addlocalvar()
 
 	DESCRIPTION:    This function adds a local variable
-			to the FUNCTION-SUB lookuop table at
+			to the FUNCTION-SUB lookup table at
 			a specific level.
 
 ***************************************************************/
@@ -2275,4 +2303,3 @@ is_label( buffer )
    }
 
 
-

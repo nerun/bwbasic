@@ -25,6 +25,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 
 #include "bwbasic.h"
@@ -69,7 +74,8 @@ bwb_newtask( task_requested )
 
    /* get memory for task structure */
 
-   if ( ( bwb_tasks[ task_requested ] = calloc( 1, sizeof( struct bwb_task ) ) )
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ( ( bwb_tasks[ task_requested ] = CALLOC( 1, sizeof( struct bwb_task ), "bwb_newtask" ) )
       == NULL )
       {
 #if PROG_ERRORS
@@ -107,4 +113,3 @@ bwb_newtask( task_requested )
 #endif
 
 
-

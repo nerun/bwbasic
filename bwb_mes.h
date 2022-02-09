@@ -23,6 +23,10 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
 
 #ifndef TRUE
 #define TRUE    1
@@ -391,6 +395,7 @@
 #define CMD_DEFINT	"DEFINT"
 #define CMD_DEFSNG	"DEFSNG"
 #define CMD_DEFSTR	"DEFSTR"
+#define CMD_MID		"MID$"
 #define CMD_CALL	"CALL"
 #define CMD_SUB		"SUB"
 #define CMD_FUNCTION	"FUNCTION"
@@ -409,6 +414,7 @@
 #define CMD_RANDOMIZE	"RANDOMIZE"
 #define CMD_FILES	"FILES"
 #define CMD_EDIT	"EDIT"
+#define CMD_RENUM	"RENUM"
 #define CMD_ERASE	"ERASE"
 #define CMD_SWAP	"SWAP"
 #define CMD_NAME	"NAME"
@@ -471,4 +477,3 @@ extern char err_noprogfile[];
 
 
 
-

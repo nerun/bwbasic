@@ -25,6 +25,14 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
@@ -303,7 +311,9 @@ bwx_shell( struct bwb_line *l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( s_buffer = calloc( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( s_buffer = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
 	 {
 	 bwb_error( err_getmem );
 	 return FALSE;
@@ -425,9 +435,63 @@ bwb_edit( struct bwb_line *l )
    system( tbuf );
 #endif
 
+   /* open edited file for read */
+
+   if ( ( loadfile = fopen( CURTASK progfile, "r" )) == NULL )
+      {
+      sprintf( bwb_ebuf, err_openfile, CURTASK progfile );
+      bwb_error( bwb_ebuf );
+
+      iqc_setpos();
+      return bwb_zline( l );
+      }
+
    /* clear current contents */
 
-   bwb_new( l );
+   bwb_new( l ); /* Relocated by JBV (bug found by DD) */
+
+   /* and (re)load the file into memory */
+
+   bwb_fload( loadfile );
+
+
+   iqc_setpos();
+   return bwb_zline( l );
+   }
+
+/***************************************************************
+
+        FUNCTION:       bwb_renum()
+
+	DESCRIPTION:    This function implements the BASIC RENUM
+			command by shelling out to a default
+			renumbering program called "renum".
+			Added by JBV 10/95
+
+	SYNTAX:		RENUM
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_line *
+bwb_renum( struct bwb_line *l )
+#else
+struct bwb_line *
+bwb_renum( l )
+   struct bwb_line *l;
+#endif
+   {
+   char tbuf[ MAXSTRINGSIZE + 1 ];
+   FILE *loadfile;
+
+   sprintf( tbuf, "renum %s\0", CURTASK progfile );
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in bwb_renum(): command line <%s>", tbuf );
+   bwb_debug( bwb_ebuf );
+#else
+   system( tbuf );
+#endif
 
    /* open edited file for read */
 
@@ -439,6 +503,10 @@ bwb_edit( struct bwb_line *l )
       iqc_setpos();
       return bwb_zline( l );
       }
+
+   /* clear current contents */
+
+   bwb_new( l ); /* Relocated by JBV (bug found by DD) */
 
    /* and (re)load the file into memory */
 
@@ -530,7 +598,7 @@ fnc_inkey( int argc, struct bwb_variable *argv )
    if ( init == FALSE )
       {
       init = TRUE;
-      var_make( &nvar, STRING );
+      var_make( &nvar, STRING, "fnc_inkey" );
       }
 
    /* check arguments */

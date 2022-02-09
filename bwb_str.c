@@ -23,6 +23,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 
 #include "bwbasic.h"
@@ -64,7 +69,8 @@ str_btob( d, s )
 
    /* get memory for new buffer */
 
-   if ( ( t = (char *) calloc( s->length + 1, 1 )) == NULL )
+   /* Following section removed by JBV (no more mass string reallocation) */
+   /* if ( ( t = (char *) CALLOC( s->length + 1, 1, "str_btob" )) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in str_btob(): failed to get memory for new buffer" );
@@ -72,14 +78,30 @@ str_btob( d, s )
       bwb_error( err_getmem );
 #endif
       return FALSE;
-      }
+      } */
 
-   /* write the c string to the b string */
+   /* Only one of these two conditions necessitates reallocation (JBV) */
+   if ( ( d->sbuffer == NULL ) || ( d->rab == TRUE ) )
+   {
+      if ( ( t = (char *) CALLOC( MAXSTRINGSIZE + 1, 1, "str_btob" )) == NULL )
+         {
+#if PROG_ERRORS
+         bwb_error( "in str_btob(): failed to get memory for new buffer" );
+#else
+         bwb_error( err_getmem );
+#endif
+         return FALSE;
+         }
+   }
+   else t = d->sbuffer; /* Leave well enough alone (JBV) */
+
+   /* write the b string to the temp c string */
 
    t[ 0 ] = '\0';
    for ( i = 0; i < (int) s->length; ++i )
       {
       t[ i ] = s->sbuffer[ i ];
+      t[ i + 1 ] = '\0'; /* JBV */
 #if INTENSIVE_DEBUG
       tbuf[ i ] = s->sbuffer[ i ];
       tbuf[ i + 1 ] = '\0';
@@ -96,18 +118,22 @@ str_btob( d, s )
       }
 #endif
 
-   if (( d->rab != TRUE ) && ( d->sbuffer != NULL ))
+   /* Following section removed by JBV (no more mass string reallocation) */
+   /* if (( d->rab != TRUE ) && ( d->sbuffer != NULL ))
       {
 #if INTENSIVE_DEBUG
       sprintf( tbuf, "in str_btob(): deallocating string memory" );
       bwb_debug ( tbuf );
 #endif
-      free( d->sbuffer );
+      FREE( d->sbuffer, "str_btob" );
+      d->sbuffer = NULL;
       }
    else
       {
       d->rab = (char) FALSE;
-      }
+      } */
+
+   d->rab = (char) FALSE; /* JBV */
 
    /* reassign buffer */
 
@@ -162,7 +188,21 @@ str_ctob( s, buffer )
 
    /* get memory for new buffer */
 
-   if ( ( t = (char *) calloc( strlen( buffer ) + 1, 1 )) == NULL )
+   /* Following section removed by JBV (no more mass string reallocation) */
+   /* if ( ( t = (char *) CALLOC( strlen( buffer ) + 1, 1, "str_ctob" )) == NULL )
+      {
+#if PROG_ERRORS
+      bwb_error( "in str_ctob(): failed to get memory for new buffer" );
+#else
+      bwb_error( err_getmem );
+#endif
+      return FALSE;
+      } */
+
+   /* Only one of these two conditions necessitates reallocation (JBV) */
+   if ( ( s->sbuffer == NULL ) || ( s->rab == TRUE ) )
+   {
+   if ( ( t = (char *) CALLOC( MAXSTRINGSIZE + 1, 1, "str_ctob" )) == NULL )
       {
 #if PROG_ERRORS
       bwb_error( "in str_ctob(): failed to get memory for new buffer" );
@@ -171,13 +211,16 @@ str_ctob( s, buffer )
 #endif
       return FALSE;
       }
+   }
+   else t = s->sbuffer; /* Leave well enough alone (JBV) */
 
-   /* write the c string to the b string */
+   /* write the c string to the temp c string */
 
    t[ 0 ] = '\0';
    for ( i = 0; i < (int) strlen( buffer ); ++i )
       {
       t[ i ] = buffer[ i ];
+      t[ i + 1 ] = '\0'; /* JBV */
 #if INTENSIVE_DEBUG
       tbuf[ i ] = buffer[ i ];
       tbuf[ i + 1 ] = '\0';
@@ -194,14 +237,18 @@ str_ctob( s, buffer )
       }
 #endif
 
-   if (( s->rab != TRUE ) && ( s->sbuffer != NULL ))
+   /* Following section removed by JBV (no more mass string reallocation) */
+   /* if (( s->rab != TRUE ) && ( s->sbuffer != NULL ))
       {
-      free( s->sbuffer );
+      FREE( s->sbuffer, "str_ctob" );
+      s->sbuffer = NULL;
       }
    else
       {
       s->rab = (char) FALSE;
-      }
+      } */
+
+   s->rab = (char) FALSE; /* JBV */
 
    /* reassign buffer */
 
@@ -351,5 +398,3 @@ str_cmp( a, b )
    }
 
 
-
-

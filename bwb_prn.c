@@ -23,6 +23,11 @@
 
 ***************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -103,7 +108,9 @@ bwb_print( l )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( s_buffer = calloc( MAXSTRINGSIZE + 1, sizeof(char) ) ) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( s_buffer = CALLOC( MAXSTRINGSIZE + 1, sizeof(char), "bwb_print") ) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in bwb_print(): failed to get memory for s_buffer" );
@@ -232,6 +239,9 @@ bwb_xprint( l, f )
    static char *element;
    static char *prnbuf;
    static int init = FALSE;
+   register int i, j; /* JBV */
+   int dig_pos, dec_pos; /* JBV */
+   char tbuf[ MAXSTRINGSIZE + 1 ]; /* JBV */
 #if INTENSIVE_DEBUG || TEST_BSTRING
    bstring *b;
 #endif
@@ -241,7 +251,9 @@ bwb_xprint( l, f )
    if ( init == FALSE )
       {
       init = TRUE;
-      if ( ( format_string = calloc( MAXSTRINGSIZE + 1, sizeof(char) ) ) == NULL )
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( format_string = CALLOC( MAXSTRINGSIZE + 1, sizeof(char), "bwb_xprint") ) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in bwb_xprint(): failed to get memory for format_string" );
@@ -249,7 +261,8 @@ bwb_xprint( l, f )
          bwb_error( err_getmem );
 #endif
          }
-      if ( ( output_string = calloc( MAXSTRINGSIZE + 1, sizeof(char) ) ) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( output_string = CALLOC( MAXSTRINGSIZE + 1, sizeof(char), "bwb_xprint") ) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in bwb_xprint(): failed to get memory for output_string" );
@@ -257,7 +270,8 @@ bwb_xprint( l, f )
          bwb_error( err_getmem );
 #endif
          }
-      if ( ( element = calloc( MAXSTRINGSIZE + 1, sizeof(char) ) ) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( element = CALLOC( MAXSTRINGSIZE + 1, sizeof(char), "bwb_xprint") ) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in bwb_xprint(): failed to get memory for element buffer" );
@@ -265,7 +279,8 @@ bwb_xprint( l, f )
          bwb_error( err_getmem );
 #endif
          }
-      if ( ( prnbuf = calloc( MAXSTRINGSIZE + 1, sizeof(char) ) ) == NULL )
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ( ( prnbuf = CALLOC( MAXSTRINGSIZE + 1, sizeof(char), "bwb_xprint") ) == NULL )
          {
 #if PROG_ERRORS
          bwb_error( "in bwb_xprint(): failed to get memory for prnbuf" );
@@ -425,8 +440,9 @@ bwb_xprint( l, f )
                   bwb_error( err_mismatch );
 #endif
                   }
-               sprintf( output_string, "%.*s", format->width,
-                  element );
+               if ( format->width == -1 ) /* JBV */
+                  sprintf( output_string, "%s", element );
+               else sprintf( output_string, "%.*s", format->width, element );
 
 #if INTENSIVE_DEBUG
                sprintf( bwb_ebuf, "in bwb_xprint(): output string <%s>",
@@ -434,7 +450,7 @@ bwb_xprint( l, f )
                bwb_debug( bwb_ebuf );
 #endif
 
-               prn_xprintf( f, output_string );
+               prn_xxprintf( f, output_string ); /* Was prn_xprintf (JBV) */
                break;
 
 	    case NUMBER:
@@ -449,14 +465,108 @@ bwb_xprint( l, f )
 
 	       if ( format->exponential == TRUE )
 		  {
-		  sprintf( output_string, "%e",
-		     exp_getnval( e ) );
+                  /*------------------------------------------------------*/
+                  /* NOTE: Width and fill have no effect on C exponential */
+                  /* format (JBV)                                         */
+                  /*------------------------------------------------------*/
+		  if ( format->sign == TRUE ) /* Added by JBV */
+                     sprintf( output_string, "%+e", exp_getnval( e ) );
+		  else
+                     sprintf( output_string, "%e", exp_getnval( e ) );
 		  }
 	       else
 		  {
+                  /*---------------------------------------------------*/
+                  /* NOTE: Minus, commas, and money are only valid for */
+                  /* floating point format (JBV)                       */
+                  /*---------------------------------------------------*/
+		  if ( format->sign == TRUE ) /* Added by JBV */
+		  sprintf( output_string, "%+*.*f",
+		     format->width, format->precision, exp_getnval( e ) );
+		  else if ( format->minus == TRUE ) /* Added by JBV */
+                  {
+		      sprintf( output_string, "%*.*f",
+		         format->width, format->precision, exp_getnval( e ) );
+                      for (i = 0; i < strlen( output_string ); ++i )
+                      {
+                          if ( output_string[ i ] != ' ' )
+                          {
+                              if ( output_string[ i ] == '-' )
+                              {
+                                  output_string[ i ] = ' ';
+                                  strcat( output_string, "-" );
+                              }
+                              else strcat( output_string, " " );
+                              break;
+                          }
+                      }
+                  }
+		  else
 		  sprintf( output_string, "%*.*f",
 		     format->width, format->precision, exp_getnval( e ) );
+
+                  if ( format->commas == TRUE ) /* Added by JBV */
+                  {
+                      dig_pos = -1;
+                      dec_pos = -1;
+                      for ( i = 0; i < strlen( output_string ); ++i )
+                      {
+                          if ( ( isdigit( output_string[ i ] ) != 0 )
+                          && ( dig_pos == -1 ) )
+                             dig_pos = i;
+                          if ( ( output_string[ i ] == '.' )
+                          && ( dec_pos == -1 ) )
+                             dec_pos = i;
+                          if ( ( dig_pos != -1 ) && ( dec_pos != -1 ) ) break;
+                      }
+                      if ( dec_pos == -1 ) dec_pos = strlen( output_string );
+                      j = 0;
+                      for ( i = 0; i < strlen( output_string ); ++i )
+                      {
+                          if ( ( ( dec_pos - i ) % 3 == 0 )
+                          && ( i > dig_pos ) && ( i < dec_pos ) )
+                          {
+                              tbuf[ j ] = ',';
+                              ++j;
+                              tbuf[ j ] = '\0';
+                          }
+                          tbuf[ j ] = output_string[ i ];
+                          ++j;
+                          tbuf[ j ] = '\0';
+                      }
+                      strcpy( output_string,
+                         &tbuf[ strlen( tbuf ) - strlen( output_string ) ] );
+                  }
+
+                  if ( format->money == TRUE ) /* Added by JBV */
+                  {
+                      for ( i = 0; i < strlen( output_string ); ++i )
+                      {
+                          if ( output_string[ i ] != ' ' )
+                          {
+                              if ( i > 0 )
+                              {
+                                  if ( isdigit( output_string[ i ] ) == 0 )
+                                  {
+                                      output_string[ i - 1 ]
+                                         = output_string[ i ];
+                                      output_string[ i ] = '$';
+                                  }
+                                  else output_string[ i - 1 ] = '$';
+                              }
+                              break;
+                          }
+                      }
+                  }
+
 		  }
+
+                  if ( format->fill == '*' ) /* Added by JBV */
+                  for ( i = 0; i < strlen( output_string ); ++i )
+                  {
+                     if ( output_string[ i ] != ' ' ) break;
+                     output_string[ i ] = '*';
+                  }
 
 #if INTENSIVE_DEBUG
 	       sprintf( bwb_ebuf, "in bwb_xprint(): output number <%f> string <%s>",
@@ -464,7 +574,7 @@ bwb_xprint( l, f )
 	       bwb_debug( bwb_ebuf );
 #endif
 
-               prn_xprintf( f, output_string );
+               prn_xxprintf( f, output_string ); /* Was prn_xprintf (JBV) */
                break;
 
 	    default:
@@ -521,7 +631,9 @@ bwb_xprint( l, f )
             break;
 #endif
          case ',':		/* tab over */
-            xputc( f, '\t' );
+            /* Tab only if there's no format specification! (JBV) */
+            if (( fs_pos == -1 ) || ( strlen( element ) == 0 ))
+               xputc( f, '\t' );
             ++l->position;
             adv_ws( l->buffer, &( l->position ) );
             break;
@@ -535,6 +647,9 @@ bwb_xprint( l, f )
          }
 
       }				/* end of loop through print elements */
+
+   if (( fs_pos > -1 ) && ( strlen( element ) > 0 ))
+      format = get_prnfmt( format_string, &fs_pos, f ); /* Finish up (JBV) */
 
    /* call prn_cr() to print a CR if it is not overridden by a
       concluding ';' mark */
@@ -593,7 +708,7 @@ get_prnfmt( buffer, position, f )
 
    /* advance past whitespace */
 
-   adv_ws( buffer, position );
+   /* adv_ws( buffer, position ); */  /* Don't think we want this (JBV) */
 
    /* check first character: a lost can be decided right here */
 
@@ -610,7 +725,9 @@ get_prnfmt( buffer, position, f )
       switch( buffer[ *position ] )
          {
          case ' ':		/* end of this format segment */
-            loop = FALSE;
+            xxputc( f, buffer[ *position ] ); /* Gotta output it (JBV) */
+            ++( *position ); /* JBV */
+            if (retstruct.type != FALSE) loop = FALSE; /* JBV */
             break;
          case '\0':		/* end of format string */
          case '\n':
@@ -619,13 +736,20 @@ get_prnfmt( buffer, position, f )
             return &retstruct;
          case '_':		/* print next character as literal */
             ++( *position );
-            xputc( f, buffer[ *position ] );
+            xxputc( f, buffer[ *position ] ); /* Not xputc, no tabs (JBV) */
             ++( *position );
             break;
 
 	 case '!':
             retstruct.type = STRING;
             retstruct.width = 1;
+            ++( *position ); /* JBV */
+            return &retstruct;
+
+	 case '&': /* JBV */
+            retstruct.type = STRING;
+            retstruct.width = -1; 
+            ++( *position );
             return &retstruct;
 
 	 case '\\':
@@ -649,18 +773,22 @@ get_prnfmt( buffer, position, f )
                }
             return &retstruct;
          case '$':
+            ++retstruct.width; /* JBV */
             ++( *position );
             retstruct.money = TRUE;
             if ( buffer[ *position ] == '$' )
                {
+               ++retstruct.width; /* JBV */
                ++( *position );
                }
             break;
          case '*':
+            ++retstruct.width; /* JBV */
             ++( *position );
             retstruct.fill = '*';
             if ( buffer[ *position ] == '*' )
                {
+               ++retstruct.width; /* JBV */
                ++( *position );
                }
             break;
@@ -670,14 +798,17 @@ get_prnfmt( buffer, position, f )
             break;
          case '#':
             retstruct.type = NUMBER;		/* for now */
-            ++( *position );
-            for ( retstruct.width = 1; buffer[ *position ] == '#'; ++( *position ) )
+            /* ++( *position ); */  /* Removed by JBV */
+            /* The initial condition shouldn't be retstruct.width = 1 (JBV) */
+            for ( ; buffer[ *position ] == '#'; ++( *position ) )
                {
                ++retstruct.width;
                }
             if ( buffer[ *position ] == ',' )
                {
                retstruct.commas = TRUE;
+               ++retstruct.width; /* JBV */
+               ++( *position ); /* JBV */
                }
             if ( buffer[ *position ] == '.' )
                {
@@ -705,6 +836,11 @@ get_prnfmt( buffer, position, f )
                ++retstruct.width;
                }
             return &retstruct;
+
+	 default: /* JBV */
+            xxputc( f, buffer[ *position ] ); /* Gotta output it (JBV) */
+            ++( *position );
+            break;
 
          }
       }					/* end of loop */
@@ -830,6 +966,42 @@ prn_xprintf( f, buffer )
    for ( p = buffer; *p != '\0'; ++p )
       {
       xputc( f, *p );
+      }
+
+   return TRUE;
+
+   }
+
+/***************************************************************
+
+        FUNCTION:       prn_xxprintf()
+
+	DESCRIPTION:    This function outputs a null-terminated
+			string to a specified file or output
+			device without expanding tabs.
+			Added by JBV 10/95
+
+***************************************************************/
+
+#if ANSI_C
+int
+prn_xxprintf( FILE *f, char *buffer )
+#else
+int
+prn_xxprintf( f, buffer )
+   FILE *f;
+   char *buffer;
+#endif
+   {
+   char *p;
+
+   /* DO NOT try anything so stupid as to run bwb_debug() from
+      here, because it will create an endless loop. And don't
+      ask how I know. */
+
+   for ( p = buffer; *p != '\0'; ++p )
+      {
+      xxputc( f, *p );
       }
 
    return TRUE;
@@ -1111,11 +1283,11 @@ prn_precision( v )
 
 #if INTENSIVE_DEBUG
       sprintf( bwb_ebuf, "in prn_precision(): fmod( %f, %f ) = %.12f",
-         nval, d, fmod( nval, d ) );
+         nval, d, fmod( (double) nval, (double) d ) );
       bwb_debug( bwb_ebuf );
 #endif
 
-      if ( fmod( nval, d ) < 0.0000001 )
+      if ( fmod( (double) nval, (double) d ) < 0.0000001 ) /* JBV */
          {
          return r;
          }
@@ -1187,6 +1359,8 @@ bwb_lerror( l )
    {
    char tbuf[ MAXSTRINGSIZE + 1 ];
    int n;
+   struct exp_ese *e; /* JBV */
+   int pos; /* JBV */
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_lerror(): entered function " );
@@ -1211,7 +1385,12 @@ bwb_lerror( l )
    /* get the variable name or numerical constant */
 
    adv_element( l->buffer, &( l->position ), tbuf );
-   n = atoi( tbuf );
+   /* n = atoi( tbuf ); */  /* Removed by JBV */
+
+   /* Added by JBV */
+   pos = 0;
+   e = bwb_exp( tbuf, FALSE, &pos );
+   n = (int) exp_getnval( e );
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in bwb_lerror(): error number is <%d> ", n );

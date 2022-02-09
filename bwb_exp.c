@@ -23,6 +23,11 @@
 
 ****************************************************************/
 
+/*---------------------------------------------------------------*/
+/* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
+/* 11/1995 (eidetics@cerf.net).                                  */
+/*---------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -71,7 +76,7 @@ bwb_exp( expression, assignment, position )
    entry_level = CURTASK expsc;
    err_condition = FALSE;
 
-   /* advance past whitespace or beginningg of line segment */
+   /* advance past whitespace or beginning of line segment */
 
 #if MULTISEG_LINES
    if ( expression[ *position ] == ':' )
@@ -192,6 +197,7 @@ bwb_exp( expression, assignment, position )
          case OP_XOR:
          case OP_IMPLIES:
          case OP_EQUIV:
+         case OP_NEGATION: /* JBV */
 
 #if INTENSIVE_DEBUG
             sprintf( bwb_ebuf, "in bwb_exp(): operator detected." );
@@ -595,7 +601,7 @@ exp_findop( expression )
       {
 
 #if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in bwb_findop() loop position <%d> char 0x%x",
+      sprintf( bwb_ebuf, "in exp_findop() loop position <%d> char 0x%x",
 	 c, expression[ position ] );
       bwb_debug( bwb_ebuf );
 #endif
@@ -692,8 +698,8 @@ exp_findop( expression )
 	FUNCTION:       exp_isnc()
 
 	DESCRIPTION:    This function reads the expression to find
-			if a logical or mathematical operation is
-			required at this point.
+			if a numerical constant is present at this
+			point.
 
 ***************************************************************/
 
@@ -706,6 +712,7 @@ exp_isnc( expression )
    char *expression;
 #endif
    {
+   char tbuf[ MAXVARNAMESIZE + 1 ]; /* JBV */
 
    switch( expression[ 0 ] )
       {
@@ -751,6 +758,20 @@ exp_isnc( expression )
             {
             return OP_NULL;
             }
+
+         /*--------------------------------------------------------*/
+         /* Check for unary minus sign added by JBV.               */
+         /* Could be prefixing a parenthetical expression or a     */
+         /* variable name.                                         */
+         /* But parentheses won't show up in expression (cbuf), so */
+         /* just check for expression and variable name lengths.   */
+         /*--------------------------------------------------------*/
+         if (expression[0] == '-')
+         {
+             if (strlen(expression) == 1) return OP_NEGATION;
+             exp_getvfname(&expression[1], tbuf);
+             if (strlen(tbuf) != 0) return OP_NEGATION;
+         }
 
          /* failing these tests, the argument must be a numerical
             constant preceded by a plus or minus sign */
@@ -1112,7 +1133,7 @@ exp_getvfname( source, destination )
    while( source[ s_pos ] != '\0' )
       {
 
-      /* all aphabetical characters are acceptable */
+      /* all alphabetical characters are acceptable */
 
       if ( isalpha( source[ s_pos ] ) != 0 )
 
