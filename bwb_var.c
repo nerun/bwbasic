@@ -376,7 +376,7 @@ bwb_swap( l )
    lhs->array_pos = rhs->array_pos;
    lhs->dimensions = rhs->dimensions;
 
-   if ( lhs->type = NUMBER )
+   if ( lhs->type == NUMBER )
       {
       rhs->memnum = tmp.memnum;
       }
@@ -2513,6 +2513,15 @@ var_islocal( buffer )
    bwb_debug( bwb_ebuf );
 #endif
 
+   /* Prevent the expression in the initial value of the for loop below
+      from violating the lower bound of the "excs" array. This would
+      happen during startup when "exsc" is initially set to -1 and
+      bwbasic.exe would fail with a memory exception when compiled with
+      Open Watcom C. */
+
+   if ( CURTASK exsc >= 0 )
+      {
+
    /* run through the local variable list and try to find a match */
 
    for ( v = CURTASK excs[ CURTASK exsc ].local_variable; v != NULL; v = v->next )
@@ -2550,7 +2559,7 @@ var_islocal( buffer )
          }
 
       }
-
+      } /* check of exsc >= 0 */
    /* search failed, return NULL */
 
 #if INTENSIVE_DEBUG

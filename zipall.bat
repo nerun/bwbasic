@@ -7,5 +7,5 @@ del alljcl.jcl
 del alljcl.txt
 zip -0 -X -ll -j bwbsrc.zip *.c
 zip -0 -X -ll -j bwbinc.zip *.h
-zip -0 -X -ll -j bwbjcl.zip *.jcl README
+zip -0 -X -ll -j bwbjcl.zip *.jcl README COPYING
 zip -0 -X all *.zip

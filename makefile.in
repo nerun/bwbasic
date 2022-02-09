@@ -101,9 +101,9 @@ distclean: clean
 realclean: distclean
 	rm -f TAGS
 
-# Version number changed from 2.10 to 2.20 by JBV
+# Version number changed from 2.20 to 2.40 by PE
 dist: $(DISTFILES)
-	echo bwbasic-2.20 > .fname
+	echo bwbasic-2.40 > .fname
 	rm -rf `cat .fname`
 	mkdir `cat .fname`
 	ln $(DISTFILES) `cat .fname`

@@ -10,5 +10,5 @@ subjobs
 after taking a look at what they do and seeing if they
 are appropriate to your environment.
 
-Or just run "allbwb" which will do all of that.
+Or just run "allmvs" which will do all of that.
 

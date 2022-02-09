@@ -1,0 +1,101 @@
+#               Open Watcom C (http://www.openwatcom.org) Makefile
+#               for Bywater BASIC Interpreter
+#               
+#               Adapted from makefile.qcl
+#               by Bill Chatfield <bill_chatfield@yahoo.com>
+#
+#		To make the program type: wmake -f makefile.wcl386
+#
+#		To implement the bwx_iqc implementation (using specific
+#		features for the IBM PC and compatibles), chainge each
+#		instance of "bwx_tty" to "bwx_iqc".
+#
+#		The WATCOM environment variable should have been set
+#		to the top directory of the Open Watcom C installation.
+#		It is used below, so it needs to be set.
+
+#
+#		Watcom looks a the INCLUDE variable to find its include
+#		files.
+#		
+.BEFORE
+	set INCLUDE=$(%WATCOM)\h;$(%WATCOM)\h\nt
+
+
+PROJ=           bwbasic
+CC=             wcl386
+LINK=		wlink
+
+#
+# Open Watcom options
+# 	-bc	Build a console application
+# 	-c	Compile only; no link
+# 	-d2	Generate code for the debugger
+# 	-ox	Optimize at maximum level
+# 	-q	Quiet operation
+# 	-wx	Display warnings at maximum level
+# 	-za	ANSI C syntax only; no language extensions
+#
+CFLAGS=         -bc -c -ox -q -wx -za -DMSDOS 
+
+LFLAGS=         OPTION QUIET
+
+OFILES=         bwbasic.obj bwb_int.obj bwb_tbl.obj bwb_cmd.obj bwb_prn.obj &
+                bwb_exp.obj bwb_var.obj bwb_inp.obj bwb_fnc.obj bwb_cnd.obj &
+                bwb_ops.obj bwb_dio.obj bwb_str.obj bwb_elx.obj bwb_mth.obj &
+		bwb_stc.obj bwx_tty.obj
+
+HFILES=         bwbasic.h bwb_mes.h
+
+ZFILES=		bwbasic.exe bwbasic.doc INSTALL COPYING README &
+		README.patch01 README.patch02
+
+all:            $(PROJ).exe
+
+$(PROJ).exe:	$(OFILES)
+	$(LINK) $(LFLAGS) FILE $(OFILES: =,) NAME $@
+
+clean:		.SYMBOLIC
+	del $(OFILES) *.err $(PROJ).exe
+
+dist:		.SYMBOLIC
+	zip bwbasic-2.30-win32.zip $(ZFILES)
+
+
+.c.obj:		.AUTODEPEND
+	$(CC) $(CFLAGS) $[@
+
+bwbasic.obj:	bwbasic.c $(HFILES) $(__MAKEFILES__)
+
+bwb_int.obj:	bwb_int.c $(HFILES) $(__MAKEFILES__)
+
+bwb_tbl.obj:	bwb_tbl.c $(HFILES) $(__MAKEFILES__)
+
+bwb_cmd.obj:	bwb_cmd.c $(HFILES) $(__MAKEFILES__)
+
+bwb_prn.obj:	bwb_prn.c $(HFILES) $(__MAKEFILES__)
+
+bwb_exp.obj:	bwb_exp.c $(HFILES) $(__MAKEFILES__)
+
+bwb_var.obj:	bwb_var.c $(HFILES) $(__MAKEFILES__)
+
+bwb_inp.obj:	bwb_inp.c $(HFILES) $(__MAKEFILES__)
+
+bwb_fnc.obj:	bwb_fnc.c $(HFILES) $(__MAKEFILES__)
+
+bwb_cnd.obj:	bwb_cnd.c $(HFILES) $(__MAKEFILES__)
+
+bwb_ops.obj:	bwb_ops.c $(HFILES) $(__MAKEFILES__)
+
+bwb_dio.obj:	bwb_dio.c $(HFILES) $(__MAKEFILES__)
+
+bwb_str.obj:	bwb_str.c $(HFILES) $(__MAKEFILES__)
+
+bwb_elx.obj:	bwb_elx.c $(HFILES) $(__MAKEFILES__)
+
+bwb_mth.obj:	bwb_mth.c $(HFILES) $(__MAKEFILES__)
+
+bwb_stc.obj:	bwb_stc.c $(HFILES) $(__MAKEFILES__)
+
+bwx_tty.obj:	bwx_tty.c $(HFILES) $(__MAKEFILES__)
+

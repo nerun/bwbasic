@@ -1,7 +1,7 @@
 //BWBGEN   JOB CLASS=C,REGION=0K
 //*
 //RUNBW    PROC BWBPREF='BWBASIC'
-//BWBASIC  EXEC PGM=BWBASIC
+//BWBASIC  EXEC PGM=BWBASIC,PARM='DD:INPUT'
 //STEPLIB  DD DSN=&BWBPREF..LINKLIB,DISP=SHR
 //SYSIN    DD DUMMY
 //SYSPRINT DD SYSOUT=*,DCB=(RECFM=F,LRECL=132,BLKSIZE=132)
@@ -15,8 +15,11 @@
 //         PEND
 //*
 //S1 EXEC RUNBW
-//SYSIN DD *
-print "hello, world"
+//INPUT DD *
+x = 1
+print "hello, world",x
+x = 2
+print "hello, world",x
 quit
 /*
 //S2 EXEC CLEAN

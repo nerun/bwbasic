@@ -337,10 +337,10 @@ str_btoc( buffer, s )
 ***************************************************************/
 
 #if ANSI_C
-char *
+bstring *
 str_cat( bstring *a, bstring *b )
 #else
-char *
+bstring *
 str_cat( a, b )
    bstring *a;
    bstring *b;
@@ -348,7 +348,6 @@ str_cat( a, b )
    {
    char abuf[ MAXSTRINGSIZE + 1 ];
    char bbuf[ MAXSTRINGSIZE + 1 ];
-   char *r;
 
    str_btoc( abuf, a );
    str_btoc( bbuf, b );
@@ -366,7 +365,7 @@ str_cat( a, b )
    bwb_debug( bwb_ebuf );
 #endif
 
-   return r;
+   return a;
    }
 
 /***************************************************************

@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.30"          /* Current version number */
+#define VERSION         "2.40"          /* Current version number */
 
 /***************************************************************
 
@@ -451,6 +451,8 @@
 #define ERRFILE         "err.out"       /* Filename for redirected error messages */
 #if defined(__MVS__)
 #define PROFILENAME "dd:profile"
+#elif defined(__CMS__)
+#define PROFILENAME "PROFILE BAS"
 #else
 #define PROFILENAME	"profile.bas"	/* Filename for profile execution */
 #endif
@@ -1029,7 +1031,7 @@ extern int str_btoc( char *buffer, bstring *s );
 extern int str_btob( bstring *d, bstring *s );
 extern int str_ctob( bstring *s, char *buffer );
 extern int str_cmp( bstring *s, bstring *t );
-extern char * str_cat( bstring *s, bstring *t );
+extern bstring * str_cat( bstring *s, bstring *t );
 extern int exp_findop( char *expression );
 extern int exp_isop( char *expression );
 extern int exp_isfn( char *expression );
@@ -1334,7 +1336,7 @@ extern int str_btoc();
 extern int str_btob();
 extern int str_ctob();
 extern int str_cmp();
-extern char * str_cat();
+extern bstring * str_cat();
 extern int exp_findop();
 extern int exp_isop();
 extern int exp_isfn();
