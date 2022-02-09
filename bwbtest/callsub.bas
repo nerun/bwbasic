@@ -8,7 +8,7 @@ Print "The next printed line should be from the Subroutine."
 Print
 testvar = 17
 
-Call TestSub 5, "Hello", testvar
+Call TestSub( 5, "Hello", testvar)
 
 Print
 Print "This is back at the main program. "

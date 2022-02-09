@@ -3,7 +3,7 @@
                               README file for
 
 
-               Bywater BASIC Interpreter/Shell, version 2.61
+               Bywater BASIC Interpreter, version 3.00
                ---------------------------------------------
 
                     Copyright (c) 1993, Ted A. Campbell
@@ -33,6 +33,8 @@
                Version 2.61 modifications by Paul Edwards,
                               4 August 2014
 
+               Version 3.00 modifications by Howard Wulf, AF5NE
+                               12 May 2015
 
 
 
@@ -74,129 +76,295 @@ COMMUNICATIONS:
 A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
 
    Be aware that many of these commands and functions will not be
-   available unless you have set certain flags in the header files.
+   available unless you have enabled a particular dialect using
+   the OPTION VERSION command. 
 
-   ABS( number )
-   ASC( string$ )
-   ATN( number )
-   CALL subroutine-name
-   CASE constant | IF partial-expression | ELSE
-   CHAIN file-name
-   CHDIR pathname
-   CHR$( number )
-   CINT( number )
-   CLEAR
-   CLOSE [[#]file-number]...
-   CLS
-   COMMON variable [, variable...]
-   COS( number )
-   CSNG( number )
-   CVD( string$ )
-   CVI( string$ )
-   CVS( string$ )
-   DATA constant[,constant]...
-   DATE$
-   DEF FNname(arg...)] = expression
-   DEFDBL letter[-letter](, letter[-letter])...
-   DEFINT letter[-letter](, letter[-letter])...
-   DEFSNG letter[-letter](, letter[-letter])...
-   DEFSTR letter[-letter](, letter[-letter])...
-   DELETE line[-line]
-   DIM variable(elements...)[variable(elements...)]...
-   DO NUM|UNNUM
-   DO [WHILE expression]
-   EDIT		(* depends on variable BWB.EDITOR$)
-   ELSE
-   ELSEIF
-   END FUNCTION | IF | SELECT | SUB
-   ENVIRON variable-string$ = string$
-   ENVIRON$( variable-string )
-   EOF( device-number )
-   ERASE variable[, variable]...
-   ERL
-   ERR
-   ERROR number
-   EXIT FOR|DO
-   EXP( number )
-   FIELD [#] device-number, number AS string-variable [, number AS string-variable...]
-   FILES filespec$	(* depends on variable BWB.FILES$)
-   FOR counter = start TO finish [STEP increment]
-   FUNCTION function-definition
-   GET [#] device-number [, record-number]
-   GOSUB line | label
-   GOTO line | label
-   HEX$( number )
-   IF expression THEN [statement [ELSE statement]]
-   INKEY$
-   INPUT [# device-number]|[;]["prompt string";]list of variables
-   INSTR( [start-position,] string-searched$, string-pattern$ )
-   INT( number )
-   KILL file-name
-   LEFT$( string$, number-of-spaces )
-   LEN( string$ )
-   LET variable = expression
-   LINE INPUT [[#] device-number,]["prompt string";] string-variable$
-   LIST line[-line]
-   LOAD file-name
-   LOC( device-number )
-   LOCATE
-   LOF( device-number )
-   LOG( number )
-   LOOP [UNTIL expression]
-   LSET string-variable$ = expression
-   MERGE file-name
-   MID$( string$, start-position-in-string[, number-of-spaces ] )
-   MKD$( number )
-   MKDIR pathname
-   MKI$( number )
-   MKS$( number )
-   NAME old-file-name AS new-file-name
-   NEW
-   NEXT counter
-   OCT$( number )
-   ON variable GOTO|GOSUB line[,line,line,...]
-   ON ERROR GOSUB line | label
-   OPEN O|I|R, [#]device-number, file-name [,record length]
-        file-name FOR INPUT|OUTPUT|APPEND AS [#]device-number [LEN = record-length]
-   OPTION BASE number
-   POS
-   PRINT [# device-number,][USING format-string$;] expressions...
-   PUT [#] device-number [, record-number]
-   RANDOMIZE number
-   READ variable[, variable]...
-   REM string
-   RENUM
-   RESTORE line
-   RETURN
-   RIGHT$( string$, number-of-spaces )
-   RMDIR pathname
-   RND( number )
-   RSET string-variable$ = expression
-   RUN [line]|[file-name]
-   SAVE file-name
-   SELECT CASE expression
-   SGN( number )
-   SIN( number )
-   SPACE$( number )
-   SPC( number )
-   SQR( number )
-   STOP
-   STR$( number )
-   STRING$( number, ascii-value|string$ )
-   SUB subroutine-name
-   SWAP variable, variable
-   SYSTEM
-   TAB( number )
-   TAN( number )
-   TIME$
-   TIMER
-   TROFF
-   TRON
-   VAL( string$ )
-   WEND
-   WHILE expression
-   WIDTH [# device-number,] number
-   WRITE [# device-number,] element [, element ]....
+     ? expressions...
+     ABS( X )
+     ACOS( X )
+     ANGLE( X, Y )
+     ARGC
+     ARGT$( X )
+     ARGV$( X )
+     ARGV( X )
+     ASC( A$ )
+     ASIN( X )
+     ATN( X )
+     CALL subroutine-name [parameter [, ...] ]
+     CASE ELSE
+     CASE IF partial-expression
+     CASE IS
+     CASE constant
+     CCUR( X )
+     CDBL( X )
+     CEIL( X )
+     CHAIN filename$
+     CHANGE A$ TO X | CHANGE X TO A$
+     CHDIR( A$ )
+     CHR$( X )
+     CINT( X )
+     CLEAR
+     CLNG( X )
+     CLOAD [file-name$]
+     CLOAD* ArrayName
+     CLOSE( X )
+     CLS
+     CMDS
+     COLOR( X, Y )
+     COMMON variable [, ...]
+     CONT
+     COS( X )
+     COSH( X )
+     COT( X )
+     CSAVE [file-name$]
+     CSAVE* ArrayName
+     CSC( X )
+     CSNG( X )
+     CVC( A$ )
+     CVD( A$ )
+     CVI( A$ )
+     CVL( A$ )
+     CVS( A$ )
+     DATA constant[, ...]
+     DATE
+     DATE$
+     DEF FN
+     DEF FNname(arg...)] = expression
+     DEF SUB
+     DEFDBL letter[-letter] [, ...]
+     DEFINT  letter[-letter] [, ...]
+     DEFSNG letter[-letter] [, ...]
+     DEFSTR letter[-letter] [, ...]
+     DEG( X )
+     DELETE line [- line]
+     DIM variable( elements [, ...]) [, ...]
+     DO
+     DO UNTIL expression
+     DO WHILE expression
+     EDIT
+     ELSE
+     ELSEIF
+     END
+     END FUNCTION
+     END IF
+     END SELECT
+     END SUB
+     ENVIRON$( A$ )
+     ENVIRON( A$ )
+     EOF( X )
+     EPS( X )
+     ERASE variable [, ...]
+     ERL
+     ERR
+     ERR$
+     ERROR( X )
+     ERROR( X, A$ )
+     EXIT
+     EXIT DO
+     EXIT FOR
+     EXIT FUNCTION
+     EXIT SUB
+     EXIT UNTIL
+     EXIT WHILE
+     EXP( X )
+     FIELD [#] device-number, number AS string-variable$ [, ...]
+     FILEATTR( X, Y )
+     FILES
+     FILES( A$ )
+     FIX( X )
+     FNCS
+     FOR variable = start TO finish [STEP increment]
+     FP( X )
+     FRE
+     FRE( A$ )
+     FRE( X )
+     FREEFILE
+     FUNCTION [ ( parameter [, ...  ] ) ]
+     GET( X )
+     GET( X, Y )
+     GO
+     GOSUB line
+     GOTO line
+     HELP name
+     HEX$( X )
+     IF expression THEN
+     IF expression THEN line1 [ELSE line2]
+     INKEY$
+     INP( X )
+     INPUT [# device-number]|[;]["prompt string";]list of variables
+     INPUT$( X )
+     INPUT$( X, Y )
+     INSTR( A$, B$ )
+     INSTR( X, A$, B$ )
+     INT( X )
+     IP( X )
+     KILL( A$ )
+     LCASE$( A$ )
+     LEFT$( A$, X )
+     LEN( A$ )
+     [LET] variable = expression
+     LINE INPUT [[#] device-number,]["prompt string";] string-variable$
+     LIST line1 [- line2]
+     LOAD [file-name$]
+     LOC( X )
+     LOCATE( X, Y )
+     LOF( X )
+     LOG( X )
+     LOG10( X )
+     LOG2( X )
+     LOOP
+     LOOP UNTIL
+     LOOP WHILE
+     LPOS
+     LPRINT [USING format-string$;] expressions...
+     LSET string-variable$ = expression
+     LTRIM$( A$ )
+     LWIDTH( X )
+     MAINTAINER
+     MAX( X, Y )
+     MAXBYT
+     MAXCUR
+     MAXDBL
+     MAXDEV
+     MAXINT
+     MAXLEN( A$ )
+     MAXLNG
+     MAXLVL
+     MAXNUM
+     MAXSNG
+     MERGE file-name
+     MID$( A$, X )
+     MID$( A$, X, Y )
+     MID$( variable$, start [, count ] ) = expression
+     MIN( X, Y )
+     MINBYT
+     MINCUR
+     MINDBL
+     MINDEV
+     MININT
+     MINLNG
+     MINNUM
+     MINSNG
+     MKC$( X )
+     MKD$( X )
+     MKDIR( A$ )
+     MKI$( X )
+     MKL$( X )
+     MKS$( X )
+     MOD( X, Y )
+     NAME old-file-name AS new-file-name
+     NAME( A$, B$ )
+     NEW
+     NEXT [variable]
+     NULL( X )
+     OCT$( X )
+     ON ERROR GOTO errline   |   ON ERROR RESUME NEXT
+     ON TIMER count GOSUB line
+     ON expression GOTO | GOSUB line [, ...]
+     OPEN file-name [FOR INPUT|OUTPUT|APPEND|BINARY|RANDOM] AS [#]device-number [LEN = record-length]
+     OPEN( A$, X, B$ )
+     OPEN( A$, X, B$, Y )
+     OPTION ...
+     OPTION ANGLE DEGREES
+     OPTION ANGLE RADIANS
+     OPTION ARITHMETIC DECIMAL
+     OPTION ARITHMETIC FIXED
+     OPTION ARITHMETIC NATIVE
+     OPTION BASE 0
+     OPTION BASE 1
+     OPTION BUGS OFF
+     OPTION BUGS ON
+     OPTION COMPARE BINARY
+     OPTION COMPARE TEXT
+     OPTION COVERAGE OFF
+     OPTION COVERAGE ON
+     OPTION INDENT number
+     OPTION STRICT OFF
+     OPTION STRICT ON
+     OPTION TERMINAL ADM-3A
+     OPTION TERMINAL ANSI
+     OPTION TERMINAL NONE
+     OPTION TRACE OFF
+     OPTION TRACE ON
+     OPTION VERSION [version] 
+     ORD( A$ )
+     OUT( X, Y )
+     PEEK( X )
+     PI
+     POKE( X, Y )
+     POS
+     POS( A$, B$ )
+     POS( A$, B$, X )
+     POS( X )
+     PRINT [# device-number,][USING format-string$;] expressions...
+     PUT( X )
+     PUT( X, Y )
+     QUIT
+     RAD( X )
+     RANDOMIZE
+     RANDOMIZE( X )
+     READ variable [, ...]
+     REM ...
+     REMAINDER( X, Y )
+     RENUM
+     REPEAT$( X, A$ )
+     REPEAT$( X, Y )
+     RESET
+     RESTORE [line]
+     RESUME [ 0 | line | NEXT ]
+     RETURN
+     RIGHT$( A$, X )
+     RMDIR( A$ )
+     RND
+     RND( X )
+     ROUND( X, Y )
+     RSET string-variable$ = expression
+     RTRIM$( A$ )
+     RUN [line | file-name$]
+     SAVE [file-name$]
+     SEC( X )
+     SEEK( X )
+     SEEK( X, Y )
+     SELECT
+     SELECT CASE expression
+     SGN( X )
+     SHELL( A$ )
+     SIN( X )
+     SINH( X )
+     SPACE$( X )
+     SPC( X )
+     SQR( X )
+     STOP
+     STR$( X )
+     STRING$( X, A$ )
+     STRING$( X, Y )
+     SUB name [ ( parameter [,...] ) ]
+     SWAP variable, variable
+     SYSTEM
+     TAB( X )
+     TAN( X )
+     TANH( X )
+     TIME
+     TIME$
+     TIMER
+     TIMER ON | STOP | OFF
+     TRIM$( A$ )
+     TROFF
+     TRON
+     TRUNCATE( X, Y )
+     UCASE$( A$ )
+     UEND
+     UNTIL expression
+     USER LBL
+     VAL( A$ )
+     VARS
+     WAIT( X, Y )
+     WAIT( X, Y, Z )
+     WEND
+     WHILE
+     WIDTH( X )
+     WIDTH( X, Y )
+     WRITE [# device-number,] element [, .... ]
 
 
 
@@ -204,6 +372,9 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
 CHANGE HISTORY
 
 
+CHANGES FROM 2.61 to 3.00
+
+   * Code redesign from Howard Wulf, AF5NE
 
 
 CHANGES FROM 2.60 to 2.61

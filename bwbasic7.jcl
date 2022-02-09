@@ -8,6 +8,14 @@
 //SYSTERM  DD SYSOUT=*
 //         PEND
 //*
+//RUNRE    PROC BWBPREF='BWBASIC'
+//BWBASIC  EXEC PGM=RENUM,PARM='DD:INPUT'
+//STEPLIB  DD DSN=&BWBPREF..LINKLIB,DISP=SHR
+//SYSIN    DD DUMMY
+//SYSPRINT DD SYSOUT=*
+//SYSTERM  DD SYSOUT=*
+//         PEND
+//*
 //CLEAN    PROC BWBPREF='BWBASIC'
 //DELETE   EXEC PGM=IEFBR14
 //DD0      DD DSN=&BWBPREF..ALLZIPS,DISP=(MOD,DELETE),
@@ -22,7 +30,16 @@ x = 1
 print "hello, world",x
 x = 2
 print "hello, world",x
-quit
+end
 /*
-//S2 EXEC CLEAN
+//*
+//S2 EXEC RUNRE
+//INPUT DD *
+5 hi
+7 folks
+9 there
+/*
+//EDITFL DD SYSOUT=*
+//*
+//S3 EXEC CLEAN
 //

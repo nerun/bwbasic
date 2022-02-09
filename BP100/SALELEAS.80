@@ -1,0 +1,49 @@
+              SALE-LEASEBACK ANALYSIS                                           
+                                                                                
+THE SITUATION FOR THIS PROGRAM IS THE FOLLOWING: AN OWNER OF A                  
+PIECE OF PROPERTY NEEDS TO RAISE SOME MONEY AND NEEDS THE USE                   
+OF THE PROPERTY. HE CAN SELL THE PROPERTY TO THE INVESTOR AND                   
+THEN LEASE IT BACK(SALE-LEASEBACK) OR HE CAN JUST BORROW THE                    
+MONEY AS A MORTGAGE ON THE PROPERTY.                                            
+                                                                                
+THERE ARE VARIOUS TAX AND OTHER RAMIFICATIONS OF THE TWO                        
+SITUATIONS WHICH THIS PROGRAM HELPS ANALYZE.                                    
+                                                                                
+PRESS <ENTER> TO CONTINUE?                                                      
+ENTER PRESENT VALUE OF PROPERTY(SALE OR MORTGAGE AMT)? 100000                   
+ENTER TERM OF THE LEASE OR MORTGAGE IN YEARS         ? 30                       
+ENTER ANNUAL INTEREST RATE FOR LEASE IN %            ? 10                       
+ENTER ANNUAL INTEREST RATE FOR MORTGAGE IN %         ? 4                        
+ENTER CORPORATE TAX RATE IN %                        ? 15                       
+ENTER TOTAL DEPRECIATION OVER TERM OF LEASE/MORTGAGE ? 5000                     
+                                                                                
+                                                                                
+                                                                                
+                 COMPUTING                                                      
+PRESENT VALUE OF PROPERTY         100000.00                                     
+TERM OF LEASE OR MORTGAGE(YEARS)             30.00                              
+ANNUAL INTEREST RATE FOR LEASE (%)             10.00                            
+ANNUAL INTEREST RATE FOR MORTG (%)              4.00                            
+CORPORATE TAX RATE (%)             15.00                                        
+TOTAL DEPRECIATION FOR TERM OF LOAN           5000.00                           
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+                                                                                
+ANNUAL LEASE RENTAL          10443.83                                           
+TOTAL LEASE PAYMENTS TO TERM         313314.81                                  
+TOTAL LEASE TAX DEDUCTIONS          46997.22                                    
+TOTAL ACTUAL COST OF LEASE TO TERM         266317.59                            
+                                                                                
+PRESS ENTER TO CONTINUE?                                                        
+                                                                                
+ANNUAL MORTGAGE PAYMENT           5728.98                                       
+TOTAL MORTGAGE PAYMENTS TO TERM         171869.51                               
+TOTAL MORTGAGE INTEREST PAID          71869.51                                  
+TOTAL MORTGAGE TAXABLE EXPENSES          76869.51                               
+TOTAL MORTGAGE TAX DEDUCTION          11530.43                                  
+TOTAL MORTGAGE COSTS AFTER TAXES         160339.08                              
+                                                                                
+                                                                                
+LEASE COSTS MORE THAN MORTGAGE BY          105978.51                            
+                                                                                
+PRESS ENTER TO CONTINUE? -1                                                     

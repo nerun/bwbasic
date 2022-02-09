@@ -1,0 +1,21 @@
+GEOMETRIC REGRESSION                                                            
+                                                                                
+NUMBER OF KNOWN POINTS? 3                                                       
+X,Y OF POINT 1 ? 1,2                                                            
+X,Y OF POINT 2 ? 2,34                                                           
+X,Y OF POINT 3 ? 3,567                                                          
+                                                                                
+F(x) = 1.67799 * X[ 5.02694                                                     
+                                                                                
+COEFFICIENT OF DETERMINATION (R[2) = .978231                                    
+COEFFICIENT OF CORRELATION = .989056                                            
+STANDARD ERROR OF ESTIMATE = .589168                                            
+                                                                                
+INTERPOLATION: (ENTER X=0 TO END PROGRAM)                                       
+X =? 1.5                                                                        
+Y = 12.8822                                                                     
+                                                                                
+X =? 2.5                                                                        
+Y = 167.962                                                                     
+                                                                                
+X =? 0                                                                          

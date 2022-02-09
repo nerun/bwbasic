@@ -10,10 +10,18 @@
 92 PRINT "x - Exit to BASIC" 
 100 PRINT 
 110 INPUT c$ 
-120 IF c$ = "1" then gosub 430 
-130 IF c$ = "9" then goto 600 
-132 IF c$ = "x" then end 
-134 IF c$ = "X" then end 
+120 IF c$ = "1" then 
+     gosub 430
+    end if 
+125 IF c$ = "9" then 
+     goto 600
+    end if 
+130 IF c$ = "x" then 
+      end
+    end if 
+135 IF c$ = "X" then 
+      end 
+    end if
 140 GOTO 10 
 150 END 
 160 REM subroutine to clear screen 

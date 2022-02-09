@@ -4,9 +4,7 @@
 #		the QuickC integrated environment. To make the program:
 #		type "nmake -f makefile.qcl".
 #
-#		To implement the bwx_iqc implementation (using specific
-#		features for the IBM PC and compatibles), chainge each
-#		instance of "bwx_tty" to "bwx_iqc".
+#		2015-04-25 Updated for version 3.00 by Howard Wulf, AF5NE
 #
 PROJ=           bwbasic
 CC=             qcl
@@ -22,12 +20,12 @@ CFLAGS=         -O -AL -W3 -Za -DMSDOS
 
 LFLAGS=         /NOE /ST:8192
 
-OFILES=         bwbasic.obj bwb_int.obj bwb_tbl.obj bwb_cmd.obj bwb_prn.obj\
-                bwb_exp.obj bwb_var.obj bwb_inp.obj bwb_fnc.obj bwb_cnd.obj\
-                bwb_ops.obj bwb_dio.obj bwb_str.obj bwb_elx.obj bwb_mth.obj\
-		bwb_stc.obj bwb_par.obj bwx_tty.obj
+OFILES=         bwbasic.obj bwb_cmd.obj bwb_cnd.obj bwb_dio.obj bwb_elx.obj\
+                bwb_exp.obj bwb_fnc.obj bwb_inp.obj bwb_int.obj bwb_ops.obj\
+                bwb_prn.obj bwb_stc.obj bwb_str.obj bwb_tbl.obj bwb_var.obj\
+                bwd_cmd.obj bwd_fun.obj bwx_tty.obj 
 
-HFILES=         bwbasic.h bwb_mes.h
+HFILES=         bwbasic.h
 
 all:            $(PROJ).exe
 
@@ -38,20 +36,20 @@ $(PROJ).exe:    $(OFILES)
 bwbasic.obj +
 bwb_cmd.obj +
 bwb_cnd.obj +
+bwb_dio.obj +
+bwb_elx.obj +
+bwb_exp.obj +
 bwb_fnc.obj +
 bwb_inp.obj +
 bwb_int.obj +
+bwb_ops.obj +
 bwb_prn.obj +
+bwb_stc.obj +
+bwb_str.obj +
 bwb_tbl.obj +
 bwb_var.obj +
-bwb_exp.obj +
-bwb_ops.obj +
-bwb_dio.obj +
-bwb_str.obj +
-bwb_elx.obj +
-bwb_mth.obj +
-bwb_stc.obj +
-bwb_par.obj +
+bwd_cmd.obj +
+bwd_fun.obj +
 bwx_tty.obj +
 $(OBJS_EXT)
 $(PROJ).exe
@@ -61,3 +59,4 @@ $(LIBS_EXT);
         link $(LFLAGS) @$(PROJ).crf
 	erase $(PROJ).crf
 
+# EOF

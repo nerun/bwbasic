@@ -1,0 +1,38 @@
+FILEATTR FOR CLOSED FILES                                                       
+FILEATTR(CLOSED,1)= 0                                                           
+FILEATTR(CLOSED,2)= 0                                                           
+FILEATTR FOR INPUT FILES                                                        
+FILEATTR(INPUT ,1)= 1                                                           
+FILEATTR(INPUT ,2)= 0                                                           
+FILEATTR FOR OUTPUT FILES                                                       
+FILEATTR(OUTPUT,1)= 2                                                           
+FILEATTR(INPUT ,2)= 0                                                           
+FILEATTR FOR RANDOM FILES                                                       
+FILEATTR(RANDOM,1)= 4                                                           
+FILEATTR(RANDOM,2)= 0                                                           
+FILEATTR FOR APPEND FILES                                                       
+FILEATTR(APPEND,1)= 8                                                           
+FILEATTR(APPEND,2)= 0                                                           
+FILEATTR FOR BINARY FILES                                                       
+FILEATTR(BINARY,1)= 32                                                          
+FILEATTR(BINARY,2)= 0                                                           
+FILEATTR WITH INVALID X < DEVMIN                                                
+FILEATTR(#0,1)=                                                                 
+ERR = 5                                                                         
+ERL = 100                                                                       
+ERR$=ILLEGAL FUUNCTION CALL: FILEATTR(X)                                        
+FILEATTR WITH INVALID X > DEVMAX                                                
+FILEATTR(#999,2)=                                                               
+ERR = 5                                                                         
+ERL = 200                                                                       
+ERR$=ILLEGAL FUUNCTION CALL: FILEATTR(X)                                        
+FILEATTR WITH INVALID Y < 1                                                     
+FILEATTR(...,0)=                                                                
+ERR = 5                                                                         
+ERL = 300                                                                       
+ERR$=ILLEGAL FUUNCTION CALL: FILEATTR(Y)                                        
+FILEATTR WITH INVALID Y > 2                                                     
+FILEATTR(...,3)=                                                                
+ERR = 5                                                                         
+ERL = 400                                                                       
+ERR$=ILLEGAL FUUNCTION CALL: FILEATTR(Y)                                        

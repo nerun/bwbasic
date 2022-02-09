@@ -1,0 +1,29 @@
+         DATED VALUE FOR OBLIGATIONS                                            
+                                                                                
+THE MATURITY VALUE OF AN OBLIGATION ALONG WITH THE DATE                         
+OF MATURITY IS A DATED VALUE. AN EXAMPLE OF A DATED VALUE                       
+WOULD BE $750 DUE ON SEPTEMBER 13,1980. DIFFERENT SETS OF                       
+DATED VALUES MAY BE COMPARED BUT E.G. TO COMPARE $750 DUE ON                    
+9/13/80 WITH $900 DUE ON 9/13/82 WE MUST PICK SOME INTEREST                     
+RATE AND PERFORM SOME TYPE OF COMPOUND INTEREST ANALYSIS.                       
+IN THE PRESENT PROGRAM THIS IS DONE. WE ARE GIVEN A DATED                       
+VALUE MATURING SOME FIXED NUMBER OF YEARS IN THE FUTURE. WE                     
+ARE ALSO AN INTEREST RATE TO BE USED IN COMPARISON. WHAT THE                    
+PROGRAM THEN DOES IS FIND AN EQUIVALENT DEBT MATURING AT                        
+SOME OTHER FIXED TIME IN THE FUTURE.                                            
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+ENTER INTEREST RATE(%) TO BE USED IN COMPUTATIONS? 5                            
+                                                                                
+INPUT FOR GIVEN DATED VALUE                                                     
+         INPUT MATURITY VALUE ? 1000                                            
+         INPUT # OF YEARS INTO FUTURE FOR MATURITY? 10                          
+                                                                                
+                                                                                
+INPUT # OF YEARS INTO FUTURE FOR MATURITY OF DATED VALUE FOR                    
+COMPARISON? 5                                                                   
+                                                                                
+ 1000 DUE IN 10 YEARS IS EQUIVALENT TO 783.526 DUE IN 5 YEARS                   
+                                                                                
+PRESS 1 TO KEEP SAME ORIGINAL DATED VALUE, 2 TO BEGIN OVER? -1                  
+                                                                                

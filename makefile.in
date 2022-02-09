@@ -29,17 +29,17 @@ bindir = $(exec_prefix)/bin
 
 SHELL = /bin/sh
 
-CFILES=         bwbasic.c bwb_int.c bwb_tbl.c bwb_cmd.c bwb_prn.c\
-                bwb_exp.c bwb_var.c bwb_inp.c bwb_fnc.c bwb_cnd.c\
-                bwb_ops.c bwb_dio.c bwb_str.c bwb_elx.c bwb_mth.c\
-		bwb_stc.c bwb_par.c bwx_tty.c
+CFILES=         bwbasic.c bwb_cmd.c bwb_cnd.c bwb_dio.c bwb_elx.c\
+                bwb_exp.c bwb_fnc.c bwb_inp.c bwb_int.c bwb_ops.c\
+                bwb_prn.c bwb_stc.c bwb_str.c bwb_tbl.c bwb_var.c\
+		bwd_cmd.c bwd_fun.c bwx_tty.c
 
-OFILES=         bwbasic.o bwb_int.o bwb_tbl.o bwb_cmd.o bwb_prn.o\
-                bwb_exp.o bwb_var.o bwb_inp.o bwb_fnc.o bwb_cnd.o\
-                bwb_ops.o bwb_dio.o bwb_str.o bwb_elx.o bwb_mth.o\
-		bwb_stc.o bwb_par.o bwx_tty.o
+OFILES=         bwbasic.o bwb_cmd.o bwb_cnd.o bwb_dio.o bwb_elx.o\
+                bwb_exp.o bwb_fnc.o bwb_inp.o bwb_int.o bwb_ops.o\
+                bwb_prn.o bwb_stc.o bwb_str.o bwb_tbl.o bwb_var.o\
+		bwd_cmd.o bwd_fun.o bwx_tty.o
  
-HFILES=         bwbasic.h bwb_mes.h bwx_tty.h
+HFILES=         bwbasic.h 
  
 MISCFILES=	COPYING INSTALL Makefile.in README bwbasic.doc\
 		bwbasic.mak configure.in configure makefile.qcl\

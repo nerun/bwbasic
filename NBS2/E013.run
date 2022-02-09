@@ -1,0 +1,5 @@
+The integer value of -1.23457  is-1                                             
+*** TEST #1 PASSED ***                                                          
+The integer value of  1.23457  is 1                                             
+*** TEST #2 PASSED ***                                                          
+*** ALL TESTS PASSED ***                                                        

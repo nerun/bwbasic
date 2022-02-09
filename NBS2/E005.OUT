@@ -1,0 +1,11 @@
+The arcsine value of  0  is 0 
+*** TEST #1 PASSED ***
+The arcsine value of  .5  is .523599 
+*** TEST #2 PASSED ***
+The arcsine value of -.5  is-.523599 
+*** TEST #3 PASSED ***
+The arcsine value of  1  is 1.5708 
+*** TEST #4 PASSED ***
+The arcsine value of -1  is-1.5708 
+*** TEST #5 PASSED ***
+*** ALL TESTS PASSED ***

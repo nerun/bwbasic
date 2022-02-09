@@ -6,6 +6,7 @@
 /*-------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <string.h>
 
 int instr();
 char *midstr1();
@@ -45,7 +46,11 @@ main(argc, argv)
    }
    strcpy(f9str, pstr);
 
+#if !defined(__MVS__) && !defined(__CMS__)
    strcpy(pstr, "editfl");
+#else
+   strcpy(pstr, "dd:editfl");
+#endif
    fdout = fopen(pstr, "w");
    if (fdout == NULL)
    {
@@ -88,6 +93,8 @@ main(argc, argv)
       }
    }
    fclose(fdin);
+   
+   strcpy(pstr, "");
 
    if (s == 0)
    {
@@ -465,8 +472,10 @@ main(argc, argv)
 
    fclose(fdin);
    fclose(fdout);
+#if !defined(__MVS__) && !defined(__CMS__)
    sprintf(tempstr, "mv editfl %s\0", f9str);
    system(tempstr);
+#endif
    return (0);
 }
 
@@ -474,13 +483,19 @@ main(argc, argv)
 int instr(astr, bstr)
    char *astr, *bstr;
 {
-   int p;
+   char *p;
+   int q;
 
    p = strstr(astr, bstr);
-   if (p == NULL) p = (int)(astr) - 1;
-   p = p - (int)(astr) + 1;
-
-   return p;
+   if (p == NULL)
+   {
+       q = 0;
+   }
+   else
+   {
+       q = (p - astr) + 1;
+   }
+   return q;
 }
 
 

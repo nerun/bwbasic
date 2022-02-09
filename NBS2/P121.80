@@ -1,0 +1,77 @@
+PROGRAM FILE 121: ACCURACY OF EXP FUNCTION.                                     
+    ANSI STANDARD 7.6, 8.4                                                      
+                                                                                
+SECTION 121.1: ACCURACY OF EXP FUNCTION.                                        
+                                                                                
+THIS PROGRAM TESTS VALUES RETURNED BY INVOCATIONS OF THE                        
+EXP FUNCTION FOR ACCURACY. THE INVOCATION MUST RETURN,                          
+ACCURATE TO SIX DIGITS, SOME VALUE ACTUALLY TAKEN ON BY                         
+THE FUNCTION WITHIN A DOMAIN BOUNDED BY THE ACTUAL ARGUMENT                     
+PLUS OR MINUS ONE IN THE SIXTH DIGIT. ALSO, AN                                  
+'ERROR MEASURE' IS COMPUTED AND REPORTED. THIS MEASURE                          
+IS JUST 2 * THE ABSOLUTE ERROR OVER THE SIZE OF THE RANGE;                      
+THUS, A VALUE JUST BARELY PASSING OR FAILING WILL USUALLY                       
+HAVE A MEASURE OF ABOUT  1. A VALUE 3 TIMES                                     
+AS INACCURATE AS EXPECTED WILL HAVE A MEASURE OF 3.                             
+                                                                                
+THIS TEST IS INFORMATIVE ONLY, SINCE THE ANSI STANDARD                          
+DOES NOT MANDATE ANY ACCURACY FOR SUPPLIED-FUNCTIONS.                           
+                                                                                
+              BEGIN TEST                                                        
+                                                                                
+ARGUMENT       TRUE           COMPUTED       ERROR          OUTCOME             
+               VALUE          VALUE          MEASURE                            
+                                                                                
+-87.4981        1.00013E-38    1.00013E-38    2.5612E-5      OK                 
+-85.9876        4.5296E-38     4.5296E-38     4.70168E-7     OK                 
+-75             2.67864E-33    2.67864E-33    6.62627E-6     OK                 
+-44.4444        4.98933E-20    4.98933E-20    8.10052E-6     OK                 
+-23.4567        6.49957E-11    6.49957E-11    5.24719E-6     OK                 
+-7.77777        4.18945E-4     4.18945E-4     2.1366E-5      OK                 
+-2.22222        .108368        .108368        2.5248E-5      OK                 
+-1              .367879        .367879        4.10247E-5     OK                 
+-.999999        .36788         .36788         5.88334E-5     OK                 
+-.456789        .633314        .633314        1.85552E-4     OK                 
+-9.87654E-2     .905955        .905955        3.20733E-4     OK                 
+-9.87654E-3     .990172        .990172        2.99105E-4     OK                 
+-9.87654E-4     .999013        .999013        8.58062E-4     OK                 
+-9.87654E-5     .999901        .999901        9.5333E-4      OK                 
+-9.87654E-6     .99999         .99999         9.81473E-4     OK                 
+-9.87654E-7     .999999        .999999        6.92283E-4     OK                 
+-9.87654E-8     1.             1.             4.68741E-4     OK                 
+-9.87654E-9     1.             1.             2.46674E-4     OK                 
+-9.87654E-10    1.             1.             2.46674E-5     OK                 
+-9.87654E-15    1              1.             1.97422E-8     OK                 
+-9.87654E-20    1              1              0              OK  - EXACT        
+-9.87654E-30    1              1              0              OK  - EXACT        
+-9.87654E-38    1              1              0              OK  - EXACT        
+ 0              1              1             RANGE ZERO      OK  - EXACT        
+ 9.87654E-38    1              1              0              OK  - EXACT        
+ 9.87654E-30    1              1              0              OK  - EXACT        
+ 9.87654E-20    1              1              0              OK  - EXACT        
+ 9.87654E-15    1              1.             1.95204E-9     OK                 
+ 9.87654E-10    1              1.             1.97333E-4     OK                 
+ 9.87654E-9     1.             1.             2.46895E-5     OK                 
+ 9.87654E-8     1.             1.             2.4687E-4      OK                 
+ 9.87654E-7     1.             1.             4.68962E-4     OK                 
+ 9.87654E-6     1.00001        1.00001        6.81564E-4     OK                 
+ 9.87654E-5     1.0001         1.0001         5.54371E-5     OK                 
+ 9.87654E-4     1.00099        1.00099        3.77786E-4     OK                 
+ 9.87654E-3     1.00993        1.00993        7.95215E-4     OK                 
+ 9.87654E-2     1.10381        1.10381        7.84953E-4     OK                 
+ .456789        1.579          1.579          1.53234E-4     OK                 
+ .999999        2.71828        2.71828        2.31316E-5     OK                 
+ 1              2.71828        2.71828        4.78706E-5     OK                 
+ 2.22222        9.22779        9.22779        4.206E-5       OK                 
+ 7.77777        2386.95        2386.95        5.3341E-5      OK                 
+ 23.4567        1.53856E+10    1.53856E+10    1.78641E-5     OK                 
+ 44.4444        2.00428E+19    2.00428E+19    5.24441E-6     OK                 
+ 75             3.73324E+32    3.73324E+32    8.46097E-6     OK                 
+ 85.9876        2.2077E+37     2.2077E+37     1.55374E-5     OK                 
+ 87.4981        9.99866E+37    9.99866E+37    1.4081E-6      OK                 
+                                                                                
+*** INFORMATIVE TEST PASSED ***                                                 
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 121                                                                 

@@ -1,0 +1,27 @@
+[bwb_elx.c:438]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_elx.c:522]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_elx.c:580]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_elx.c:641]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_fnc.c:2005]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_inp.c:937]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_inp.c:1884]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_inp.c:1967]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_inp.c:2023]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwb_inp.c:2083]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[bwbasic.c:1339]: (style) Variable 'LastChar' is assigned a value that is never used.
+[renum.c:534]: (style) The scope of the variable 'm' can be reduced.
+[unixio.c:92]: (error) Uninitialized variable: wb
+[unixio.c:1]: (information) Skipping configuration 'fileno' since the value of 'fileno' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.
+[unixio.c:131]: (style) The function 'access' is never used.
+[unixio.c:95]: (style) The function 'close' is never used.
+[unixio.c:126]: (style) The function 'fileno' is never used.
+[unixio.c:136]: (style) The function 'fstat' is never used.
+[unixio.c:105]: (style) The function 'getcwd' is never used.
+[unixio.c:152]: (style) The function 'mktemp' is never used.
+[unixio.c:25]: (style) The function 'open' is never used.
+[unixio.c:142]: (style) The function 'pwait' is never used.
+[unixio.c:61]: (style) The function 'read' is never used.
+[unixio.c:120]: (style) The function 'stat' is never used.
+[unixio.c:114]: (style) The function 'unlink' is never used.
+[unixio.c:76]: (style) The function 'write' is never used.
+(information) Cppcheck cannot find all the include files (use --check-config for details)

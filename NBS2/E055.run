@@ -1,0 +1,19 @@
+Fake INP                                                                        
+x= 1                                                                            
+Fake OUT                                                                        
+X= 2                                                                            
+Y= 3                                                                            
+Fake PEEK                                                                       
+X= 4                                                                            
+Fake POKE                                                                       
+X= 5                                                                            
+Y= 6                                                                            
+Fake WAIT                                                                       
+X= 7                                                                            
+Y= 8                                                                            
+Fake WAIT #2                                                                    
+X= 9                                                                            
+Y= 10                                                                           
+Z= 11                                                                           
+a= 77                                                                           
+b= 88                                                                           

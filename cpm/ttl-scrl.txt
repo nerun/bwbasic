@@ -1,0 +1,30 @@
+10 'Banner Title Program
+20 'Glenn Wilson
+30 'May 2, 1986
+40 'Modified for Microsoft(c) Basic
+50 'from Nhan Khai Hoang's WP-TITLE.INC
+60 'of Word Pro for Turbo Pascal(c)...
+70 CLR$=CHR$(26)	'clear screen code
+80 PRINT CLR$
+90 DEF FNC$(X,Y)=CHR$(27)+CHR$(61)+CHR$(X+32)+CHR$(Y+32)
+100			'^^^^^^cursor addressing for Xerox 820-II
+110 PRINT FNC$(8,25);"-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-"
+120 PRINT FNC$(9,25);"-/                           /-"
+130 PRINT FNC$(10,25);"-/                           /-"
+140 PRINT FNC$(11,25);"-/                           /-"
+150 PRINT FNC$(12,25);"-/                           /-"
+160 PRINT FNC$(13,25);"-/                           /-"
+170 PRINT FNC$(14,25);"-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-
+180 M$="Banner Title Program...By Glenn Wilson...May 2, 1986...Modified from"
+190 M$=M$+" WP-TITLE of Word Pro, v 1.0, by Nhan Khai Hoang..."
+200			'^^^^^^messgage of choice goes here
+210 MSG$=MID$(M$,1,25)
+220 CDR$=MID$(M$,2,(LEN(M$)-1))
+230 CAR$=MID$(M$,1,1)
+240 M$=CDR$+CAR$
+250 PRINT FNC$(11,28);MSG$
+260 GOSUB 280		'gosub for delay
+270 GOTO 210		'do again
+280 FOR X=1 TO 40	'delay loop
+290	NEXT X
+300 RETURN

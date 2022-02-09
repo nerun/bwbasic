@@ -1,0 +1,104 @@
+PROGRAM FILE 120: ACCURACY OF COS FUNCTION.
+    ANSI STANDARD 7.6, 8.4
+
+SECTION 120.1: ACCURACY OF COS FUNCTION.
+
+THIS PROGRAM TESTS VALUES RETURNED BY INVOCATIONS OF THE
+COS FUNCTION FOR ACCURACY. THE INVOCATION MUST RETURN,
+ACCURATE TO SIX DIGITS, SOME VALUE ACTUALLY TAKEN ON BY
+THE FUNCTION WITHIN A DOMAIN BOUNDED BY THE ACTUAL ARGUMENT
+PLUS OR MINUS ONE IN THE SIXTH DIGIT. ALSO, AN
+'ERROR MEASURE' IS COMPUTED AND REPORTED. THIS MEASURE
+IS JUST 2 * THE ABSOLUTE ERROR OVER THE SIZE OF THE RANGE;
+THUS, A VALUE JUST BARELY PASSING OR FAILING WILL USUALLY
+HAVE A MEASURE OF ABOUT 1. A VALUE 3 TIMES
+AS INACCURATE AS EXPECTED WILL HAVE A MEASURE OF 3.
+
+THIS TEST IS INFORMATIVE ONLY, SINCE THE ANSI STANDARD
+DOES NOT MANDATE ANY ACCURACY FOR SUPPLIED-FUNCTIONS.
+
+              BEGIN TEST
+
+ARGUMENT       TRUE           COMPUTED       ERROR          OUTCOME
+               VALUE          VALUE          MEASURE
+
+-98765.4        .999948        .999948        7.75071E-8     OK 
+-98764.4        .548821        .548821        2.11951E-9     OK 
+-94268.2       -4.00579E-5    -4.00579E-5     3.47476E-11    OK 
+-9427.92       -1.            -1.             1.03325E-5     OK 
+-9425.92        .415741        .415741        3.08328E-8     OK 
+-9429.49       -3.4975E-4     -3.4975E-4      5.07E-11       OK 
+-986.46         1.             1.             6.29608E-4     OK 
+-999            .99965         .99965         7.11159E-7     OK 
+-994.314        7.48612E-5     7.48612E-5     8.81657E-11    OK 
+-87.9646        1              1.             6.41981E-5     OK 
+-99             3.98209E-2     3.98209E-2     6.86312E-8     OK 
+-89.5354       -9.37269E-6    -9.37269E-6     1.17762E-10    OK 
+-50             .964966        .964966        1.8405E-5      OK 
+-20             .408082        .408082        2.03288E-6     OK 
+-5.9            .927478        .927478        6.03761E-5     OK 
+-4.71239        1.01962E-6     1.01962E-6     2.20857E-11    OK 
+-3.14159       -1             -1.             1.40548E-5     OK 
+-2.3           -.666276       -.666276        3.51649E-5     OK 
+-1.5708        -3.67321E-6    -3.67321E-6     3.34657E-10    OK 
+-1.2            .362358        .362358        4.85386E-5     OK 
+-1              .540302        .540302        1.47908E-5     OK 
+-.987654        .55065         .55065         1.40519E-4     OK 
+-.765432        .721083        .721083        1.24814E-4     OK 
+-9.87654E-2     .995127        .995127        5.325E-4       OK 
+-7.65432E-2     .997072        .997072        4.88824E-4     OK 
+-9.75319E-3     .999952        .999952        3.88033E-5     OK 
+-3.45678E-3     .999994        .999994        6.83247E-4     OK 
+-1.00001E-3     1.             .999999        1.98968E-5     OK 
+-.001           1.             1.             8.31835E-8     OK 
+-9.99999E-4     1.             1.             2.08322E-6     OK 
+-9.87654E-5     1.             1.             4.85932E-4     OK 
+-9.17359E-6     1              1.             1.67973E-4     OK 
+-9.E-10         1              1              0              OK  - EXACT
+-9.E-20         1              1              0              OK  - EXACT
+-9.E-30         1              1              0              OK  - EXACT
+-9.E-38         1              1              0              OK  - EXACT
+ 0              1              1             RANGE ZERO      OK  - EXACT
+ 1.E-38         1              1              0              OK  - EXACT
+ 9.E-30         1              1              0              OK  - EXACT
+ 9.E-20         1              1              0              OK  - EXACT
+ 9.E-10         1              1              0              OK  - EXACT
+ 9.17359E-6     1              1.             1.67973E-4     OK 
+ 9.87654E-5     1.             1.             4.85932E-4     OK 
+ 9.99999E-4     1.             1.             2.08322E-6     OK 
+ .001           1.             1.             8.31835E-8     OK 
+ 1.00001E-3     1.             .999999        1.98968E-5     OK 
+ 3.45678E-3     .999994        .999994        6.83247E-4     OK 
+ 9.75319E-3     .999952        .999952        3.88033E-5     OK 
+ 7.65432E-2     .997072        .997072        4.88824E-4     OK 
+ 9.87654E-2     .995127        .995127        5.325E-4       OK 
+ .765432        .721083        .721083        1.24814E-4     OK 
+ .987654        .55065         .55065         1.40519E-4     OK 
+ 1              .540302        .540302        1.47908E-5     OK 
+ 1.2            .362358        .362358        4.85386E-5     OK 
+ 1.5708        -3.67321E-6    -3.67321E-6     3.34657E-10    OK 
+ 2.3           -.666276       -.666276        3.51649E-5     OK 
+ 3.14159       -1             -1.             1.40548E-5     OK 
+ 3.9           -.725932       -.725932        2.71266E-5     OK 
+ 4.71239        1.01962E-6     1.01962E-6     2.20857E-11    OK 
+ 5.9            .927478        .927478        6.03761E-5     OK 
+ 20             .408082        .408082        2.03288E-6     OK 
+ 50             .964966        .964966        1.8405E-5      OK 
+ 89.5354       -9.37269E-6    -9.37269E-6     8.22373E-11    OK 
+ 99             3.98209E-2     3.98209E-2     6.86312E-8     OK 
+ 87.9646        1              1.             6.41981E-5     OK 
+ 994.314        7.48612E-5     7.48612E-5     8.81657E-11    OK 
+ 999.1          .997297        .997297        1.5104E-6      OK 
+ 986.46         1.             1.             6.29608E-4     OK 
+ 9429.49       -3.4975E-4     -3.4975E-4      5.07E-11       OK 
+ 9425.92        .415741        .415741        3.08328E-8     OK 
+ 9427.92       -1.            -1.             1.03325E-5     OK 
+ 94268.2       -4.00579E-5    -4.00579E-5     9.18427E-11    OK 
+ 98764.4        .548821        .548821        2.11951E-9     OK 
+ 98765.4        .999948        .999948        7.75071E-8     OK 
+
+*** INFORMATIVE TEST PASSED ***
+
+               END TEST
+
+END PROGRAM 120

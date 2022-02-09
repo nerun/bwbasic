@@ -1,0 +1,16 @@
+Zenith distance (deg.) : ? 30
+Enter V-band magnitude of star: ? 7
+Exposure time (seconds): ? 360
+
+Airmass (gas, aerosol, ozone):      1.15    1.15    1.15
+Extinction Coefficients (UBVRI):    0.62    0.32    0.19    0.09    0.05
+Total Extinction (UBVRI):           0.71    0.37    0.22    0.10    0.05
+Sky brightness (UBVRI):  0.03.851061e-14  0.07.038847e-14  0.0
+
+Star counts in photometry aperture (UBVRI): 864817 7865884 17142814 50004318 
+22816746
+Sky counts per pixel (UBVRI):             2      9     30    141    304
+
+For star with U, B, V, R, I         8.04     7.70     7.00     6.47     5.88
+ their respective SNR are         929.49  2804.46  4140.27  7071.28  4776.48
+ with 1-sigma errors (mag.) of      0.00     0.00     0.00     0.00     0.00

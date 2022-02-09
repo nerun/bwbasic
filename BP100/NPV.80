@@ -1,0 +1,36 @@
+         NET PRESENT VALUE OF PROJECT                                           
+                                                                                
+MOST INVESTMENT PROJECTS INVOLVE SOME INITIAL COST AND THEN                     
+INFLOWS AND OUTFLOWS IN THE FUTURE UNTIL SOME TIME WHEN                         
+WHEN THE INVESTMENT IS TERMINATED. BASED UPON THE RISK IN THE                   
+ORIGINAL INVESTMENT THE INVESTOR SHOULD HAVE SOME REQUIRED                      
+RATE OF RETURN HE/SHE DESIRES TO EARN FROM THE INVESTMENT.                      
+IF THE PRESENT VALUE OF THE CASH FLOWS FROM THE PROJECT                         
+ARE POSITIVE WHEN USING THE REQUIRED RATE AS THE DISCOUNT RATE                  
+THEN THE PROJECT IS A REASONABLE ONE TO INVEST IN.THIS                          
+PROGRAM COMPUTES THE PRESENT VALUE OF SUCH A PROJECT. IF THE                    
+USER SETS THE INITIAL INVESTMENT EQUAL TO 0 THEN THE PRESENT                    
+VALUE EQUALS THE MAXIMUM AMOUNT TO BE PAID INITIALLY FOR THE                    
+PROJECT.                                                                        
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+INPUT FOR NEW PROJECT                                                           
+                                                                                
+INPUT REQUIRED RATE OF RETURN (%) ? 5                                           
+                                                                                
+INITIAL CASH COST OF PROJECT      ? 123000                                      
+ENTER CASH FLOW FOR PERIOD  1  (-.01 TO END)? 11111                             
+ENTER CASH FLOW FOR PERIOD  2  (-.01 TO END)? 22222                             
+ENTER CASH FLOW FOR PERIOD  3  (-.01 TO END)? 33333                             
+ENTER CASH FLOW FOR PERIOD  4  (-.01 TO END)? 44444                             
+ENTER CASH FLOW FOR PERIOD  5  (-.01 TO END)? 55555                             
+ENTER CASH FLOW FOR PERIOD  6  (-.01 TO END)? -0.01                             
+                                                                                
+NET PRESENT VALUE AT 5 % INTEREST EQUALS     $16625                             
+DO YOU WANT ANOTHER NPV FOR SAME CASH FLOWS BUT CHANGING        INTEREST RATE (Y
+/N) ? N                                                                         
+                                                                                
+INPUT FOR NEW PROJECT                                                           
+                                                                                
+INPUT REQUIRED RATE OF RETURN (%) ? 0                                           
+                                                                                

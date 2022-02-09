@@ -1,0 +1,30 @@
+       SHARPE'S METHOD OF PORTFOLIO SELECTION                                   
+                                                                                
+tHIS PROGRAM STARTS WITH DATA PERTAINING TO A MARKET INDEX                      
+AND SEVERAL POSSIBLE STOCKS TO HOLD. fOR EACH STOCK THE                         
+USER INPUTS THE ALPHA AND BETA PARAMETERS ALONG WITH THE                        
+VARIANCE OF RETURN(OR STANDARD DEVIATION OF RETURN=VOLATILITY).                 
+FOR THE INDEX THE EXPECTED VALUE AND VARIANCE OF RETURN                         
+ARE ENTERED. tHE PROGRAM THEN CALCULATES THE PROPORTION                         
+A RISK FACTOR MAY ALSO BE INCLUDED. THIS FACTOR TAKES ON VALUES                 
+BETWEEN 0 AND 4 OR 5. THE HIGHER THE RISK FACTOR THE MORE                       
+DARING THE INVESTOR SHOULD BE. 0 MEANS VERY CONSERVATIVE.                       
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+NUMBER OF STOCKS BEING CONSIDRED FOR PORFOLIO? 2                                
+                                                                                
+ENTER 1 IF STOCK VARIANCE OF RETURN IS BEING ENTERED.                           
+ENTER 0 IF STOCK STANDARD DEVIATION OF RETURN IS ENTERED? 0                     
+ENTER STOCK 1  ALPHA,BETA,ST.DEV? 1,2,3                                         
+ENTER STOCK 2  ALPHA,BETA,ST.DEV? 4,5,6                                         
+                                                                                
+INDEX RETURN? 7                                                                 
+INDEX VARIANCE OF RETURN? 8                                                     
+                                                                                
+ENTER RISK FACTOR ? 9                                                           
+SOLUTION FOLLOWS                                                                
+                                                                                
+PROPORTION FOR STOCK  1  =  .410256                                             
+PROPORTION FOR STOCK  2  =  .589744                                             
+                                                                                
+PRESS ENTER FOR ANOTHER COMPUTATION? -1                                         

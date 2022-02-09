@@ -1,0 +1,33 @@
+         TIME SERIES-LINEAR TREND                                               
+                                                                                
+THIS PROGRAM COMPUTES A LINEAR TREND FOR A TIME SERIES.                         
+THE DETRENDED VALUES FROM THE SERIES ARE ALSO PRINTED.                          
+                                                                                
+PRESS ENTER TO BEGIN.?                                                          
+                                                                                
+                                                                                
+GIVE AN UPPER BOUND ON THE NUMBER OF OBSERVATIONS YOU INTEND TO                 
+USE.THIS WILL BE THE GREATEST NUMBER OF OBSERVATIONS POSSIBLE.                  
+NUMBER = ? 10                                                                   
+INPUT OBSERVATIONS 1 BY 1, PRESSING ENTER AFTER EACH.                           
+INPUT 99999 AND ENTER WHEN DONE.                                                
+                                                                                
+PRESS ENTER TO BEGIN? 12345                                                     
+OBSERVATION  1  (99999 TO END)? 12                                              
+OBSERVATION  2  (99999 TO END)? 9                                               
+OBSERVATION  3  (99999 TO END)? 12                                              
+OBSERVATION  4  (99999 TO END)? 9                                               
+OBSERVATION  5  (99999 TO END)? 12                                              
+OBSERVATION  6  (99999 TO END)? 9                                               
+OBSERVATION  7  (99999 TO END)? 12                                              
+OBSERVATION  8  (99999 TO END)? 99999                                           
+TREND EQUATION IS T = 10.7143 + 0 Y WHERE T IS THE TREND                        
+VALUE AND Y IS NO. OF YEARS FROM ORIGIN.                                        
+OBSERVATION #   OBSERVATION VALUE   SMOOTHED VALUE  DETRENDED                   
+        1                12.00             10.7143      1.12                    
+        2                 9.00             10.7143      0.84                    
+        3                12.00             10.7143      1.12                    
+        4                 9.00             10.7143      0.84                    
+        5                12.00             10.7143      1.12                    
+        6                 9.00             10.7143      0.84                    
+        7                12.00             10.7143      1.12                    

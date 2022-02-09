@@ -1,0 +1,28 @@
+    TRUE INTEREST RATE ON DISCOUNTED LOAN                                       
+                                                                                
+MOST CONSUMER BANK LOANS ARE WHAT ARE CALLED 'DISCOUNT LOANS'.                  
+IN A LOAN OF THIS TYPE THE FINANCE CHARGE IS PREPAID.                           
+FOR EXAMPLE, THE BANK WILL GIVE YOU A LOAN WITH FACE VALUE                      
+EQUAL TO A STATED AMOUNT(TOTAL OF REPAYMENTS) AND WILL THEN                     
+DEDUCT THE INTEREST CHARGES FROM THE PROCEEDS OF THE LOAN.                      
+THUS THE CONSUMER DOES NOT GET THE FACE VALUE, BUT SOME LOWER                   
+AMOUNT. TO MAKE MATTERS WORSE CHARGES FOR ACCIDENT & HEALTH                     
+INSURANCE,CREDIT LIFE INSURANCE, AND OFFICIAL FEES MAY BE                       
+REQUIRED.THIS PROGRAM COMPUTES THE PROCEEDS AND THE EFFECTIVE                   
+INTEREST RATE IN SUCH A CASE.                                                   
+THE CHARGES SUCH AS A & H ARE CONSIDERED AND TEND TO RAISE                      
+THE EFFECTIVE RATE.                                                             
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+TOTAL REPAYMENTS OF LOAN       ? 250000                                         
+TOTAL INTEREST PREPAID         ? 12500                                          
+TOTAL A & H INSURANCE CHARGES  ? 876                                            
+TOTAL CREDIT LIFE INS. CHARGES ? 321                                            
+TOTAL OFFICIAL FEES CHARGES    ? 5678                                           
+MONTHLY LOAN PAYMENT          ? 1275                                            
+TOTAL NUMBER OF MONTHLY PMTS  ? 360                                             
+                                                                                
+PROCEEDS OF LOAN    $230625.00                                                  
+ANNUAL EFFECTIVE INT. RATE          5.26%                                       
+                                                                                
+PRESS ENTER FOR MORE COMPUTATIONS? -1                                           

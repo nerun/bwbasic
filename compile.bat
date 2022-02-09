@@ -16,10 +16,10 @@ call stdcomp bwb_ops.c
 call stdcomp bwb_dio.c
 call stdcomp bwb_str.c
 call stdcomp bwb_elx.c
-call stdcomp bwb_mth.c
 call stdcomp bwb_stc.c
 call stdcomp bwx_tty.c
-call stdcomp unixio.c
+call stdcomp bwd_cmd.c
+call stdcomp bwd_fun.c
 
 rem gcc -mno-cygwin -s -o bwbasic.exe *.o
 bcc32 -O -ebwbasic.exe *.obj

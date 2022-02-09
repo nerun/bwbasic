@@ -1,0 +1,161 @@
+0 '*** A MASTER DIRECTORY PROGRAM  ***
+1 '***  FOR THE TRS-80 MODEL III   ***
+2 '***   WILBUR A. MUEHLIG, M.D.    ***
+3 '***   726 N. 91 PLAZA, # 305,    ***
+4 '***   OMAHA, NEBR.  68114        ***
+50 CLEAR10000:DEFINTX,B:DEFSTRA:DIMA(1000):X=0
+60 CLS:PRINT@470,"MASTER DISK INDEX":FORZ=1TO700:NEXT
+70 CLS:PRINT:PRINT:PRINT:PRINT:PRINT
+80 INPUT"Do you want instructions (Y/N)";I$
+90 IF I$="Y" GOTO 1500
+100 CLS:PRINT:REM * USE DOWN ARROW TO ALIGN ITEMS WHEN TYPING
+                  * IN THE NEXT TWO LINES.
+110 PRINT"                       MENU
+
+                1-START, ADD TO, OR SEE THE FILE
+                2-LOAD FILE FROM DISK
+                3-SAVE FILE TO DISK
+                4-CORRECT AN ENTRY"
+120 PRINT"                5-DELETE AN ENTRY
+                6-MAKE A HARD COPY
+                7-TOGGLE SORT ALPHA <--> NUMERICAL
+                8-SEARCH
+                9-LEAVE THE PROGRAM"
+130 PRINT:INPUT"           CHOOSE A NUMBER";Z
+140 ON Z GOTO 500,600,700,800,900,1000,1200,1300,1400
+500 X=X+1:CLS:PRINT:PRINT"WHEN FINISHED WITH INPUTS OR TO SEE THE FILE, PRESS ENTER AN              EXTRA TIME. TO STOP THE FILE PRINTING, PRESS 'S'.":PRINT:PRINT"EACH ENTRY MUST BE 16 SPACES LONG.":PRINT
+510 PRINTX;:INPUT"PROGRAM FILE NAME AND DISK #";A(X)
+512 IF A(X)=""GOTO 550
+515 IF LEN(A(X))<16PRINT"                                       TOO SHORT! TRY AGAIN.":GOTO 510
+516 IF LEN(A(X))>16PRINT"                                       TOO LONG! TRY AGAIN.":GOTO 510
+530 X=X+1
+540 GOTO 510  
+545 REM * REMOVE THE X THAT IS NULL AND CALL THE SORT PROGRAM
+550 X=X-1:CMD"O",X,A(1)
+555 CLS
+560 FOR B = 1 TO X
+570 PRINTUSING"#### %              %";B;A(B)
+575 IF INKEY$="S" GOTO 100:REM * NOT ESSENTIAL!
+580 IF B/15 = INT(B/15) INPUT"PRESS ENTER TO CONTINUE, S FOR MENU, R FOR PREVIOUS PAGE";Z9$:CLS
+585 IF Z9$="S"CLS:Z9$="":GOTO100
+       REM * IF YOU DON'T 'NULL' Z9$, NEXT TIME THROUGH *
+           * PRESSING ENTER WILL SEND YOU TO THE MENU   *
+586 IF Z9$="R" THEN Z9$="":B=B-30:REM * A NICE TOUCH
+590 NEXT
+595 INPUT"PRESS ENTER TO CONTINUE";Z9:GOTO100
+600 ON ERROR GOTO 1450
+605 PRINT:PRINT"LOADING FILE FROM DISK......."
+610 OPEN"I",1,"IND/FIL"
+620 INPUT#1,X:REM * X IS THE TOTAL NUMBER OF ITEMS
+630 FOR B = 1 TO X
+640 INPUT#1,A(B)
+650 NEXT:CLOSE
+660 GOTO 100
+700 IF A(1)=""THEN PRINT"FILE EMPTY":INPUT"PRESS ENTER";Z:GOTO 100
+710 PRINT:PRINT"SAVING FILE TO DISK....."
+720 OPEN"O",1,"IND/FIL"
+730 PRINT#1,X
+740 FOR B = 1 TO X
+750 PRINT#1,A(B)
+760 NEXT:CLOSE
+780 GOTO 100
+800 CLS:PRINT:PRINT:PRINT:PRINT:PRINT
+820 PRINT:INPUT"WHICH NUMBER DO YOU WISH TO CORRECT";B
+840 PRINT:PRINTB;A(B)
+860 PRINT:INPUT"TYPE CORRECT ENTRY. IF OK AS IS, PRESS ENTER";A(B)
+870 GOTO100
+900 CLS:PRINT:PRINT:PRINT:PRINT:PRINT:INPUT"WHICH NUMBER DO YOU WANT TO DELETE";B
+912 PRINT:PRINTB;A(B)
+913 PRINT:INPUT"IS THIS THE NUMBER YOU WANT TO DELETE (Y/N)";Z9$
+915 IF Z9$="Y" GOTO 920
+917 IF Z9$="N" GOTO 100
+920 A(B)=" "
+930 FOR B = B+1 TO X:A(B-1)=A(B):NEXT
+935 A(X)="":X=X-1
+950 PRINT:PRINT"ENTRY DELETED":FOR Z=1 TO 300:NEXT:GOTO100
+1000 CLS:PRINT:PRINT:PRINT:PRINT:INPUT"IS THE PRINTER ON? WHAT MARGIN DO YOU WANT (TRY 6)";T
+1010 LPRINTTAB(30+T)"MASTER INDEX"
+1015 LPRINTTAB(30+T)"============":LPRINT" "
+1020 FOR B=1 TO X
+1030 LPRINTTAB(T)USING"#### %              %";B;A(B)
+1040 IF B/54=INT(B/54)PRINT:PRINT"REPOSITION PAPER AND CHANGE MARGIN TO NEXT COLUMN.":INPUT"    (TRY ADDING 25)";T
+1050 NEXT
+1060 GOTO100
+1200 CLS:PRINT:PRINT:PRINT:PRINT:PRINT:PRINT"CHOOSE:
+             1-ALPHABETICAL SORT TO DISK # SORT
+             2-DISK # SORT TO ALPHABETICAL"
+1205 PRINT:INPUT"                    NUMBER";N
+1207 ON N GOTO 1209,1250
+1209 PRINT:PRINT"PUTTING DISK # BEFORE FILE NAME......."
+1210 FOR B=1 TO X
+1220 A(B)=RIGHT$(A(B),3)+" "+A(B):
+         REM * A(B) IS STILL INTACT BUT PRINT USING *
+             * WILL CUT OFF THE DISK NUMBERS ON THE *
+             * RIGHT END.
+1230 NEXT
+1240 GOTO100
+1250 PRINT:PRINT"PUTTING FILE NAME BEFORE DISK #......."
+1260 FOR B=1 TO X
+1270 A(B)=RIGHT$(A(B),16):REM * GIVING US THE ORIGINAL *
+                               * A(B) BACK
+1280 NEXT
+1290 GOTO 100
+1300 CLS:PRINT:PRINT:PRINT:PRINT:PRINT
+1310 INPUT"WHAT IS THE FILE NAME OR PART OF FILE NAME
+
+              YOU WISH TO SEARCH FOR";C$:REM * USE DOWN ARROW *
+1320 FOR B = 1 TO X
+1330 IF INSTR(A(B),C$)>0 PRINT: PRINTB;A(B):PRINT:INPUT"PRESS ENTER TO CONTINUE, 'M' FOR MENU";J$
+1332 IF J$="M" THEN J$="":GOTO100
+1340 NEXT
+1345 PRINT:PRINTC$;:INPUT" NOT FOUND. PRESS ENTER";Z:GOTO 100
+1350 RETURN
+1400 INPUT"DID YOU SAVE FILE TO DISK (Y/N)";Z9$
+1410 IF Z9$="Y"GOTO 1430
+1420 IF Z9$="N"GOTO 100
+1430 PRINT"OK!":CLOSE
+1440 END
+1450 PRINT:INPUT"ERROR! NO FILE ON DISK OR OTHER. PRESS ENTER FOR MENU";L:GOTO 100
+1500 CLS:PRINT:PRINT@26,"INSTRUCTIONS":PRINT
+1510 PRINT"  Make entries with MENU item #1. They should be limited to"
+1520 PRINT"16 spaces, 12 for the file name, a blank, and 3 spaces for the"
+1530 PRINT"disk number, e.g., FILENAME/EXT ###. Spaces not used for"
+1535 PRINT"characters should be filled with blanks. Place the number"
+1540 PRINT"as far to the right as possible in the 16 spaces, i.e., a"
+1550 PRINT"single number would go in the 16th space. PRKNT USING"
+1560 PRINT"statements are used in lines 570 and 1030 to give even print-"
+1570 PRINT"outs on video and paper. The length is limited in order to get"
+1580 PRINT"three columns on 8 1/2 x 11 paper. If you need more room for"
+1590 PRINT"your file names, the PRINT USING statements can be changed."
+1600 PRINT:INPUT"PRESS ENTER";Z:CLS
+1610 PRINT"  When additional entries are to be made, always load previous"
+1620 PRINT"entries from disk first.":PRINT
+1640 PRINT"  The entries are sorted alphabetically as soon as they are"
+1650 PRINT"complete. They may be reviewed by using MENU item 1. The review"
+1660 PRINT"may be stopped while the screen is being printed by pressing"
+1670 PRINT"'S'. The previous page may be seen by pressing 'R'. It is"
+1675 PRINT"a good idea to save the file to two different disks as soon"
+1680 PRINT"as your entries are complete."
+1685 PRINT
+1690 PRINT"  The numbers to the left of the file names are index numbers"
+1700 PRINT"to be used in making corrections or deletions. If you are"
+1710 PRINT"making several deletions, do them in descending order, since"
+1720 PRINT"the numbers above each deletion will be changed."
+1730 PRINT:INPUT"PRESS ENTER";Z:CLS:PRINT:PRINT
+1740 PRINT"  The hard copy suggestions given in the program are for lines"
+1750 PRINT"of 10 CPI and will give three columns of 54 entries each"
+1760 PRINT"on 8 1/2 x 11 inch paper.":PRINT
+1770 PRINT"  TOGGLE SORT ALPHA <--> NUMERICAL gives two choices. The first"
+1780 PRINT"puts the disk number before the file name and the second"
+1790 PRINT"reverses this. The second choice is not essential but is fun"
+1795 PRINT"to play with and makes a nice demonstration of your computer."
+1800 PRINT"The sort by disk numbers will make a hard copy that can be cut"
+1805 PRINT"up for disk jacket labels.":PRINT
+1807 PRINT:INPUT"PRESS ENTER";Z:CLS:PRINT:PRINT:PRINT
+1810 PRINT"  The SEARCH choice will find any group of two or more"
+1820 PRINT"characters occurring in the list of entries. It prints out"
+1830 PRINT"the entry, then when ENTER is pressed, searches through the"
+1840 PRINT"rest of the entries to find additonal occurrences."
+1850 PRINT
+1860 PRINT"  If you press BREAK and leave the program, type GOTO 100 to"
+1870 PRINT"return to the MEN

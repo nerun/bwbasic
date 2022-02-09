@@ -1,0 +1,627 @@
+10 ' FILE NAME:  MBRS.BAS - Creates, lists, adds to, corrects, and queries
+20 ' church member personal information and donation files.
+30 ESC$=CHR$(27):CLR$=ESC$+"*"
+40 DEF FNCTR$(A$)=SPACE$(40-(LEN(A$)/2))+A$
+50 DEF FNAT$(V,H)=ESC$+"="+CHR$(31+V)+CHR$(31+H)
+60 RET$=FNAT$(24,1)+FNCTR$("Hit RETURN to continue:  "):BTM$=FNAT$(24,1)
+70 HT$="Home Town":ST$="NC":YR$="1984"
+80 OPTION BASE 1
+90 DATA "ATTENTION, PROGRAMMERS AND USERS",""
+100 DATA "For distribution purposes, the World Famous Toad Hall"
+110 DATA "Church Membership Record Program (Public Domain)"
+120 DATA "needs a few patches to tailor it to YOUR environment and use.",""
+130 DATA "Change the name of the program itself from MBRSV13.BAS to MBRS.BAS."
+140 DATA "(V13 is to tell apart the versions, but the program itself needs"
+150 DATA "the program name to be MBRS.BAS (for file existence checking).",""
+160 DATA "At the very beginning of the code, change HT$ and ST$ to your own"
+170 DATA "local city/town and state.  Change YR$ to keep up to date."
+180 DATA "Change MY CHURCH right below this in code to your own church name."
+190 DATA "If you'd like to add your own letterhead to the donation reports,"
+200 DATA "fill in the appropriate lines down in the code printing to"
+210 DATA "#5 - that's the printout.  You'll see the 'blanks'."
+220 DATA "Enjoy it -- just a gesture in the spirit of Public Domain Software."
+230 DATA "","(Oh, yeah -- peel out all this stuff too!"
+240 DATA "The Author, Toad Hall, March 1984",*
+250 PRINT CLR$:RESTORE 90:GOSUB 390:STOP
+260 DATA "MY CHURCH Member Records",""
+270 DATA "Courtesy of Toad Hall","Home of Bionic Toad Software"
+280 DATA "David P Kirschbaum, Author","Version 1.3, 29 Mar 84"
+290 DATA "(C) 1983 All rights reserved.",""
+300 DATA "Please contact the author for comments, bugs, recommendations.",""
+310 DATA "Also, any church group using this software:"
+320 DATA "Please drop me a card or call with your name, tel #, and address."
+330 DATA "It gives me great personal satisfaction to know people are using"
+340 DATA "this program of mine, (my resume could use the references!),"
+350 DATA "and I can provide you with updates (my software never stays static!)"
+360 DATA "","My address is","Toad Hall","7573 Jennings Lane"
+370 DATA "Fayetteville NC  28303","tel (919) 868-3471",***
+380 PRINT CLR$:RESTORE 260:GOSUB 390:GOTO 470
+390 READ T$
+400   IF T$="*" THEN RETURN ELSE IF T$="**" OR T$="***" THEN 420
+410 PRINT FNCTR$(T$):GOTO 390
+420   IF T$="***" THEN PRINT BTM$;
+430 PRINT RET$;
+440 INPUT "",T1$:IF T$="***" THEN PRINT CLR$;
+450 T$="":RETURN
+460 '== Program Start ==
+470 DEFINT A-C,E-Z:DEFSNG D:MAX=200
+480 DIM MNR(MAX+2),P(MAX+2),FSKIL$(4),FCOMM$(4),SKIL$(4),COMM$(4),F$(4)
+490 FOR I=1 TO 3:F$(I)="MBRS-"+MID$(STR$(I),2,1)+".DAT":NEXT I
+500   IF F$(4)="" OR QTR$="" OR OPT=9 THEN GOSUB 5720
+510 GOSUB 820:GOSUB 920
+520 DATA "==== Church Membership Program Menu ====",""
+530 DATA "The following options are available:",""
+540 DATA "1  - Membership List (with record numbers)"
+550 DATA "2  - Add new members.                     "
+560 DATA "3  - Correct member information.          "
+570 DATA "4  - Query member record.                 "
+580 DATA "5  - Enter Weekly Donation.               "
+590 DATA "6  - Review Quarterly Donations.          "
+600 DATA "7  - Create Formatted Donation Report File"
+610 DATA "8  - Set Quarter.                         "
+620 DATA "Q  - Return to System.                    ","",*
+630 PRINT CLR$:RESTORE 520:GOSUB 390
+640   IF QTR$="" THEN 660
+650 PRINT FNCTR$("Current Quarter is "+QTR$+" Quarter."):GOTO 670
+660 PRINT FNCTR$("No current Quarter initialized.")
+670 PRINT:PRINT FNCTR$("Enter option desired:  ");
+680 T$=INKEY$:IF LEN(T$)<1 THEN 680 ELSE PRINT T$;
+690   IF T$="Q" OR T$="q" THEN PRINT "uit":GOTO 800 ELSE 750
+700   IF OPT=6 THEN FLAG=2	'needed in GOSUB
+710   IF OPT=8 THEN F$(4)=""
+720 ON OPT GOSUB 2490,1300,2700,2200,4510,4510,4510,500:GOTO 630
+730 PRINT FNCTR$("Do you wish to continue?  (Y/N):  ");
+740 T$=INKEY$:IF LEN(T$)<1 THEN 740 ELSE PRINT T$
+750 OPT=INSTR("12345678YyNn",T$)
+760   IF OPT=9 OR OPT=10 THEN 670  'get menu selection
+770   IF OPT=11 OR OPT=12 THEN 800  'endit
+780   IF OPT>0 AND OPT<9 THEN 700 ELSE 730  'make sure in range 1-9
+790 DATA "","","Processing complete","","Bye...",*
+800 RESTORE 790:GOSUB 390:END
+810 '== Open and define files ==
+820 RESET:OPEN "R",#1,F$(1)
+830 FIELD #1,2 AS FZ1$,2 AS FXNR1$,30 AS FXN$,30 AS FA1$,30 AS FA2$,15 AS FA3$,
+     2 AS FA4$,5 AS FA5$,7 AS FTEL$
+840 OPEN "R",#2,F$(2)
+850 FIELD #2,2 AS FZ1$,2 AS FXNR1$,6 AS FANNIV$,6 AS FTDJN$,10 AS FPSN$,
+     4 AS FXREF$,6 AS FBDAY$,10 AS FSKIL$(1), 10 AS FSKIL$(2),10 AS FSKIL$(3),
+     10 AS FSKIL$(4), 10 AS FCOMM$(1),10 AS FCOMM$(2),10 AS FCOMM$(3),
+     10 AS FCOMM$(4)
+860 OPEN "R",#3,F$(3)
+870 FIELD #3,2 AS FZ1$,2 AS FXNR1$,120 AS FCMT$
+880 OPEN "R",#4,F$(4)
+890 FIELD #4,2 AS FZ1$,2 AS FXNR1$,2 AS FWK$,52 AS FTD$,15 AS FSP1N$,
+     52 AS FSP1D$
+900 RETURN
+910 '== Table Build ==
+920 FOR REC=1 TO MAX
+930   GET #1,REC:IF LEFT$(FXN$,1)="Z" THEN MNR(REC)=0 ELSE MNR(REC)=REC
+940 GET #1,REC:X$=FXN$:IF LEFT$(X$,1)="Z" THEN MNR(REC)=0:GOTO 950
+950 NEXT REC
+960 RETURN
+970 '== Find Member Record ==
+980 FOR N=1 TO MAX
+990   IF REC=MNR(N) THEN 1030  'found it; return
+1000 NEXT N:IF FLAG=5 THEN REC=0:GOTO 1030  'special use
+1010 PRINT:PRINT FNCTR$("Member # "+STR$(REC)+" not presently in use."):PRINT
+1020 FOR N=1 TO 500:REC=0:NEXT
+1030 RETURN
+1040 '== File Write ==
+1050 LSET FZ1$="**"
+1060 LSET FXNR1$=MKI$(REC)
+1070 LSET FXN$=NAM$
+1080 LSET FA1$=T1$
+1090 LSET FA2$=T2$
+1100 LSET FA3$=T3$
+1110 LSET FA4$=T4$
+1120 LSET FA5$=T5$
+1130 LSET FTEL$=TEL$
+1140 LSET FANNIV$=ANNIV$
+1150 LSET FTDJN$=DTJN$
+1160 LSET FPSN$=PSN$
+1170 LSET FXREF$=XREF$
+1180 LSET FBDAY$=BDAY$
+1190 FOR I=1 TO 4:LSET FSKIL$(I)=SKIL$(I):NEXT I
+1200 FOR I=1 TO 4:LSET FCOMM$(I)=COMM$(I):NEXT I
+1210 LSET FCMT$=CMT$
+1220 '== File Rewrite Entry Point ==
+1230 PUT #1,REC
+1240 PUT #2,REC
+1250 PUT #3,REC
+1260 PUT #4,REC
+1270 '
+1280 RETURN
+1290 '== Add New Member(s) ==
+1300 DATA "== Entering New Members ==",""
+1310 DATA "Enter new Member Number (up to 4 digits), RETURN to quit,"
+1320 DATA "or ? for me to find an unused Member number.","",*
+1330 PRINT CLR$:RESTORE 1300:GOSUB 390
+1340 PRINT FNCTR$("Enter selection (# or ? and RETURN) or RETURN to quit:  ");
+1350   INPUT "",A$:IF A$="" THEN 2030  'return
+1360   IF A$="?" THEN FLAG=1 ELSE FLAG=0  'find next avail mbr #
+1370 GOSUB 2060		'find member #
+1380   IF FLAG=1 THEN FLAG=0:GOTO 2030  'a problem - gotta quit.
+1390 PRINT FNCTR$("Family Head Member # (1-3 digits) or RETURN if Head:  ");
+1400 INPUT "",XREF$:IF XREF$="" OR XREF$=STR$(REC) THEN XREF=0:GOTO 1560
+1410 XREF=VAL(XREF$)
+1420 TEMP=REC:REC=XREF:GOSUB 980:XREF=RC=TEMP
+1430 IF XREF>0 THEN 1540
+1440 DATA "ERROR!  The Family Head Member # is not on file!"
+1450 DATA "Enter the correct number, or this member # for now.","",*
+1460 RESTORE 1440:GOSUB 390:GOTO 1390
+1470 DATA "","Because you've cross-referenced this member to another member,"
+1480 DATA "you may use the 'Head of Family' (HOF) information for addresses,"
+1490 DATA "telephone numbers, date joined church, anniversary, etc."
+1500 DATA "(Fields that will accept a HOF default are marked with an *."
+1510 DATA "Just hit RETURN to use the HOF data.)",""
+1520 DATA "This does NOT work for church position, skills, and those personal"
+1530 DATA "things not shared with a Head of Family.","",*
+1540 RESTORE 1470:GOSUB 390
+1550 GET #1,XREF:GET #2,XREF:GET #3,XREF
+1560 PRINT TAB(10);:LINE INPUT "Member name (L<sp>,F<sp>MI):  ",NAM$
+1570   IF NAM$="Q" THEN MNR(REC)=0:GOTO 1330
+1580   IF LEN(NAM$)>1 THEN 1610
+1590 PRINT FNCTR$("You really must enter a name, you know, or Q to quit.")
+1600 GOTO 1560
+1610 PRINT TAB(10);:INPUT "First address line:  *",T1$
+1620   IF T1$<>"" THEN 1640 ELSE IF XREF<=0 THEN T1$="~":GOTO 1640
+1630   T1$=FA1$:T2$=FA2$:T3$=FA3$:T4$=FA4$:T5$=FA5$:GOTO 1720	'Use HOF data
+1640 PRINT TAB(10);:INPUT "Second address line:  *",T2$:IF T2$="" THEN T2$="~"
+1650 PRINT TAB(10);"City (if ";HT$;", enter H):  *";:INPUT "",T3$
+1660   IF T3$="H" THEN T3$=HT$:T4$=ST$:GOTO 1710
+1670   IF T3$<>"" THEN 1690 ELSE IF XREF<=0 THEN T3$="~":GOTO 1690
+1680   T3$=FA3$:T4$=FA4$:T5$=FA5$:GOTO 1720	'Use HOF data
+1690 PRINT TAB(10);"State (2-char, if ";ST$;" hit RETURN):  ";:INPUT "",T4$
+1700   IF T4$="" THEN T4$=ST$
+1710 PRINT TAB(10);:INPUT "ZIP code (5 digits):  ",T5$
+1720 PRINT TAB(10);:INPUT "Telephone number (7 digits, no dash):  *",TEL$
+1730   IF TEL$="" THEN IF XREF>0 THEN TEL$=FTEL$ ELSE TEL$="~"
+1740   IF LEN(TEL$)<=7 THEN 1760
+1750 PRINT FNCTR$("ERROR!  7 numbers only, please."):GOTO 1720
+1760 PRINT TAB(10);:INPUT "Date joined church (YYMMDD):  *",DTJN$
+1770   IF DTJN$="" THEN IF XREF>0 THEN DTJN$=FDTJN$ ELSE DTJN$="~"
+1780 PRINT TAB(10);:INPUT "Anniversary date (YYMMDD):  *",ANNIV$
+1790   IF ANNIV$="" THEN IF XREF>0 THEN ANNIV$=FANNIV$ ELSE ANNIV$="~"
+1800 PRINT TAB(10);:INPUT "Church Position (max 10 chars):  ",PSN$
+1810   IF PSN$="" THEN PSN$="~"
+1820 PRINT TAB(10);:INPUT "Birth Date (YYMMDD):  ",BDAY$
+1830   IF BDAY$="" THEN BDAY$="~"
+1840 PRINT "Enter up to 4 Special Skills (max 10 chars, RETURN to stop):"
+1850 FLAG=0
+1860 FOR I=1 TO 4
+1870     IF FLAG=1 THEN SKIL$(I)="~":GOTO 1900
+1880   PRINT TAB(10);"Skill";I;:INPUT ":  ",SKIL$(I)
+1890     IF SKIL$(I)="" THEN SKIL$(I)="~":FLAG=1
+1900 NEXT I:FLAG=0
+1910 PRINT "Enter up to 4 Committee memberships (present and past;"
+1920 PRINT "put past ones in parentheses, e.g., '(Building)')."
+1930 PRINT "(max 10 characters, RETURN to stop):"
+1940 FOR I=1 TO 4
+1950     IF FLAG=1 THEN COMM$(I)="~":GOTO 1980
+1960   PRINT TAB(10);"Committee";I;:INPUT ":  ",COMM$(I)
+1970     IF COMM$(I)="" THEN COMM$(I)="~":FLAG=1
+1980 NEXT I:FLAG=0
+1990 PRINT "Enter other desired information or comments (up to 1 line):"
+2000 PRINT:LINE INPUT "",CMT$:IF CMT$="" THEN CMT$="None"
+2010 GOSUB 1050:GOSUB 820
+2020 GOTO 1300
+2030 RETURN
+2040 '== Find Record Number for New Member ==
+2050 ' Must bring in A$
+2060   IF A$="?" THEN 2130 ELSE IF A$="" THEN FLAG=1:GOTO 2180
+2070 REC=VAL(A$)
+2080     IF MNR(REC)=0 THEN 2160
+2090 PRINT "ERROR!  Duplicate Member Number.  Select another, please,"
+2100 PRINT "? for next available number, or RETURN to quit."
+2110 INPUT "Enter selection ( # or ? ) or RETURN to quit:  ",A$
+2120 GOTO 2060
+2130   FOR REC=1 TO MAX:IF MNR(REC)=0 THEN 2160:NEXT REC
+2140 PRINT FNCTR$("Sorry - no more records are available.")
+2150 FLAG=1:REC=0:GOTO 2180
+2160   FLAG=0:MNR(REC)=REC
+2170 PRINT FNCTR$("Confirming Member Record #"+STR$(REC))
+2180 RETURN
+2190 '== Query Member Record ==
+2200 REC=0:PRINT CLR$;FNCTR$("== Query Member Record =="):PRINT
+2210 PRINT FNCTR$("Enter Member Number (#, ?-Listing, A-All, Q-Quit):  ");
+2220 INPUT; "",A$:IF A$="Q" OR A$="q" THEN PRINT "uit":GOTO 2300
+2230 PRINT:IF A$="?" THEN GOSUB 2490:GOTO 2200
+2240   IF A$<>"A" AND A$<>"a" THEN 2270 
+2250 IF REC<MAX THEN   REC=REC+1:IF MNR(REC)>0 THEN GOSUB 2330:GOTO 2280
+2260   IF REC>=MAX THEN 2200 ELSE 2250
+2270 REC=VAL(A$):GOSUB 980:IF REC=0 THEN 2200 ELSE GOSUB 2330:REC=0
+2280   IF T$="Q" OR T$="q" THEN PRINT "uitting...":GOTO 2300
+2290   IF REC=0 THEN 2200 ELSE 2250
+2300 RETURN
+2310 PRINT FNCTR$("Getting Member #");REC:GOTO 2250
+2320 '-- gosub to show member rec --
+2330 GET #1,REC:GET #2,REC:GET #3,REC
+2340 T7$=MID$(FTEL$,1,3):T8$=MID$(FTEL$,4,4)
+2350 PRINT CLR$;"MBR #";TAB(12);"NAME";TAB(40);"ADDRESS":PRINT
+2360 PRINT REC;TAB(10);FXN$;TAB(40);FA1$
+2370   IF ASC(FA2$)>32 THEN PRINT TAB(40);FA2$
+2380 PRINT TAB(40);FA3$;FA4$;"  ";FA5$:PRINT
+2390 PRINT "Position:       ";FPSN$;TAB(40);"Tel #:        ";T7$;"-";T8$
+2400 PRINT "Joined:         ";FTDJN$;TAB(40);"Birth Date:   ";FBDAY$
+2410 PRINT "Family Head #:  ";FXREF$;TAB(40);"Anniversary:  ";FANNIV$
+2420 PRINT:PRINT TAB(15);"Skills";TAB(40);"Committees ('(past)')"
+2430 FOR I=1 TO 4:PRINT TAB(15);FSKIL$(I);TAB(40);FCOMM$(I):NEXT I
+2440 PRINT:PRINT:PRINT FCMT$
+2450 PRINT FNCTR$("Hit RETURN to continue, or Q to quit:  ");
+2460 T$=INKEY$:IF LEN(T$)<1 THEN 2460
+2470 RETURN
+2480 '== Print Member Numbers ==
+2490 GOSUB 2500:GOTO 2540
+2500 PRINT CLR$;FNCTR$("== Member Number List =="):PRINT
+2510 PRINT "NBR";TAB(5);"NAME";TAB(35);"XREF";
+2520 PRINT TAB(40);"NBR";TAB(45);"NAME";TAB(75);"XREF"
+2530 RETURN
+2540 T=MAX/2		'2 columns
+2550 FOR REC=1 TO T
+2560   T0=0:T1=REC:T2=0
+2570     IF MNR(T1)=0 THEN 2620
+2580   GET #1,T1:GET #2,T1
+2590   PRINT TAB(T2);:PRINT USING "###";REC;
+2600   PRINT TAB(T2+5);FXN$;TAB(T2+35);FXREF$;
+2610   IF T2=0 THEN PRINT "|"; ELSE PRINT
+2620   IF T2>0 THEN 2650
+2630   IF T2=0 THEN T1=T+REC:T2=40:GOTO 2570
+2640   IF REC MOD 20=0 AND REC<T THEN GOSUB 2660:GOSUB 2500
+2650 NEXT REC
+2660 PRINT RET$;
+2670 T$=INKEY$:IF LEN(T$)<1 THEN 2670
+2680 RETURN
+2690 '== Correct Member Information ==
+2700 PRINT CLR$;FNCTR$("== Member Record Corrections =="):PRINT
+2710 PRINT FNCTR$("Enter Member Number, ? for a Listing, or RETURN to quit:  ");
+2720 INPUT; "",A$:IF A$="" THEN PRINT "Quit.":GOTO 2900 'return
+2730   IF A$="?" THEN PRINT:GOSUB 2490:GOTO 2700
+2740   REC=VAL(A$):PRINT CLR$:GOSUB 980
+2750   IF REC=0 THEN 2900	'return
+2760 GET #1,REC:GET #2,REC:GET #3,REC:GET #4,REC
+2770 PRINT REC,FXN$:PRINT
+2780 GOTO 2920
+2790 '-- Delete record --
+2800 PRINT FNCTR$("Delete this Member Record?  ('DELETE' or RETURN for No):  ");
+2810 INPUT "",T$:IF T$<>"DELETE" THEN 2900 ELSE IF FLAG=1 THEN 2890
+2820 DATA "","WARNING!    If you delete this record, ALL record of ALL data"
+2830 DATA "on this member is PERMANENTLY and FOREVER destroyed in this file."
+2840 DATA "There are other options available:  Change the member's number;"
+2850 DATA "Move the member to an inactive file."
+2860 DATA "Consider these, and be ABSOLUTELY sure you want to delete this!"
+2870 DATA "If you do not, enter ANYTHING but 'DELETE' to abort.","",*
+2880 RESTORE 2820:GOSUB 390:IF FLAG=1 THEN FLAG=0 ELSE FLAG=1:GOTO 2800
+2890 TEMP=REC:GOSUB 3770	'delete rec
+2900 FLAG=0:RETURN
+2910 '== Regular member data change ==
+2920 PRINT FNCTR$("== Member Record Correction =="):PRINT
+2930 PRINT "Enter the information to be changed (only one at a time, please):"
+2940 DATA "Member Number:","#","Member Name:","N","Position:","P"
+2950 DATA "Telephone:","T","Address:","A","Birth Date:","B"
+2960 DATA "Date Joined:","J","Anniversary:","M","Skill(s):","S"
+2970 DATA "Committee(s):","C","Family Head:","H","Other Comments:","O"
+2980 DATA "Delete Member:","D"
+2990 RESTORE 2940:FOR N=1 TO 13:READ A$,B$:PRINT,A$;TAB(30);B$:NEXT N
+3000 PRINT:PRINT FNCTR$("(#,N,P,T,A,B,J,M,S,C,H,O,D, or ESC to quit):  ");
+3010 A$=INKEY$:IF LEN(A$)<1 THEN 3010 ELSE IF ASC(A$)=11 OR ASC(A$)=17 THEN 3010
+3020   IF A$=ESC$ THEN PRINT "ESC" ELSE PRINT A$:GOTO 3050
+3030     PRINT FNCTR$("Now updating all changes to files...")
+3040     GOSUB 1230:PRINT CLR$:GOTO 2700
+3050 T=INSTR("#NPTABJMSCHOD",A$)
+3060  IF T<1 THEN PRINT FNCTR$("ERROR!  Try again, please."):PRINT:GOTO 3000
+3070 DATA "Remember, use RETURN to accept Present data, 'ERASE' to erase"
+3080 DATA "an entry, or enter new data as desired.  DO NOT use this utility"
+3090 DATA "to go right back and check a new entry (and then hit RETURN to"
+3100 DATA "accept that new entry) -- the new data is not actually written"
+3110 DATA "to the disk yet, and your RETURN will erase it!","",*
+3120 PRINT CLR$:RESTORE 3070:GOSUB 390
+3130 ON T GOSUB 3600,3170,4030,3260,3330,3890,3820,3960,4280,4390,4100,4170,2800
+3140   IF T=1 THEN 3030 ELSE IF T=13 THEN 2700
+3150 PRINT:PRINT:PRINT FNCTR$("Change posted."):FOR I=1 TO 500:NEXT:GOTO 2920
+3160 '== Change Name ==
+3170 PRINT "Present Name:  ";FXN$
+3180 LINE INPUT; "Enter corrected name (max 30 char):  ",A$
+3190   IF A$="" THEN PRINT FXN$:GOTO 3240 ELSE PRINT
+3200   IF A$<>"ERASE" THEN  3230
+3210 PRINT FNCTR$("ERROR!  You cannot ERASE a name field, only change.")
+3220 PRINT:GOTO 3170
+3230 LSET FXN$=A$
+3240 RETURN
+3250 '== Change Telephone Number ==
+3260 PRINT "Present Telephone Number:  ";FTEL$
+3270 INPUT; "Enter new telephone number (max 7 characters, no dashes):  ",A$
+3280   IF A$="" THEN PRINT FTEL$:GOTO 3310
+3290   IF A$="ERASE" THEN A$="~"
+3300 PRINT:LSET FTEL$=A$
+3310 RETURN
+3320 '== Change Address ==
+3330 PRINT "Present Address:  ";TAB(20);FA1$
+3340 PRINT TAB(20);FA2$:PRINT TAB(20);FA3$
+3350 PRINT TAB(20);FA4$:PRINT TAB(20);FA5$
+3360 PRINT:PRINT FNCTR$("Enter new information, or RETURN to accept the old:")
+3370 PRINT:INPUT; "Enter first address line:  ",A$
+3380   IF A$="" THEN PRINT FA1$:GOTO 3410
+3390   IF A$="ERASE" THEN A$="~":PRINT A$
+3400 LSET FA1$=A$
+3410 PRINT:INPUT; "Enter second address line:  ",A$
+3420   IF A$="" THEN PRINT FA2$:GOTO 3450
+3430   IF A$="ERASE" THEN A$="~":PRINT A$
+3440 LSET FA2$=A$
+3450 PRINT:INPUT; "Enter City (20 char):  ",A$
+3460   IF A$<>"" THEN 3480
+3470 PRINT "City & State:  ";FA3$;"  ";FA4$:GOTO 3540
+3480   IF A$="ERASE" THEN A$="~":PRINT A$
+3490 LSET FA3$=A$
+3500 PRINT:INPUT; "Enter State (2 char abbrev.):  ",A$
+3510   IF A$="" THEN PRINT FA4$:GOTO 3540
+3520   IF A$="ERASE" THEN A$="~":PRINT A$
+3530 LSET FA4$=A$
+3540 PRINT:INPUT; "Enter ZIP code (5 char):  ",A$
+3550   IF A$="" THEN PRINT FA5$:GOTO 3580
+3560   IF A$="ERASE" THEN A$="~":PRINT A$
+3570 LSET FA5$=A$
+3580 PRINT:RETURN
+3590 '== Change Member Number ==
+3600 DATA "== Changing Member Numbers ==",""
+3610 DATA "You may assign a member a new number.  However it CANNOT be one"
+3620 DATA "already assigned.  You must first Delete that other member"
+3630 DATA "from the files, COMPLETELY and FOREVER erasing all data you have"
+3640 DATA "on that person -- and that's pretty drastic!",""
+3650 DATA "I recommend you change the old member's number to a high unused"
+3660 DATA "number, and then assign the vacant number as you desire.","",***
+3670 PRINT CLR$:RESTORE 3600:GOSUB 390:TEMP=REC
+3680 FOR I=1 TO 4:GET #I,REC:NEXT
+3690 PRINT:PRINT FNCTR$("Present Member's Number:  "+STR$(REC))
+3700 PRINT FNCTR$("Enter new desired number (4 digits, or RETURN to quit):  ");
+3710 INPUT "",A$:IF A$="" THEN 3800
+3720   IF A$="ERASE" THEN PRINT "ERROR!":GOTO 3690
+3730 GOSUB 2060:IF REC=0 OR FLAG=1 THEN 3800
+3740 '-- OK to use new number --
+3750 LSET FXNR1$=MKI$(REC):MNR(REC)=REC:GOSUB 1230	'post new data
+3760 LSET FZ1$="ZZ":LSET FXNR1$=MKI$(0):LSET FXN$=""
+3770 REC=TEMP:MNR(REC)=0:GOSUB 1230	'purge old
+3780 PRINT FNCTR$("Deletion Posted"):PRINT RET$;
+3790 A$=INKEY$:IF LEN(A$)<1 THEN 3790
+3800 RETURN
+3810 '== Change Date Joined ==
+3820 PRINT "Present Date Joined:  ";FTDJN$
+3830 INPUT; "Enter new Date Joined (YYMMDD):  ",A$
+3840   IF A$="" THEN PRINT FTDJN$:GOTO 3870
+3850   IF A$="ERASE" THEN A$="~":PRINT A$
+3860 LSET FTDJN$=A$
+3870 RETURN  'to member field change
+3880 '== Change Birth Date ==
+3890 PRINT "Present Birth Date:  ";FBDAY$
+3900 INPUT; "Enter new Birth Date (YYMMDD):  ",A$
+3910   IF A$="" THEN PRINT FBDAY$:GOTO 3940
+3920   IF A$="ERASE" THEN A$="~":PRINT A$
+3930 LSET FBDAY$=A$
+3940 RETURN
+3950 '== Change Anniversary ==
+3960 PRINT "Present Anniversary:  ";FANNIV$
+3970 INPUT; "Enter new Anniversary (YYMMDD):  ",A$
+3980   IF A$="" THEN PRINT FANNIV$:GOTO 4010
+3990   IF A$="ERASE" THEN A$="~":PRINT A$
+4000 LSET FANNIV$=A$
+4010 RETURN
+4020 '== Change Church Position ==
+4030 PRINT "Present Church Position:  ";FPSN$
+4040 INPUT; "Enter new Church Position (10 char):  ",A$
+4050   IF A$="" THEN PRINT FPSN$:GOTO 4080
+4060   IF A$="ERASE" THEN A$="~":PRINT A$
+4070 LSET FPSN$=A$
+4080 RETURN
+4090 '== Change Family Head # ==
+4100 PRINT "Present Family Head Member #:  ",FXREF$
+4110 INPUT; "Enter new Family Head Member #:  ",A$
+4120   IF A$="" THEN PRINT FXREF$:GOTO 4150
+4130   IF A$="ERASE" THEN A$="~":PRINT A$
+4140 LSET FXREF$=A$
+4150 RETURN  'to member field change
+4160 '== Change Other Comments ==
+4170 PRINT "Present Comment Line:":PRINT:PRINT FCMT$:PRINT:T$=FCMT$
+4180 PRINT "Enter new Comment Line:":LINE INPUT; "*",A$
+4190   IF A$="" THEN PRINT T$:A$=T$:GOTO 4250
+4200   IF A$="ERASE" THEN A$="None.":GOTO 4250
+4210 PRINT "A double-check ... here's your new line.  If OK, hit RETURN."
+4220 PRINT "If you don't like it, do it again."
+4230 PRINT:PRINT A$:PRINT:T$=A$
+4240 GOTO 4180
+4250 LSET FCMT$=A$
+4260 RETURN
+4270 '== Change Skills ==
+4280 PRINT "Present Skills:"
+4290 FOR I=1 TO 4:PRINT USING "#. ";I;
+4300   PRINT FSKIL$(I);:IF I<>4 THEN PRINT ", ";
+4310 NEXT I:PRINT
+4320 PRINT "Enter new skills (10 chars):"
+4330 FOR I=1 TO 4:PRINT USING "#. ";I;:INPUT; "",A$
+4340     IF A$="" THEN PRINT FSKIL$(I):GOTO 4360 ELSE IF A$="ERASE" THEN A$="~"
+4350   LSET FSKIL$(I)=A$
+4360 PRINT:NEXT I
+4370 RETURN
+4380 '== Change Committee Membership ==
+4390 PRINT "Present Committee Membership:"
+4400 FOR I=1 TO 4:PRINT USING "#. ";I;
+4410   PRINT FCOMM$(I);:IF I<>4 THEN PRINT ", ";
+4420 NEXT I:PRINT
+4430 PRINT "Enter new Committee Membership(s) (10 chars):"
+4440 FOR I=1 TO 4:PRINT USING "#. ";I;:INPUT; "",A$
+4450     IF A$="" THEN PRINT FCOMM$(I):GOTO 4480
+4460     IF A$="ERASE" THEN A$="~":PRINT A$
+4470   LSET FCOMM$(I)=A$
+4480 PRINT:NEXT I
+4490 RETURN  'to member field change
+4500 '== Actual Donation Posting/Listing ==
+4510 PRINT CLR$;FNCTR$("== Donation Posting/Listing ==")
+4520 PRINT FNCTR$("Current Quarter:  "+QTR$+" Quarter"):PRINT
+4530 REC=1:IF OPT=7 THEN OPEN "O",#5,"MBRS-DON.RPT"
+4540 LSET FSP1N$=""
+4550 PRINT FNCTR$("Enter Member Number (or ?-Listing, A-All, RETURN-quit):  ");
+4560 INPUT "",A$:REC=1
+4570   IF A$="A" OR A$="a" THEN FLAG=1:GOTO 4610
+4580   IF A$="" THEN IF OPT=7 THEN CLOSE #5:RETURN ELSE RETURN
+4590   IF A$="?" THEN GOSUB 2490:GOTO 4510
+4600 REC=VAL(A$):FLAG=0:GOSUB 980:IF REC=0 THEN 4550
+4610   IF MNR(REC)=0 THEN 4720
+4620 GET #1,REC:GET #2,REC:GET #4,REC
+4630 A=CVI(FXNR1$):IF ASC(FSP1N$)>32 THEN L=1 ELSE LSET FSP1N$="None":L=0
+4640   IF LEN(FWK$)=0 THEN WK=0:TD$="":SP1D$="":GOTO 4680
+4650 T=CVI(FWK$):WK=T
+4660 TD$=LEFT$(FTD$,T*4)
+4670 SP1D$=LEFT$(FSP1D$,T*4)
+4680 WK=WK+1:LSET FWK$=MKI$(WK)
+4690   IF OPT=5 THEN GOSUB 4740
+4700   IF OPT=6 THEN GOSUB 4980:IF T$="Q" THEN A$="":GOTO 4580
+4710   IF OPT=7 THEN GOSUB 5340
+4720   IF FLAG=0 OR REC>MAX THEN 4550 ELSE REC=REC+1:GOTO 4610
+4730 '-- Donation Entry --
+4740 LSET FZ1$="**":LSET FSP1D$="":LSET FTD$=""
+4750 PRINT CLR$;"Donation for Member ";FXN$
+4760 PRINT "Type Donation (S - Special, RETURN - Sunday, ESC - Next Mbr):  ";
+4770 TYP$=INKEY$:IF LEN(TYP$)<1 THEN 4770
+4780   IF TYP$=ESC$ THEN PRINT "Next Member...":GOTO 4960  'return
+4790   IF TYP$="S" OR TYP$="s" THEN TYP=1:TYP$="Special":GOTO 4810
+4800   TYP$="Regular":TYP=0
+4810 PRINT:PRINT:PRINT "Now posting ";TYP$;" Donation, Week #";WK
+4820   IF TYP=0 THEN 4890
+4830 PRINT FNCTR$("The Special Donation name is "+FSP1N$)
+4840 PRINT FNCTR$("Enter name of new Special Donation (max 15 chars),")
+4850 PRINT FNCTR$("or RETURN for no change/none:  ");:LINE INPUT;"",A$
+4860   IF L=1 AND LEN(A$)=0 THEN PRINT "Accepted.":GOTO 4890
+4870   IF L=0 AND LEN(A$)=0 THEN A$="None":PRINT A$
+4880 LSET FSP1N$=A$:GOTO 4830
+4890 PRINT "Enter ";TYP$;" Donation Amount (no $ or ,):  ";:INPUT "",DNEW
+4900 PRINT "The amount entered is ";:PRINT USING "$###.##";DNEW
+4910 PRINT "Hit RETURN to accept, or enter corrected donation amount:  ";
+4920 INPUT "",A:IF A<>0 THEN DNEW=A:GOTO 4900
+4930 DNEW$=MKS$(DNEW)
+4940   IF TYP=1 THEN LSET FSP1D$=SP1D$+DNEW$ ELSE LSET FTD$=TD$+DNEW$
+4950 PUT #4,REC:GOTO 4760
+4960 CLOSE #4:GOSUB 880:RETURN
+4970 '== Screen Donation Report ==
+4980 PRINT CLR$;FNCTR$("DONATIONS")
+4990 PRINT TAB(30);FXN$;TAB(70);FXNR1$
+5000 PRINT TAB(30);FA1$
+5010   IF ASC(FA2$)<>32 AND ASC(FA2$)<>126 THEN PRINT TAB(30);FA2$
+5020 PRINT TAB(30);FA3$;FA4$;"  ";FA5$
+5030 PRINT FNCTR$(QTR$+" Quarter "+YR$):PRINT
+5040 PRINT TAB(20);"Sunday";TAB(50);"Special"
+5050 PRINT TAB(10);"Week";TAB(20);"Donation";TAB(50);"Donation";
+5060 PRINT TAB(60);"Purpose"
+5070 PRINT TAB(10);"----";TAB(20);"--------";TAB(50);"--------";
+5080 PRINT TAB(60);"-------"
+5090 DT=0:DSP1T=0
+5100 FOR I=1 TO 13
+5110   IF WK=1 THEN PRINT:PRINT FNCTR$("No donations entered."):GOTO 5280
+5120   IF I=WK THEN 5220
+5130   D$=MID$(FTD$,((I-1)*4)+1,4)
+5140   SP1D$=MID$(FSP1D$,((I-1)*4)+1,4)
+5150   D=CVS(D$):DSP1=CVS(SP1D$)
+5160   PRINT TAB(10);:PRINT USING "###";I;
+5170     PRINT TAB(20);:PRINT USING "  ###.##";D;
+5180     PRINT TAB(50);:PRINT USING "  ###.##";DSP1;
+5190     PRINT TAB(60);:IF I=WK-1 THEN PRINT FSP1N$ ELSE PRINT
+5200   DT=DT+D:DSP1T=DSP1T+DSP1
+5210 NEXT I
+5220 DAV=DT/(I-1)
+5230 PRINT TAB(20);"---------";TAB(50);"---------":PRINT
+5240 PRINT TAB(10);"Total:";TAB(20);:PRINT USING " $###.##";DT;
+5250 PRINT TAB(50);:PRINT USING " $###.##";DSP1T
+5260 PRINT "Weekly average:";TAB(20);:PRINT USING " $###.##";DAV;
+5270 PRINT TAB(35);"Comb. Total:";TAB(50);:PRINT USING " $###.##";DT+DSP1T
+5280 PRINT BTM$;FNCTR$("Hit RETURN to continue or Q to quit:  ");
+5290 T$=INKEY$:IF LEN(T$)<1 THEN 5290 ELSE PRINT CLR$:RETURN
+5300 '== Print Formatted Donation Report to File ==
+5310 PRINT #5,CLR$;	'FNCTR$("MY CHURCH")
+5320 'PRINT #5,FNCTR$("100 Sanctity Lane")
+5330 'PRINT #5,FNCTR$(HT$+" "+ST$+"  28303"):PRINT #5,""
+5340 PRINT #5,FNCTR$("DONATIONS"):PRINT #5,""
+5350 PRINT #5,TAB(30);FXN$;TAB(70);FXNR1$
+5360 PRINT #5,TAB(30);FA1$
+5370   IF ASC(FA2$)<>32 AND ASC(FA2$)<>126 THEN PRINT #5,TAB(30);FA2$
+5380 PRINT #5,TAB(30);FA3$;FA4$;"  ";FA5$:PRINT #5,""
+5390 PRINT #5,FNCTR$(QTR$+" Quarter +YR$):PRINT #5,""
+5400 PRINT #5,TAB(20);"Sunday";TAB(50);"Special"
+5410 PRINT #5,TAB(10);"Week";TAB(20);"Donation";TAB(50);"Donation";
+5420 PRINT #5,TAB(60);"Purpose"
+5430 PRINT #5,TAB(10);"----";TAB(20);"--------";TAB(50);"--------";
+5440 PRINT #5,TAB(60);"-------"
+5450 DT=0:DSP1T=0
+5460 FOR I=1 TO 13:IF WK<>1 THEN 5480
+5470   PRINT #5,"":PRINT #5,FNCTR$("No donations entered."):GOTO 5580
+5480     IF I=WK THEN 5580
+5490   FD$=MID$(FTD$,(I-1)*4+1,4)
+5500   SP1D$=MID$(FSP1D$,(I-1)*4+1,4)
+5510   D=CVS(FD$):DSP1=CVS(SP1D$)
+5520   PRINT #5,TAB(10);:PRINT #5,USING "###";I;
+5530     PRINT #5,TAB(20);:PRINT #5,USING "  ###.##";D;
+5540     PRINT #5,TAB(50);:PRINT #5,USING "  ###.##";DSP1;
+5550     PRINT #5,TAB(60);:IF I=WK-1 THEN PRINT #5,FSP1N$ ELSE PRINT #5
+5560   DT=DT+D:DSP1T=DSP1T+DSP1
+5570 NEXT I
+5580 DAV=DT/I
+5590 PRINT #5,TAB(20);"---------";TAB(50);"---------":PRINT #5,""
+5600 PRINT #5,TAB(10);"Total:";TAB(20);:PRINT #5,USING " $###.##";DT;
+5610 PRINT #5,TAB(50);:PRINT #5,USING " $###.##";DSP1T
+5620 PRINT #5,"":PRINT #5,"Weekly average:";TAB(20);
+5630 PRINT #5,USING " $###.##";DAV;:PRINT #5,TAB(35);"Comb. Total:";
+5640 PRINT #5,TAB(50);:PRINT #5,USING " $###.##";DT+DSP1T;:PRINT #5,CHR$(12)
+5650 RETURN
+5660 '-- Small Gosub to field all files --
+5670 FOR I=1 TO 4
+5680   OPEN "R",#I,F$(I):FIELD #I,126 AS FA$
+5690 PRINT FNCTR$("Now opening and fielding "+F$(I)+" (File #"+STR$(I)+").")
+5700 NEXT I:RETURN
+5710 '== Quarter File Init==
+5720 DATA "== Quarter Initialization ==",""
+5730 DATA "You may now set the present Quarter to access current Quarterly"
+5740 DATA "Donation Files.  If this is a new Quarter, that file will be"
+5750 DATA "created automatically.","",*
+5760 PRINT CLR$:RESTORE 5720:GOSUB 390
+5770 GOSUB 6150:IF T$<>"Q" THEN 5820
+5780   IF LEN(F$(4))>0 THEN 6120
+5790 PRINT FNCTR$("Your file names are NOT initialized, and you cannot access")
+5800 PRINT FNCTR$("your files until that is done!  Please select a Quarter.")
+5810 GOTO 5770
+5820 QTR$=MID$("1st2nd3rd4th",(VAL(T$)-1)*3+1,3)
+5830 PRINT:PRINT FNCTR$("Here are your file names for the "+QTR$+" Quarter:")
+5840 PRINT:PRINT TAB(20);
+5850 FOR I=1 TO 4:PRINT F$(I);"  ";:NEXT I:PRINT
+5860 RESET:ON ERROR GOTO 5940
+5870 ' The following file test requires that MBRS.BAS exist on this disk.
+5880 ' So DON'T change MBRS.BAS to anything else, or change these names.
+5890 NAME "MBRS.BAS" AS F$(1)
+5900 NAME F$(1) AS "MBRS.BAS":ON ERROR GOTO 0
+5910 GOTO 6050
+5920 NAME "MBRS.BAS" AS F$(4)
+5930 NAME F$(4) AS "MBRS.BAS":GOTO 5980
+5940   IF ERR=58 AND ERL=5890 THEN RESUME 5920
+5950   IF ERR=58 AND ERL=5920 THEN RESUME 6120
+5960 PRINT "Untrapped ERR=";ERR;"at Line ";ERL:STOP
+5970 '--Quarter files do not exist - initialize them.--
+5980 ON ERROR GOTO 0
+5990 PRINT FNCTR$("Creating new "+QTR$+" Quarter Donation File "+F$(4)+"...")
+6000 OPEN "R",#4,F$(4):FIELD #4,2 AS FZ1$,2 AS FXNR1$,2 AS FWK$,120 AS FA$
+6010 LSET FZ1$="ZZ":LSET FXNR1$=MKI$(0):LSET FWK$=MKI$(0)
+6020 FOR REC=1 TO MAX:PUT #4,REC:NEXT REC:CLOSE #4
+6030 GOTO 6120
+6040 '-- Initialize All Files --
+6050 FOR I=1 TO 3
+6060   PRINT FNCTR$("Creating File "+F$(I))
+6070   OPEN "R",#I,F$(I):FIELD #I,2 AS FZ1$,2 AS FXNR1$,122 AS FA$
+6080   LSET FZ1$="ZZ":LSET FXNR1$=MKI$(0)
+6090   FOR REC=1 TO MAX:PUT #I,REC:NEXT REC:CLOSE #I
+6100 NEXT I:GOTO 5980
+6110 '-- End of All File Initialization --
+6120 ON ERROR GOTO 0
+6130 RETURN
+6140 '-- Prompt for and Get Quarter Data --
+6150 IF QTR$="" THEN T$="No Quarter Initialized" ELSE T$=QTR$+" Quarter"
+6160 PRINT FNCTR$("Current Quarter:  "+T$):PRINT
+6170 PRINT FNCTR$("Enter Quarter desired (1,2,3,4) or ESC or RET to quit:  ");
+6180 T$=INKEY$:IF LEN(T$)<1 THEN 6180
+6190   IF T$=ESC$ OR T$="" THEN T$="Q":PRINT "Quit":GOTO 6220
+6200 F$(4)="DONQTR"+T$+".DAT"
+6210   IF INSTR("1234",T$)<1 THEN PRINT FNCTR$("ERROR!  Try again."):GOTO 6170
+6220 RETURN

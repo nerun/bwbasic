@@ -14,4 +14,6 @@ Sub Subsequent
    Print "This should not print."
 End Sub
 
+Main
+
 

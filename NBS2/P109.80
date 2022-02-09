@@ -1,0 +1,421 @@
+PROGRAM FILE 109: STRING INPUT.                                                 
+    ANSI STANDARD 3.2, 13.2, 13.4                                               
+                                                                                
+SECTION 109.1 INPUT OF QUOTED AND UNQUOTED STRINGS                              
+                                                                                
+PLEASE ENTER YOUR INPUT-REPLIES EXACTLY AS REQUESTED                            
+BY THE PROMPT, INCLUDING ALL SPACING, COMMAS AND OTHER                          
+PUNCTUATION.                                                                    
+                                                                                
+ - EXCEPT - WHEREVER THE PROMPT CONTAINS AN EQUALS (=)                          
+SUBSTITUTE A BLANK SPACE, AND WHEREVER THE PROMPT                               
+CONTAINS A NUMBER-SIGN (#), SUBSTITUTE A QUOTE.                                 
+THUS, THE PROMPT:                                                               
+             ==#ER#==                                                           
+SHOULD CAUSE YOU TO STRIKE THE KEYS:                                            
+  1. SPACE                                                                      
+  2. SPACE                                                                      
+  3. QUOTE                                                                      
+  4. LETTER E                                                                   
+  5. LETTER R                                                                   
+  6. QUOTE                                                                      
+  7. SPACE                                                                      
+  8. SPACE                                                                      
+                                                                                
+THESE CONVENTIONS ARE NECESSARY BECAUSE THE QUOTE IS                            
+UNPRINTABLE IN MINIMAL BASIC, AND SPACES ARE DIFFICULT                          
+TO COUNT ON A TERMINAL.                                                         
+                                                                                
+PLEASE NOTE THAT THIS ROUTINE IS STRONGLY DEPENDENT                             
+ON THE CORRECT OPERATION OF THE STRING COMPARISON                               
+FEATURE. IF THAT FEATURE IS INCORRECT, THIS ROUTINE                             
+WILL LIKELY GIVE INVALID RESULTS.                                               
+                                                                                
+ALL THE REPLIES PROMPTED FOR ARE VALID, THEREFOR                                
+IF THE PROCESSOR REJECTS ANY OF THEM,                                           
+***  TEST FAILED  ***                                                           
+                                                                                
+FOR USER CONVENIENCE, THE STRING TO BE ENTERED IS INDENTED                      
+TWO SPACES, SO THAT IF THE INPUT-PROMPT OCCUPIES TWO                            
+POSITIONS, AS RECOMMENDED, YOUR INPUT-REPLY WILL BE                             
+ALIGNED WITH THE PROMPT STRING.                                                 
+                                                                                
+                BEGIN TEST                                                      
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ABC                                                                           
+? ABC                                                                           
+                                                                                
+SHOULD BE: ***ABC***                                                            
+ACTUAL:    ***ABC***                                                            
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  #ABC#                                                                         
+? "ABC"                                                                         
+                                                                                
+SHOULD BE: ***ABC***                                                            
+ACTUAL:    ***ABC***                                                            
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ABC,DEF                                                                       
+? ABC,DEF                                                                       
+                                                                                
+SHOULD BE: ***ABCDEF***                                                         
+ACTUAL:    ***ABCDEF***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  #ABC#,#DEF#                                                                   
+? "ABC","DEF"                                                                   
+                                                                                
+SHOULD BE: ***ABCDEF***                                                         
+ACTUAL:    ***ABCDEF***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  #ABC#,DEF                                                                     
+? "ABC",DEF                                                                     
+                                                                                
+SHOULD BE: ***ABCDEF***                                                         
+ACTUAL:    ***ABCDEF***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ABC,#DEF#                                                                     
+? ABC,"DEF"                                                                     
+                                                                                
+SHOULD BE: ***ABCDEF***                                                         
+ACTUAL:    ***ABCDEF***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ABCDEFGHIJKLM                                                                 
+? ABCDEFGHIJKLM                                                                 
+                                                                                
+SHOULD BE: ***ABCDEFGHIJKLM***                                                  
+ACTUAL:    ***ABCDEFGHIJKLM***                                                  
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  NOPQRSTUVWXYZ                                                                 
+? NOPQRSTUVWXYZ                                                                 
+                                                                                
+SHOULD BE: ***NOPQRSTUVWXYZ***                                                  
+ACTUAL:    ***NOPQRSTUVWXYZ***                                                  
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  +.=====-                                                                      
+? +.     -                                                                      
+                                                                                
+SHOULD BE: ***+.     -***                                                       
+ACTUAL:    ***+.     -***                                                       
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ----5---10---15-18                                                            
+? ----5---10---15-18                                                            
+                                                                                
+SHOULD BE: ***----5---10---15-18***                                             
+ACTUAL:    ***----5---10---15-18***                                             
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ===ABC                                                                        
+?    ABC                                                                        
+                                                                                
+SHOULD BE: ***ABC***                                                            
+ACTUAL:    ***ABC***                                                            
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ABC===                                                                        
+? ABC                                                                           
+                                                                                
+SHOULD BE: ***ABC***                                                            
+ACTUAL:    ***ABC***                                                            
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ===ABC===                                                                     
+?    ABC                                                                        
+                                                                                
+SHOULD BE: ***ABC***                                                            
+ACTUAL:    ***ABC***                                                            
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  #===ABC#                                                                      
+? "   ABC"                                                                      
+                                                                                
+SHOULD BE: ***   ABC***                                                         
+ACTUAL:    ***   ABC***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  #ABC===#                                                                      
+? "ABC   "                                                                      
+                                                                                
+SHOULD BE: ***ABC   ***                                                         
+ACTUAL:    ***ABC   ***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  #===ABC===#                                                                   
+? "   ABC   "                                                                   
+                                                                                
+SHOULD BE: ***   ABC   ***                                                      
+ACTUAL:    ***   ABC   ***                                                      
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ===#===ABC====#====                                                           
+?    "   ABC    "                                                               
+                                                                                
+SHOULD BE: ***   ABC    ***                                                     
+ACTUAL:    ***   ABC    ***                                                     
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ===ABC==,===#DEF#===,==GHI==                                                  
+?    ABC  ,   "DEF"   ,  GHI                                                    
+                                                                                
+SHOULD BE: ***ABCDEFGHI***                                                      
+ACTUAL:    ***ABCDEFGHI***                                                      
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  =1=,==2==,===3===                                                             
+?  1 ,  2  ,   3                                                                
+                                                                                
+SHOULD BE: ***123***                                                            
+ACTUAL:    ***123***                                                            
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  A===B                                                                         
+? A   B                                                                         
+                                                                                
+SHOULD BE: ***A   B***                                                          
+ACTUAL:    ***A   B***                                                          
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ===A===B===                                                                   
+?    A   B                                                                      
+                                                                                
+SHOULD BE: ***A   B***                                                          
+ACTUAL:    ***A   B***                                                          
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ===EIGHTEEN=POSITIONS===                                                      
+?    EIGHTEEN POSITIONS                                                         
+                                                                                
+SHOULD BE: ***EIGHTEEN POSITIONS***                                             
+ACTUAL:    ***EIGHTEEN POSITIONS***                                             
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ==A==B==,==C==D==,==E==F==                                                    
+?    A  B  ,  C  D  ,  E  F                                                     
+                                                                                
+SHOULD BE: ***A  BC  DE  F***                                                   
+ACTUAL:    ***A  BC  DE  F***                                                   
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ==A==B==,==#D#==,==E==F==                                                     
+?   A  B  ,  "D"  ,  E  F                                                       
+                                                                                
+SHOULD BE: ***A  BDE  F***                                                      
+ACTUAL:    ***A  BDE  F***                                                      
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  =#A#=,=B=C=,=#D#=                                                             
+?  "A" , B C , "D"                                                              
+                                                                                
+SHOULD BE: ***AB CD***                                                          
+ACTUAL:    ***AB CD***                                                          
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ==#==A==B==#==,=#=C=D=#=,=E=F=                                                
+?   "  A  B  "  , " C D " , E F                                                 
+                                                                                
+SHOULD BE: ***  A  B   C D E F***                                               
+ACTUAL:    ***  A  B   C D E F***                                               
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  A,B,#C,D#,#E#                                                                 
+? A,B,"C,D","E"                                                                 
+                                                                                
+SHOULD BE: ***ABC,DE***                                                         
+ACTUAL:    ***ABC,DE***                                                         
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ##                                                                            
+? ""                                                                            
+                                                                                
+SHOULD BE: ******                                                               
+ACTUAL:    ******                                                               
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  A,##,B                                                                        
+? A,"",B                                                                        
+                                                                                
+SHOULD BE: ***AB***                                                             
+ACTUAL:    ***AB***                                                             
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  ==A==,==##==,==B==                                                            
+?   A  ,  ""  ,  B                                                              
+                                                                                
+SHOULD BE: ***AB***                                                             
+ACTUAL:    ***AB***                                                             
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  AB+3-5.6B                                                                     
+? AB+3-5.6B                                                                     
+                                                                                
+SHOULD BE: ***AB+3-5.6B***                                                      
+ACTUAL:    ***AB+3-5.6B***                                                      
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  -1.23                                                                         
+? -1.23                                                                         
+                                                                                
+SHOULD BE: ***-1.23***                                                          
+ACTUAL:    ***-1.23***                                                          
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+  +3-5=-8+6                                                                     
+? +3-5 -8+6                                                                     
+                                                                                
+SHOULD BE: ***+3-5 -8+6***                                                      
+ACTUAL:    ***+3-5 -8+6***                                                      
+TEST OK                                                                         
+                                                                                
+                                                                                
+***  TEST PASSED  ***                                                           
+                                                                                
+                  END TEST                                                      
+                                                                                
+SECTION 109.2 TEST QUOTED-STRING-CHARACTERS                                     
+                                                                                
+THIS PART OF THE TEST IS INTENDED TO DETERMINE WHETHER                          
+QUOTED STRINGS ON INPUT CAN CONTAIN ANY OF THE LEGAL                            
+QUOTED STRING CHARACTERS.                                                       
+                                                                                
+PLEASE RESPOND TO THE PROMPT BY ENTERING THE REQUESTED                          
+CHARACTERS IMMEDIATELY PRECEDED AND FOLLOWED BY THE                             
+QUOTE CHARACTER. THUS THE PROMPT:                                               
+    ABC                                                                         
+SHOULD CAUSE YOU TO STRIKE THE KEYS:                                            
+  1. QUOTE                                                                      
+  2. LETTER A                                                                   
+  3. LETTER B                                                                   
+  4. LETTER C                                                                   
+  5. QUOTE                                                                      
+THUS THE QUOTE TO BE ENTERED IS NOW IMPLICIT AND THE                            
+NUMBER SIGN (#) AND EQUALS SIGN (=) HAVE NO SPECIAL                             
+SIGNIFICANCE.                                                                   
+                                                                                
+             BEGIN TEST                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+   ABCDEFGHIJKLM                                                                
+? "ABCDEFGHIJKLM"                                                               
+SHOULD BE: ***ABCDEFGHIJKLM***                                                  
+ACTUAL:    ***ABCDEFGHIJKLM***                                                  
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+   NOPQRSTUVWXYZ                                                                
+? "NOPQRSTUVWXYZ"                                                               
+SHOULD BE: ***NOPQRSTUVWXYZ***                                                  
+ACTUAL:    ***NOPQRSTUVWXYZ***                                                  
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+   0123456789                                                                   
+? "0123456789"                                                                  
+SHOULD BE: ***0123456789***                                                     
+ACTUAL:    ***0123456789***                                                     
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+   !#$%&'()*+,-                                                                 
+? "!#$%&'()*+,-"                                                                
+SHOULD BE: ***!#$%&'()*+,-***                                                   
+ACTUAL:    ***!#$%&'()*+,-***                                                   
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+   ./:;<=>?^_                                                                   
+? "./:;<=>?^_"                                                                  
+SHOULD BE: ***./:;<=>?^_***                                                     
+ACTUAL:    ***./:;<=>?^_***                                                     
+TEST OK                                                                         
+                                                                                
+                                                                                
+PLEASE ENTER:                                                                   
+   EMBEDDED SPACE                                                               
+? "EMBEDDED SPACE"                                                              
+SHOULD BE: ***EMBEDDED SPACE***                                                 
+ACTUAL:    ***EMBEDDED SPACE***                                                 
+TEST OK                                                                         
+                                                                                
+***** TEST PASSED *****                                                         
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 109                                                                 

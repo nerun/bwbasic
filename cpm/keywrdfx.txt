@@ -1,0 +1,117 @@
+10 '
+20 '
+30 '    PROGRAM:       Key Word Fix
+40 '    DATE WRITTEN:  July 4, 1982
+50 '    VERSION:       1.0
+60 '    AUTHOR:        Timothy D. Winslow
+70 '
+80 '            This program is written in microsoft basic for the
+90 '    Heathkit H-89 computer.  It takes a file that is messed up
+100 '   by having the key words e.g. 'PRINT' being mashed next to a
+110 '   variable,  statement, etc. and puts a space afterwards, if it
+120 '   doesn't already have one.
+130 '
+140 '           It's a long process, the program isn't in good
+150 '   order, and it's not full proof.  It also does words in quotes.
+160 '   I'm only human.
+170 '
+180 '           This program may error out depending on the amount of
+190 '   RAM 'Random Access Memory' you have.  If it does, lower the
+200 '   Level of Z$ by a couple of hundred.
+210 '
+220 '           This program isn't looking at these key words:
+230 '   'INPUT', 'ERROR', 'FOR', 'GOTO', 'XOR', 'NOR', and 'LPRINT'.
+240 '   The reasons are 'INPUT' is done with 'PUT', 'ERROR', 'FOR', 'XOR',
+250 '   and 'NOR are done with 'OR', 'GOTO' is done with 'TO' and 'LPRINT'
+260 '   is done with 'PRINT'.  This is done so the program works a little
+270 '   faster and to save array space.
+280 '
+290 '           This program is public domain softward.  Please treat
+300 '   as such.  I made it to help people not to sit and work putting
+310 '   spaces in there program.  This program make take long, but it
+320 '   works.
+330 '
+340 '
+350 CLEAR
+360 ON ERROR GOTO 980
+370 E$=CHR$(27)+"E":PRINT E$;
+380 PRINT "DO YOU NEED INSTUCTIONS (Y/N/Q=QUIT): ";
+390 Y$=INKEY$:IF Y$="" THEN 390
+400 IF Y$="Q" OR Y$="q" THEN 1010
+410 IF Y$="Y" OR Y$="y" THEN GOSUB 1030 ELSE 420
+420 IF Y$="N" OR Y$="n" THEN 430 ELSE 380
+430 PRINT E$;
+440 DIM Z$(5000),Q(27),A$(27)
+450 FOR X=1 TO 27
+460 READ A$(X),Q(X)
+470 NEXT X
+480 INPUT "FILENAME TO BE WORKED FROM";N$
+490 IF LEN(N$)>12 THEN PRINT "INVALID FILENAME":GOTO 480
+500 IF LEN(N$)<1 THEN PRINT "INVALID FILENAME":GOTO 480
+510 FOR X=1 TO 9
+520 IF MID$(N$,X,4)=".BAS" THEN 590
+530 NEXT
+540 FOR X=1 TO 9
+550 IF MID$(N$,X,1)="." THEN PRINT "INVALID FILENAME":GOTO 480
+560 NEXT X
+570 IF LEN(N$)>8 THEN PRINT "INVALID FILENAME":GOTO 480
+580 N$=N$+".BAS"
+590 INPUT "FILENAME TO BE OUTPUTED";O$
+600 IF LEN(O$)>12 OR LEN(O$)<1 THEN PRINT "INVALID FILENAME":GOTO 590
+610 FOR X=1 TO 9
+620 IF MID$(O$,X,4)=".BAS" THEN 690
+630 NEXT X
+640 FOR X=1 TO 9
+650 IF MID$(O$,X,1)="." THEN PRINT "INVALID FILENAME":GOTO 590
+660 NEXT X
+670 IF LEN(O$)>8 THEN PRINT "INVALID FILENAME":GOTO 590
+680 O$=O$+".BAS"
+690 OPEN "I",1,N$
+700 OPEN "O",2,O$
+710 FOR X=1 TO 1300
+720 LINE INPUT #1,Z$(X)
+730 PRINT E$;
+740 IF POS(0) THEN PRINT:PRINT Z$(X)
+750 A=LEN(Z$(X))
+760 P=0
+770 PRINT "WORKING ON . . .";
+780 FOR M=1 TO 27
+790 IF POS(0)>75 THEN PRINT
+800 PRINT LEFT$(A$(M),Q(M)-1);", ";
+810 FOR Z=1 TO A+P
+820 IF MID$(Z$(X),Z,Q(M)-1)=LEFT$(A$(M),Q(M)-1) THEN 880
+830 NEXT Z
+840 NEXT M
+850 PRINT #2,Z$(X)
+860 NEXT X
+870 GOTO 1010
+880 IF MID$(Z$(X),Z,Q(M))=A$(M)THEN GOTO 830
+890 FOR W=1 TO 500:NEXT W:Z$(X)=LEFT$(Z$(X),Z-1)+A$(M)+MID$(Z$(X),Z+(Q(M)-1),A)
+900 PRINT E$;
+910 IF POS(0) THEN PRINT:PRINT Z$(X)
+920 PRINT"WORKING ON . . .";
+930 GOTO 780
+940 DATA "AND ",4,"CALL ",5,"CLEAR ",6,"DATA ",5,"DEF ",4,"DIM ",4,"ELSE ",5
+950 DATA "GET ",4,"GOSUB ",6,"IF ",3,"LET ",4,"LINE ",5,"NEXT ",5,"ON ",3
+960 DATA "OR ",3,"OUT ",4,"PRINT ",6,"POKE ",5,"PUT ",4,"READ ",5,"REM ",4
+970 DATA "RESUME ",7,"RETURN ",7,"STEP ",5,"THEN ",5,"TO ",3,"WHILE ",6
+980 IF ERR=62 THEN RESUME 1010 
+990 IF ERR=53 THEN PRINT "Filename not found.....Please retry.":RESUME 480
+1000 RESUME 1020
+1010 PRINT E$:CLOSE:CLEAR:END
+1020 PRINT E$;:PRINT ERR;"AT";ERL:CLOSE:CLEAR:END
+1030 '                  INSTRUCTIONS
+1040 Y$="N"
+1050 PRINT E$
+1060 PRINT:PRINT:PRINT:PRINT:PRINT:PRINT
+1070 PRINT"             This program is to fix key words in a Ascii
+1080 PRINT"     program.  It will find a key word and put a space after it,
+1090 PRINT"     If it needs one.
+1100 PRINT
+1110 PRINT"             This program takes a lone time because it checks
+1120 PRINT"     every letter in every line with all the key words.
+1130 PRINT
+1140 PRINT
+1150 PRINT:PRINT "Press enter...";
+1160 I$=INKEY$:IF I$<> CHR$(13) THEN 1160
+1170 RETURN

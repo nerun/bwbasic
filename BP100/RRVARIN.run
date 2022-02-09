@@ -1,0 +1,42 @@
+     RATE OF RETURN - VARIABLE INFLOW                                           
+                                                                                
+THIS PROGRAM WILL CALCULATE THE RATE OF RETURN OF AN                            
+INVESTMENT COSTING A$ NOW AND RETURNING A(I)$ IN YEAR I                         
+WITH THE A(I)'S NOT NECESSARILY EQUAL AND NOT NECESSARILY                       
+POSITIVE.                                                                       
+INPUT IS THE INITIAL INVESTMENT AND THE YEARLY DOLLAR RETURNS.                  
+                                                                                
+PRESS ENTER TO BEGIN.?                                                          
+                                                                                
+INITIAL INVESTMENT ? 12345                                                      
+RETURN YEAR  1  (99999 TO END)? 2345                                            
+RETURN YEAR  2  (99999 TO END)? 2345                                            
+RETURN YEAR  3  (99999 TO END)? 2345                                            
+RETURN YEAR  4  (99999 TO END)? 2345                                            
+RETURN YEAR  5  (99999 TO END)? 2345                                            
+RETURN YEAR  6  (99999 TO END)? 2345                                            
+RETURN YEAR  7  (99999 TO END)? 2345                                            
+RETURN YEAR  8  (99999 TO END)? 2345                                            
+RETURN YEAR  9  (99999 TO END)? 99999                                           
+PASS  0   R= 10                                                                 
+PASS  2   R= 20                                                                 
+PASS  4   R= 11                                                                 
+PASS  6   R= 10.1                                                               
+PASS  8   R= 10.2                                                               
+PASS  10   R= 10.3                                                              
+PASS  12   R= 10.4                                                              
+PASS  14   R= 10.31                                                             
+PASS  16   R= 10.32                                                             
+PASS  18   R= 10.33                                                             
+PASS  20   R= 10.34                                                             
+PASS  22   R= 10.35                                                             
+PASS  24   R= 10.36                                                             
+PASS  26   R= 10.37                                                             
+PASS  28   R= 10.361                                                            
+PASS  30   R= 10.362                                                            
+PASS  32   R= 10.363                                                            
+PASS  34   R= 10.364                                                            
+PASS  36   R= 10.365                                                            
+PASS  38   R= 10.366                                                            
+                                                                                
+RATE OF RETURN IS  10.366  %                                                    

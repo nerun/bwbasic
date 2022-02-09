@@ -1,0 +1,42 @@
+         CONDITIONAL PROFIT TABLE                                               
+                                                                                
+THIS PROGRAM ASSUMES THERE ARE FROM 1 TO 6 STATES OF NATURE.                    
+THERE ARE ALSO FROM 1 TO 6 POSSIBLE ACTIONS WE CAN TAKE. IF THE                 
+STATE OF NATURE(S OF N) IS KNOWN THEN EACH ACTION LEADS TO                      
+A KNOWN MONETARY RESULT. THIS RESULT IS A CONDITIONAL PROFIT.                   
+FOR EXAMPLE, IF ACTION 3 LEADS TO A $35 PAYOFF WHEN STATE OF                    
+NATURE 4 IS TRUE THEN 35 IS THE CONDITIONAL PROFIT OF ACTION                    
+3 GIVEN STATE OF NATURE 4. THE FOLLOWING PROGRAM CONSTRUCTS                     
+A MATRIX WITH ELEMENTS BEING THE CONDITIONAL PROFITS.                           
+IN ADDITION THE PROBABILITY OF EACH S OF N IS ENTERED AND                       
+THE EXPECTED VALUE OF EACH ACTION IS COMPUTED.                                  
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+ENTER NUMBER OF POSSIBLE STATES OF NATURE? 2                                    
+                                                                                
+ENTER PROBABILITY OF S OF N 1 ? 0.33                                            
+ENTER PROBABILITY OF S OF N 2 ? 0.67                                            
+                                                                                
+                                                                                
+ENTER NUMBER OF POSSIBLE ACTIONS(<=5)? 2                                        
+NO PAYOFF MORE THAN 9999.99                                                     
+                                                                                
+                                                                                
+ACTION 1                                                                        
+    PAYOFF WHEN S OF N IS 1 ? 234.56                                            
+    PAYOFF WHEN S OF N IS 2 ? 543.21                                            
+                                                                                
+ACTION 2                                                                        
+    PAYOFF WHEN S OF N IS 1 ? 831.74                                            
+    PAYOFF WHEN S OF N IS 2 ? 987.65                                            
+COMPUTING                                                                       
+                                                                                
+IS LINE PRINTER OUTPUT DESIRED(Y/N)? Y                                          
+ CONDITIONAL PAYOFFS OF ACTION GIVEN S OF N                                     
+                                                                                
+S N  PR                  ACTION                                                 
+         ACTION 1 ACTION 2                                                      
+ 1  0.33   234.56   831.74                                                      
+ 2  0.67   543.21   987.65                                                      
+                                                                                
+EXP VAL.   441.36   936.20                                                      

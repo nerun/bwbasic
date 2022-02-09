@@ -1,0 +1,136 @@
+10 DEFSTR A-D: DEFINT E-Z : Q$=CHR$(34)
+11 REM  MYRS2MB   (v) 1.0    28 May  1983   by   Ed Mahoney
+12 REM *******************************************************************
+13 REM  This program will convert a Radio Shack BASIC program to a 
+14 REM   Microsoft MBASIC 5.1 program.
+15 REM  Instructions are given as the program runs.
+16 REM  INSTALLATION: The conversion process will make certain Radio Shack
+17 REM   statements into printable 'escape codes'.  You must now the two
+18 REM   escape code sequences for your computer (or terminal):                 ***********************************************************
+19 REM    1) clear the screen and home the cursor
+20 CLS$=CHR$(27)+"*" : REM For the MAX-80
+22 REM CLS$=CHR$(27)+"E"   : REM For the Heath
+23 A1="1 CLS$=CHR$(27)+"+Q$+"*"+Q$ : REM For the MAX-80
+24 REM  A1="1 CLS$=CHR$(27)+Q$+"E"+Q$  : REM For the Heath
+25 REM *********************************************************************
+26 REM     2)  print at a screen location  (Row,Column)
+27 DEF FNAT$(R9,C9)=CHR$(27)+"="+CHR$(R9+32)+CHR$(C9+32) : REM For MAX-80
+28 REM DEF FNAT$(R9,C9)=CHR$(27)+"Y"+CHR$(R9+32)+CHR$(C9+32) :REM FOR HEATH
+29 A2="2 DEF FNAT$(AT%)=CHR$(27)+"+Q$+"="+Q$+"+CHR$(INT(AT%/64)+32)+CHR$((AT% MOD 64)+32)" : REM  For the MAX-80
+30 REM A2="2 DEF FNAT$(AT%)=CHR$(27)+"+Q$+"Y"+Q$+"+CHR$(INT(AT%/64)+32)+CHR$((AT% MOD 64)+32)" : REM For the Heath
+31 REM ******************END OF INSTALLATION******************************
+45 GOSUB 60000:PRINT CLS$;"Initializing..............."
+50 SP=0:RP=0
+60 DIM Z(1000),C(130),L(130),D(130),B(9)
+61 READ A: IF A="XXXX" THEN 91
+62 RP=RP+1: C(RP)=A: M=LEN(A):L(RP)=M:B=""
+63 FOR I=1 TO M:V=ASC(MID$(A,I)):IF V>64 THEN B=B+CHR$(V+32) ELSE B=B+CHR$(V)
+64 NEXT I:D(RP)=B
+65 GOTO 61
+70 REM
+71 REM   RESERVED WORDS
+72 REM
+73 DATA ABS,AND,ASC,AS,ATN,AUTO,CDBL,CHR$,CINT,CLEAR,CLOSE,CONT
+74 DATA COS,CSNG,CVD,CVI,CVS,DATA
+75 DATA DEFDBL,DEFINT,DEFSNG,DEFSTR,DEFUSR,DEF,DELETE,DIM
+76 DATA EDIT,ELSE,END,EOF,ERL,ERR,EXP,FIELD,FILES,FOR
+77 DATA FRE,GET,GOSUB,GOTO,HEX$
+78 DATA IF,IMP,INPUT,INP,INSTR,KILL,LEFT$,LEN,LET,LINE
+79 DATA LIST,LLIST,LOAD,LOC,LOF,LOG,LPRINT,LSET,MERGE,MID$,MKD$,MKI$
+80 DATA MKS$,NEW,NEXT,NOT,ON,OPEN,OR,OUT
+81 DATA POS,PRINT,PUT
+82 DATA READ,REM,RESTORE,RESUME,RETURN,RIGHT$,RND,RSET,RUN
+83 DATA SAVE,SGN,SIN,SQR,STEP,STOP,STR$,STRING$
+84 DATA TAB(,TAN,THEN,TO,TROFF,TRON
+85 DATA USING,USR,VAL,VARPTR
+90 DATA XXXX
+91 READ A: IF A="XXXX" THEN 100
+92 QP=QP+1: B(QP)=A:GOTO 91
+95 DATA PEEK,POKE,SET(,RESET,POINT
+96 DATA XXXX
+100 LINE INPUT"WHAT IS RADIO SHACK PROGRAM ...... > ";R$
+110 LINE INPUT"WHAT WILL BE THE MICROSOFT PROGRAM'S NAME > ";M$
+120 OPEN"I",1,R$
+130 OPEN"O",2,M$
+132 A1=A1+" : WIDTH(64)":PRINT A1: PRINT#2,A1
+136 PRINT A2: PRINT#2,A2
+140 IF EOF(1) THEN 20000
+150 LINE INPUT#1, A
+500 PRINT LL$;A;HL$
+1000 REM LOOK FOR THE RANDOM FUNCTION
+1010 P=1
+1020 R=INSTR(P,A,"RND(")
+1030 IF R=0 THEN 2000
+1040 V=VAL(MID$(A,R+4))
+1060 Q=INSTR(R,A,")")
+1065 IF V>0 THEN 1500
+1070 A=LEFT$(A,R-1)+"RND"+MID$(A,Q+1)
+1080 P=R+1:GOTO 1020
+1500 A=LEFT$(A,R-1)+"INT(RND*"+STR$(V)+"+1)"+MID$(A,Q+1):P=P+6:GOTO 1020
+2000 REM CLS TO PRINT CLS$
+2010 P=1
+2020 R=INSTR(P,A,"CLS")
+2030 IF R=0 THEN 3000
+2040 A=LEFT$(A,R-1)+"PRINT CLS$;"+MID$(A,R+3): P=R+9: GOTO 2020
+3000 REM PRINT @###,
+3010 P=1
+3020 R=INSTR(P,A,"PRINT@"): IF R=0 THEN R=INSTR(P,A,"PRINT @")
+3030 IF R=0 THEN 4000
+3040 Q=INSTR(R,A,","):S=INSTR(R,A,"@")
+3050 A=LEFT$(A,S-1)+" FNAT$("+MID$(A,S+1,Q-S-1)+");"+MID$(A,Q+1): GOTO 3020
+4000 REM WARNINGS
+4005 F=0
+4010 FOR I=1 TO QP:IF INSTR(A,B(I)) THEN F=1
+4020 NEXT I
+4030 IF F THEN SP=SP+1: Z(SP)=VAL(A): A=A+":REM WARNING!"
+5000 REM SPACES
+5010 FOR I=1 TO RP
+5020 P=1
+5030 R=INSTR(P,A,C(I)): IF R=0 THEN 5500
+5035 MID$(A,R)=D(I)
+5040 IF MID$(A,R-1,1)<>" " THEN A=LEFT$(A,R-1)+" "+MID$(A,R):R=R+1
+5050 R=R+L(I)
+5060 IF MID$(A,R,1)<>" " THEN A=LEFT$(A,R-1)+" "+MID$(A,R)
+5070 P=R:GOTO 5030
+5500 NEXT I
+10000 PRINT A
+11000 PRINT #2,A
+15000 GOTO 140
+20000 CLOSE
+30000 IF SP=0 THEN END
+40000 PRINT:PRINT:PRINT"WARNING - THE FOLLOWING LINES STILL HAVE EITHER RADIO SHACK GRAPHICS":PRINT"    OR  HAVE EITHER PEEKS AND POKES."
+40100 FOR I=1 TO SP:PRINT Z(I),:NEXT
+49999 END
+50000 I$=INKEY$:IF I$="" THEN 50000 ELSE RETURN
+60000 PRINT CLS;"MYRS2MB          My Radio Shack to Microsoft BASIC conversion utility"
+60010 PRINT"By Ed Mahoney  28 May 83             Version 1.0 "
+60020 PRINT:PRINT"This program will convert a Radio Shack Model I or Model 3 BASIC (or
+60030 PRINT"Disk BASIC) program to a Microsoft BASIC 5.1 program."
+60040 PRINT:PRINT"REQUIREMENTS:":PRINT"1) Your computer that will be running the Microsoft program
+60050 PRINT"   must be able to 'print at' specific locations on your screen."
+60060 PRINT"2) The Radio Shack program that is to be converted, must exist on disk
+60070 PRINT"   and be stored in ASCII format."
+60080 PRINT"    a)  This program must not have line numbers 1 or 2  (the conversion
+60090 PRINT"        process will place statements in these positions)"
+60100 PRINT"    b)  The statements in the Radio Shack program must not be extreemly
+60110 PRINT"        long, say greater than 220 characters long. (The program will
+60120 PRINT"        expand each line.)"
+60130 PRINT"    c)  The Radio Program should not have the following statements:
+60140 PRINT"        PEEK  POKE   SET(x,y)  RESET(x,y)   POINT(x,y)
+60150 PRINT"        (These statements are machine dependent)
+60160 PRINT"    If these 5 statements are present, they will be passed on to the MBASIC"
+60170 PRINT"    with a REM statement appended to the end that warns you that you will
+60180 PRINT"    have to do some additional conversion (good luck!)."
+60190 PRINT"3)  FINAL WARNING: This is only version 1.0.  This utility has not been
+60200 PRINT"      extensivly tested.";
+60250 GOSUB 50000:PRINT CLS$;
+60300 PRINT"WHAT IT DOES:
+60310 PRINT"1)  converts the RND function to MBASIC standards
+60320 PRINT"2)  converts Radio Shack's CLS statement to a print code
+60330 PRINT"3)  converts Radio Shack's PRINT @ ##, to a printable code
+60340 PRINT"4)  'pads' all statements with spaces which MBASIC requires (and Radio
+60350 PRINT"     Shack does not).
+60360 PRINT"5)   Identifies statements that are machine dependent (ex.  PEEK or SET
+60370 PRINT"     with a warning at the end of the statement and provides a table of
+60380 PRINT"     the bad statements oa the end of execution.
+60430 GOSUB 50000:RETURN

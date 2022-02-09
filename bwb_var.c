@@ -1,205 +1,184 @@
 /***************************************************************
-
+  
         bwb_var.c       Variable-Handling Routines
                         for Bywater BASIC Interpreter
-
-                        Commands:	DIM
-                                        COMMON
-                                        ERASE
-                                        SWAP
-					CLEAR
-
+  
                         Copyright (c) 1993, Ted A. Campbell
                         Bywater Software
-
+  
                         email: tcamp@delphi.com
-
+  
         Copyright and Permissions Information:
-
+  
         All U.S. and international rights are claimed by the author,
         Ted A. Campbell.
-
-	This software is released under the terms of the GNU General
-	Public License (GPL), which is distributed with this software
-	in the file "COPYING".  The GPL specifies the terms under
-	which users may copy and use the software in this distribution.
-
-	A separate license is available for commercial distribution,
-	for information on which you should contact the author.
-
+  
+   This software is released under the terms of the GNU General
+   Public License (GPL), which is distributed with this software
+   in the file "COPYING".  The GPL specifies the terms under
+   which users may copy and use the software in this distribution.
+  
+   A separate license is available for commercial distribution,
+   for information on which you should contact the author.
+  
 ***************************************************************/
 
 /*---------------------------------------------------------------*/
 /* NOTE: Modifications marked "JBV" were made by Jon B. Volkoff, */
 /* 11/1995 (eidetics@cerf.net).                                  */
+/*                                                               */
+/* Those additionally marked with "DD" were at the suggestion of */
+/* Dale DePriest (daled@cadence.com).                            */
+/*                                                               */
+/* Version 3.00 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
 
-#include <stdio.h>
-#include <ctype.h>
-#include <math.h>
 
 #include "bwbasic.h"
-#include "bwb_mes.h"
 
-int dim_base = 0;                        	/* set by OPTION BASE */
-static int dimmed = FALSE;                      /* has DIM been called? */
-static int first, last;				/* first, last for DEFxxx commands */
+
+
+static int      dimmed = FALSE;  /* has DIM been called? */
+static int      first, last;  /* first, last for DEFxxx commands */
 
 /* Prototypes for functions visible to this file only */
 
-#if ANSI_C
-static int dim_check( struct bwb_variable *v, int *pp );
-static int var_defx( struct bwb_line *l, int type );
-static int var_letseq( char *buffer, int *position, int *start, int *end );
-static size_t dim_unit( struct bwb_variable *v, int *pp );
-#else
-static int dim_check();
-static int var_defx();
-static int var_letseq();
-static size_t dim_unit();
-#endif
+static int
+dim_check(struct bwb_variable * v, int *pp);
+static int
+var_defx(struct bwb_line * l, int type);
+static int
+var_letseq(char *buffer, int *position, int *start, int *end);
+static          size_t
+dim_unit(struct bwb_variable * v, int *pp);
+static struct bwb_variable *
+var_islocal(char *buffer);
+
 
 /***************************************************************
-
+  
         FUNCTION:       var_init()
-
-        DESCRIPTION:	This function initializes the internal
-			linked list of variables.
-
+  
+        DESCRIPTION: This function initializes the internal
+         linked list of variables.
+  
 ***************************************************************/
 
-#if ANSI_C
 int
-var_init( int task )
-#else
-int
-var_init( task )
-   int task;
-#endif
-   {
-   LOCALTASK var_start.next = &(LOCALTASK var_end);
-   strcpy( LOCALTASK var_start.name, "<START>" );
-   strcpy( LOCALTASK var_end.name, "<END>" );
-   return TRUE;
-   }
+var_init(int task)
+{
+   bwx_DEBUG(__FUNCTION__);
 
-#if COMMON_CMDS
+   LOCALTASK       var_start.next = &(LOCALTASK var_end);
+   strcpy(LOCALTASK var_start.name, "<START>");
+   strcpy(LOCALTASK var_end.name, "<END>");
+   return TRUE;
+}
+
 
 /***************************************************************
-
+  
         FUNCTION:       bwb_common()
-
-        DESCRIPTION:	This C function implements the BASIC
-        		COMMON command.
-
-	SYNTAX:		COMMON variable [, variable...]
-
+  
+        DESCRIPTION: This C function implements the BASIC
+            COMMON command.
+  
+   SYNTAX:     COMMON variable [, variable...]
+  
 ***************************************************************/
 
-#if ANSI_C
 struct bwb_line *
-bwb_common( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_common( l )
-   struct bwb_line *l;
-#endif
-   {
-   register int loop;
-   struct bwb_variable *v;
-   char tbuf[ MAXSTRINGSIZE + 1 ];
+bwb_COMMON(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
 
    /* loop while arguments are available */
 
-   loop = TRUE;
-   while ( loop == TRUE )
-      {
+   while (TRUE)
+   {
 
+      struct bwb_variable *v;
+      char            tbuf[BasicStringLengthMax + 1];
       /* get variable name and find variable */
 
-      bwb_getvarname( l->buffer, tbuf, &( l->position ) );
+      bwb_getvarname(l->buffer, tbuf, &(l->position));
 
-      if ( ( v = var_find( tbuf ) ) == NULL )
-         {
-         bwb_error( err_syntax );
-         return bwb_zline( l );
-         }
-
-      v->common = TRUE;				/* set common flag to true */
+      if ((v = var_find(tbuf)) == NULL)
+      {
+         bwb_error(err_syntax);
+         return bwb_zline(l);
+      }
+      v->common = TRUE; /* set common flag to true */
 
       /* check for comma */
 
-      adv_ws( l->buffer, &( l->position ) );
-      if ( l->buffer[ l->position ] != ',' )
-         {
-         return bwb_zline( l );				/* no comma; leave */
-         }
-      ++( l->position );
-      adv_ws( l->buffer, &( l->position ) );
-
+      adv_ws(l->buffer, &(l->position));
+      if (l->buffer[l->position] != ',')
+      {
+         /* no comma; leave */
+         return bwb_zline(l);
       }
-
-   return bwb_zline( l );
+      ++(l->position);
+      adv_ws(l->buffer, &(l->position));
 
    }
 
+   return bwb_zline(l);
+
+}
+
 /***********************************************************
-
-        FUNCTION:	bwb_erase()
-
-	DESCRIPTION:    This C function implements the BASIC
-			ERASE command.
-
-	SYNTAX:		ERASE variable[, variable]...
-
+  
+        FUNCTION: bwb_erase()
+  
+   DESCRIPTION:    This C function implements the BASIC
+         ERASE command.
+  
+   SYNTAX:     ERASE variable[, variable]...
+  
 ***********************************************************/
 
-#if ANSI_C
 struct bwb_line *
-bwb_erase( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_erase( l )
-   struct bwb_line *l;
-#endif
-   {
-   register int loop;
+bwb_ERASE(struct bwb_line * l)
+{
+   register int    loop;
    struct bwb_variable *v;
-   struct bwb_variable *p;		/* previous variable in linked list */
-   char tbuf[ MAXSTRINGSIZE + 1 ];
-   bstring *sp; /* JBV */
-   register int n; /* JBV */
+   struct bwb_variable *p; /* previous variable in linked list */
+   char            tbuf[BasicStringLengthMax + 1];
+   bstring        *sp;  /* JBV */
+   register int    n;   /* JBV */
+
+   bwx_DEBUG(__FUNCTION__);
 
    /* loop while arguments are available */
 
    loop = TRUE;
-   while ( loop == TRUE )
-      {
+   while (loop == TRUE)
+   {
 
       /* get variable name and find variable */
 
-      bwb_getvarname( l->buffer, tbuf, &( l->position ) );
+      bwb_getvarname(l->buffer, tbuf, &(l->position));
 
-      if ( ( v = var_find( tbuf ) ) == NULL )
-         {
-         bwb_error( err_syntax );
-         return bwb_zline( l );
-         }
-
+      if ((v = var_find(tbuf)) == NULL)
+      {
+         bwb_error(err_syntax);
+         return bwb_zline(l);
+      }
       /* be sure the variable is dimensioned */
 
-      if (( v->dimensions < 1 ) || ( v->array_sizes[ 0 ] < 1 ))
-	 {
-	 bwb_error( err_dimnotarray );
-	 return bwb_zline( l );
-         }
-
+      if ((v->dimensions < 1) || (v->array_sizes[0] < 1))
+      {
+         bwb_error(err_dimnotarray);
+         return bwb_zline(l);
+      }
       /* find previous variable in chain */
 
-      for ( p = &CURTASK var_start; p->next != v; p = p->next )
-         {
+      for (p = &CURTASK var_start; p->next != v; p = p->next)
+      {
          ;
-         }
+      }
 
       /* reassign linkage */
 
@@ -208,182 +187,163 @@ bwb_erase( l )
       /* deallocate memory */
 
       /* Revised to FREE pass-thru calls by JBV */
-      FREE( v->array_sizes, "bwb_erase" );
-      v->array_sizes = NULL; /* JBV */
-      FREE( v->array_pos , "bwb_erase");
+      FREE(v->array_sizes, "bwb_erase");
+      v->array_sizes = NULL;  /* JBV */
+      FREE(v->array_pos, "bwb_erase");
       v->array_pos = NULL; /* JBV */
-      if ( v->type == NUMBER )
-	 {
+      if (v->type == NUMBER)
+      {
          /* Revised to FREE pass-thru call by JBV */
-	 FREE( v->memnum, "bwb_erase" );
-	 v->memnum = NULL; /* JBV */
-	 }
+         FREE(v->memnum, "bwb_erase");
+         v->memnum = NULL; /* JBV */
+      }
       else
-	 {
-		/* Following section added by JBV */
-		sp = v->memstr;
-		for ( n = 0; n < (int) v->array_units; ++n )
-		{
-			if ( sp[ n ].sbuffer != NULL )
-			{
-                                /* Revised to FREE pass-thru call by JBV */
-				FREE( sp[ n ].sbuffer, "bwb_erase" );
-				sp[ n ].sbuffer = NULL;
-			}
-			sp[ n ].rab = FALSE;
-			sp[ n ].length = 0;
-		}
+      {
+         /* Following section added by JBV */
+         sp = v->memstr;
+         for (n = 0; n < (int) v->array_units; ++n)
+         {
+            if (sp[n].sbuffer != NULL)
+            {
+               /* Revised to FREE pass-thru call by
+                * JBV */
+               FREE(sp[n].sbuffer, "bwb_erase");
+               sp[n].sbuffer = NULL;
+            }
+            sp[n].rab = FALSE;
+            sp[n].length = 0;
+         }
          /* Revised to FREE pass-thru call by JBV */
-	 FREE( v->memstr, "bwb_erase" );
-	 v->memstr = NULL; /* JBV */
-	 }
+         FREE(v->memstr, "bwb_erase");
+         v->memstr = NULL; /* JBV */
+      }
       /* Revised to FREE pass-thru call by JBV */
-      FREE( v, "bwb_erase" );
-      v = NULL; /* JBV */
+      FREE(v, "bwb_erase");
+      v = NULL;   /* JBV */
 
       /* check for comma */
 
-      adv_ws( l->buffer, &( l->position ) );
-      if ( l->buffer[ l->position ] != ',' )
-         {
-         return bwb_zline( l );				/* no comma; leave */
-         }
-      ++( l->position );
-      adv_ws( l->buffer, &( l->position ) );
-
+      adv_ws(l->buffer, &(l->position));
+      if (l->buffer[l->position] != ',')
+      {
+         return bwb_zline(l); /* no comma; leave */
       }
-
-   return bwb_zline( l );
+      ++(l->position);
+      adv_ws(l->buffer, &(l->position));
 
    }
 
+   return bwb_zline(l);
+
+}
+
 /***********************************************************
-
-        FUNCTION:	bwb_swap()
-
-	DESCRIPTION:    This C function implements the BASIC
-			SWAP command.
-
-	SYNTAX:		SWAP variable, variable
-
+  
+        FUNCTION: bwb_swap()
+  
+   DESCRIPTION:    This C function implements the BASIC
+         SWAP command.
+  
+   SYNTAX:     SWAP variable, variable
+  
 ***********************************************************/
 
-#if ANSI_C
 struct bwb_line *
-bwb_swap( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_swap( l )
-   struct bwb_line *l;
-#endif
-   {
-   struct bwb_variable tmp;                     /* temp holder */
-   struct bwb_variable *lhs, *rhs;		/* left and right- hand side of swap statement */
-   char tbuf[ MAXSTRINGSIZE + 1 ];
+bwb_SWAP(struct bwb_line * l)
+{
+   struct bwb_variable tmp;/* temp holder */
+   struct bwb_variable *lhs, *rhs;  /* left and right- hand side of swap
+                * statement */
+   char            tbuf[BasicStringLengthMax + 1];
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_swap(): buffer is <%s>",
-      &( l->buffer[ l->position ] ) );
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
 
    /* get left variable name and find variable */
 
-   bwb_getvarname( l->buffer, tbuf, &( l->position ) );
+   bwb_getvarname(l->buffer, tbuf, &(l->position));
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_swap(): tbuf is <%s>", tbuf );
-   bwb_debug( bwb_ebuf );
-#endif
-
-   if ( ( lhs = var_find( tbuf ) ) == NULL )
-      {
-      bwb_error( err_syntax );
-      return bwb_zline( l );
-      }
-
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_swap(): lhs variable <%s> found",
-      lhs->name );
-   bwb_debug( bwb_ebuf );
-#endif
-
+   if ((lhs = var_find(tbuf)) == NULL)
+   {
+      bwb_error(err_syntax);
+      return bwb_zline(l);
+   }
    /* check for comma */
 
-   adv_ws( l->buffer, &( l->position ) );
-   if ( l->buffer[ l->position ] != ',' )
-      {
-      bwb_error( err_syntax );
-      return bwb_zline( l );
-      }
-   ++( l->position );
-   adv_ws( l->buffer, &( l->position ) );
+   adv_ws(l->buffer, &(l->position));
+   if (l->buffer[l->position] != ',')
+   {
+      bwb_error(err_syntax);
+      return bwb_zline(l);
+   }
+   ++(l->position);
+   adv_ws(l->buffer, &(l->position));
 
    /* get right variable name */
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_swap(): buffer is now <%s>",
-      &( l->buffer[ l->position ] ) );
-   bwb_debug( bwb_ebuf );
-#endif
 
-   bwb_getvarname( l->buffer, tbuf, &( l->position ) );
+   bwb_getvarname(l->buffer, tbuf, &(l->position));
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_swap(): tbuf is <%s>", tbuf );
-   bwb_debug( bwb_ebuf );
-#endif
 
-   if ( ( rhs = var_find( tbuf ) ) == NULL )
-      {
-      bwb_error( err_syntax );
-      return bwb_zline( l );
-      }
-
+   if ((rhs = var_find(tbuf)) == NULL)
+   {
+      bwb_error(err_syntax);
+      return bwb_zline(l);
+   }
    /* check to be sure that both variables are of the same type */
 
-   if ( rhs->type != lhs->type )
-      {
-      bwb_error( err_mismatch );
-      return bwb_zline( l );
-      }
-
+   if (rhs->type != lhs->type)
+   {
+      bwb_error(err_mismatch);
+      return bwb_zline(l);
+   }
    /* copy lhs to temp, rhs to lhs, then temp to rhs */
+   tmp.memnum = NULL;   /* AF5NE */
+   tmp.memstr = NULL;   /* AF5NE */
 
-   if ( lhs->type == NUMBER )
-      {
+   if (lhs->type == NUMBER)
+   {
       tmp.memnum = lhs->memnum;
-      }
+   }
    else
-      {
+   {
       tmp.memstr = lhs->memstr;
-      }
+   }
    tmp.array_sizes = lhs->array_sizes;
    tmp.array_units = lhs->array_units;
    tmp.array_pos = lhs->array_pos;
    tmp.dimensions = lhs->dimensions;
 
-   if ( lhs->type == NUMBER )
-      {
+
+   lhs->memnum = NULL;  /* AF5NE */
+   lhs->memstr = NULL;  /* AF5NE */
+
+
+   if (lhs->type == NUMBER)
+   {
       lhs->memnum = rhs->memnum;
-      }
+   }
    else
-      {
+   {
       lhs->memstr = rhs->memstr;
-      }
+   }
    lhs->array_sizes = rhs->array_sizes;
    lhs->array_units = rhs->array_units;
    lhs->array_pos = rhs->array_pos;
    lhs->dimensions = rhs->dimensions;
 
-   if ( lhs->type == NUMBER )
-      {
+
+   rhs->memnum = NULL;  /* AF5NE */
+   rhs->memstr = NULL;  /* AF5NE */
+
+
+   if (lhs->type == NUMBER)
+   {
       rhs->memnum = tmp.memnum;
-      }
+   }
    else
-      {
+   {
       rhs->memstr = tmp.memstr;
-      }
+   }
    rhs->array_sizes = tmp.array_sizes;
    rhs->array_units = tmp.array_units;
    rhs->array_pos = tmp.array_pos;
@@ -391,140 +351,160 @@ bwb_swap( l )
 
    /* return */
 
-   return bwb_zline( l );
+   return bwb_zline(l);
 
-   }
+}
 
-#endif				/* COMMON_CMDS */
 
 /***********************************************************
-
-        FUNCTION:	bwb_clear()
-
-	DESCRIPTION:    This C function implements the BASIC
-			CLEAR command.
-
-	SYNTAX:		CLEAR
-
+  
+        FUNCTION: bwb_clear()
+  
+   DESCRIPTION:    This C function implements the BASIC
+         CLEAR command.
+  
+   SYNTAX:     CLEAR
+  
 ***********************************************************/
 
-#if ANSI_C
-struct bwb_line *
-bwb_clear( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_clear( l )
-   struct bwb_line *l;
-#endif
-   {
+void
+var_CLEAR(void)
+{
    struct bwb_variable *v;
-   register int n;
-   bstring *sp;
-   bnumber *np;
+   register int    n;
+   bstring        *sp;
+   BasicNumberType *np;
 
-   for ( v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next )
+   bwx_DEBUG(__FUNCTION__);
+
+   for (v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next)
+   {
+      if (v->preset != TRUE)
       {
-      if ( v->preset != TRUE )
+         switch (v->type)
          {
-         switch( v->type )
+         case NUMBER:
+            np = v->memnum;
+            for (n = 0; n < (int) v->array_units; ++n)
             {
-            case NUMBER:
-	       np = v->memnum;
-	       for ( n = 0; n < (int) v->array_units; ++n )
-		  {
-		  np[ n ] = (bnumber) 0.0;
-		  }
-	       break;
-	    case STRING:
-	       sp = v->memstr;
-               for ( n = 0; n < (int) v->array_units; ++n )
-                  {
-		  if ( sp[ n ].sbuffer != NULL )
-		     {
-                     /* Revised to FREE pass-thru call by JBV */
-		     FREE( sp[ n ].sbuffer, "bwb_clear" );
-		     sp[ n ].sbuffer = NULL;
-                     }
-                  sp[ n ].rab = FALSE;
-                  sp[ n ].length = 0;
-                  }
-               break;
+               np[n] = (BasicNumberType) 0.0;
             }
+            break;
+         case STRING:
+            sp = v->memstr;
+            for (n = 0; n < (int) v->array_units; ++n)
+            {
+               if (sp[n].sbuffer != NULL)
+               {
+                  /* Revised to FREE pass-thru
+                   * call by JBV */
+                  FREE(sp[n].sbuffer, "bwb_clear");
+                  sp[n].sbuffer = NULL;
+               }
+               sp[n].rab = FALSE;
+               sp[n].length = 0;
+            }
+            break;
          }
       }
-
-   return bwb_zline( l );
-
    }
 
+   dimmed = FALSE;
+}
+
+struct bwb_line *
+bwb_CLEAR(struct bwb_line * l)
+{
+
+   var_CLEAR();
+
+   /* ignoare all parameters */
+   adv_eos(l->buffer, &(l->position));
+
+   return bwb_zline(l);
+}
+
 /***********************************************************
-
-	FUNCTION:       var_delcvars()
-
-	DESCRIPTION:    This function deletes all variables
-			in memory except those previously marked
-			as common.
-
+  
+   FUNCTION:       var_delcvars()
+  
+   DESCRIPTION:    This function deletes all variables
+         in memory except those previously marked
+         as common.
+  
 ***********************************************************/
 
-#if ANSI_C
 int
-var_delcvars( void )
-#else
-int
-var_delcvars()
-#endif
-   {
+var_delcvars(void)
+{
    struct bwb_variable *v;
-   struct bwb_variable *p;		/* previous variable */
-   bstring *sp; /* JBV */
-   register int n; /* JBV */
+   struct bwb_variable *p; /* previous variable */
+   bstring        *sp;  /* JBV */
+   register int    n;   /* JBV */
 
-   p = &CURTASK var_start;
-   for ( v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next )
+
+   bwx_DEBUG(__FUNCTION__);
+
+
+   for (v = CURTASK var_start.next; (v != NULL) && (v != &CURTASK var_end); v = v->next)
+   {
+
+
+      if ((v->preset != TRUE) && (v->common != TRUE))
+
       {
 
-      if ( v->common != TRUE )
+
+
+         /* if the variable is dimensioned, release allocated
+          * memory */
+
+         if (v->dimensions > 0)
          {
-
-         /* if the variable is dimensioned, release allocated memory */
-
-         if ( v->dimensions > 0 )
-            {
 
             /* deallocate memory */
 
             /* Revised to FREE pass-thru calls by JBV */
-            FREE( v->array_sizes, "var_delcvars" );
-            v->array_sizes = NULL; /* JBV */
-            FREE( v->array_pos, "var_delcvars" );
+            FREE(v->array_sizes, "var_delcvars");
+            v->array_sizes = NULL;  /* JBV */
+            FREE(v->array_pos, "var_delcvars");
             v->array_pos = NULL; /* JBV */
-	    if ( v->type == NUMBER )
-	       {
-               /* Revised to FREE pass-thru call by JBV */
-	       FREE( v->memnum, "var_delcvars" );
-	       v->memnum = NULL; /* JBV */
-	       }
-	    else
-	       {
-		/* Following section added by JBV */
-		sp = v->memstr;
-		for ( n = 0; n < (int) v->array_units; ++n )
-		{
-			if ( sp[ n ].sbuffer != NULL )
-			{
-                                /* Revised to FREE pass-thru call by JBV */
-				FREE( sp[ n ].sbuffer, "var_delcvars" );
-				sp[ n ].sbuffer = NULL;
-			}
-			sp[ n ].rab = FALSE;
-			sp[ n ].length = 0;
-		}
-               /* Revised to FREE pass-thru call by JBV */
-	       FREE( v->memstr, "var_delcvars" );
-	       v->memstr = NULL; /* JBV */
-	       }
+            if (v->type == NUMBER)
+            {
+               /* Revised to FREE pass-thru call by
+                * JBV */
+               FREE(v->memnum, "var_delcvars");
+               v->memnum = NULL; /* JBV */
             }
+            else
+            {
+               /* Following section added by JBV */
+               sp = v->memstr;
+               for (n = 0; n < (int) v->array_units; ++n)
+               {
+                  if (sp[n].sbuffer != NULL)
+                  {
+                     /* Revised to FREE
+                      * pass-thru call by
+                      * JBV */
+                     FREE(sp[n].sbuffer, "var_delcvars");
+                     sp[n].sbuffer = NULL;
+                  }
+                  sp[n].rab = FALSE;
+                  sp[n].length = 0;
+               }
+               /* Revised to FREE pass-thru call by
+                * JBV */
+               FREE(v->memstr, "var_delcvars");
+               v->memstr = NULL; /* JBV */
+            }
+         }
+         /* find previous variable in chain */
+         for (p = &CURTASK var_start; p->next != v; p = p->next)
+         {
+            ;
+         }
+
 
          /* reassign linkage */
 
@@ -533,1008 +513,942 @@ var_delcvars()
          /* deallocate the variable itself */
 
          /* Revised to FREE pass-thru call by JBV */
-         FREE( v, "var_delcvars" );
-         v = NULL; /* JBV */
-
-         }
-
-      /* else reset previous variable */
-
-      else
-         {
-         p = v;
-         }
+         FREE(v, "var_delcvars");
+         /* v = NULL; *//* Variable 'v' is reassigned a value
+          * before the old one has been used. */
+         v = p;
 
       }
+   }
 
    return TRUE;
 
-   }
-
-#if MS_CMDS
+}
 
 /***********************************************************
-
-        FUNCTION:	bwb_ddbl()
-
-	DESCRIPTION:    This function implements the BASIC
-			DEFDBL command.
-
-	SYNTAX:		DEFDBL letter[-letter](, letter[-letter])...
-
+  
+        FUNCTION: bwb_mid()
+  
+   DESCRIPTION:    This function implements the BASIC
+         MID$ command.
+  
+         Same as MID$ function, except it will set
+         the desired substring and not return its
+         value.  Added by JBV 10/95
+  
+   SYNTAX:     MID$( string-variable$, start-position-in-string
+         [, number-of-spaces ] ) = expression
+  
 ***********************************************************/
 
-#if ANSI_C
 struct bwb_line *
-bwb_ddbl( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_ddbl( l )
-   struct bwb_line *l;
-#endif
-   {
-
-   /* call generalized DEF handler with DOUBLE set */
-
-   var_defx( l, NUMBER );
-
-   return bwb_zline( l );
-
-   }
-
-/***********************************************************
-
-        FUNCTION:	bwb_dint()
-
-	DESCRIPTION:    This function implements the BASIC
-			DEFINT command.
-
-	SYNTAX:		DEFINT letter[-letter](, letter[-letter])...
-
-***********************************************************/
-
-#if ANSI_C
-struct bwb_line *
-bwb_dint( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_dint( l )
-   struct bwb_line *l;
-#endif
-   {
-
-   /* call generalized DEF handler with INTEGER set */
-
-   var_defx( l, NUMBER );
-
-   return bwb_zline( l );
-
-   }
-
-/***********************************************************
-
-        FUNCTION:	bwb_dsng()
-
-	DESCRIPTION:    This function implements the BASIC
-			DEFSNG command.
-
-	SYNTAX:		DEFSNG letter[-letter](, letter[-letter])...
-
-***********************************************************/
-
-#if ANSI_C
-struct bwb_line *
-bwb_dsng( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_dsng( l )
-   struct bwb_line *l;
-#endif
-   {
-
-   /* call generalized DEF handler with SINGLE set */
-
-   var_defx( l, NUMBER );
-
-   return bwb_zline( l );
-
-   }
-
-/***********************************************************
-
-        FUNCTION:	bwb_dstr()
-
-	DESCRIPTION:    This function implements the BASIC
-			DEFSTR command.
-
-	SYNTAX:		DEFSTR letter[-letter](, letter[-letter])...
-
-***********************************************************/
-
-#if ANSI_C
-struct bwb_line *
-bwb_dstr( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_dstr( l )
-   struct bwb_line *l;
-#endif
-   {
-
-   /* call generalized DEF handler with STRING set */
-
-   var_defx( l, STRING );
-
-   return bwb_zline( l );
-
-   }
-
-/***********************************************************
-
-        FUNCTION:	bwb_mid()
-
-	DESCRIPTION:    This function implements the BASIC
-			MID$ command.
-
-			Same as MID$ function, except it will set
-			the desired substring and not return its
-			value.  Added by JBV 10/95
-
-	SYNTAX:		MID$( string-variable$, start-position-in-string
-			[, number-of-spaces ] ) = expression
-
-***********************************************************/
-
-#if ANSI_C
-struct bwb_line *
-bwb_mid( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_mid( l )
-   struct bwb_line *l;
-#endif
-   {
-   char tbuf[ MAXSTRINGSIZE + 1 ];
-   char source_string[ MAXSTRINGSIZE + 1 ];
+bwb_MID_(struct bwb_line * l)
+{
+   char            tbuf[BasicStringLengthMax + 1];
+   char            source_string[BasicStringLengthMax + 1];
    struct bwb_variable *v;
-   static int pos;
-   bstring *d;
-   int *pp;
-   int n_params;
-   int p;
-   register int n;
-   int startpos, numchars, endpos;
-   int source_counter, source_length, target_length;
-   int target_terminate;
+   int             pos;
+   bstring        *d;
+   int            *pp;
+   int             n_params;
+   int             p;
+   register int    n;
+   int             startpos;
+   int             numchars;
+   int             endpos;
+   int             source_length;
+   int             target_length;
+
+
+
+   int             target_terminate;
    struct exp_ese *e;
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_mid(): MID$ command" );
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
 
    /* Get past left parenthesis */
-   adv_ws( l->buffer, &( l->position ) );
-   ++( l->position );
-   adv_ws( l->buffer, &( l->position ) );
+   adv_ws(l->buffer, &(l->position));
+   ++(l->position);
+   adv_ws(l->buffer, &(l->position));
 
    /* Get variable name and find variable */
-   bwb_getvarname( l->buffer, tbuf, &( l->position ) );
-   v = var_find( tbuf );
-   if ( v == NULL )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_mid(): failed to find variable" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_syntax );
-#endif
-      }
-
-   if ( v->type != STRING )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_mid(): assignment must be to string variable" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_syntax );
-#endif
-      }
-
+   bwb_getvarname(l->buffer, tbuf, &(l->position));
+   v = var_find(tbuf);
+   if (v == NULL)
+   {
+      sprintf(bwb_ebuf, "in bwb_mid(): failed to find variable");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
+   if (v->type != STRING)
+   {
+      sprintf(bwb_ebuf, "in bwb_mid(): assignment must be to string variable");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
    /* read subscripts */
    pos = 0;
-   if ( ( v->dimensions == 1 ) && ( v->array_sizes[ 0 ] == 1 ))
-      {
-#if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in bwb_mid(): variable <%s> has 1 dimension",
-         v->name );
-     bwb_debug( bwb_ebuf );
-#endif
+   if ((v->dimensions == 1) && (v->array_sizes[0] == 1))
+   {
       n_params = 1;
       pp = &p;
-      pp[ 0 ] = dim_base;
-      }
+      pp[0] = dim_base;
+   }
    else
-      {
-#if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in bwb_mid(): variable <%s> has > 1 dimensions",
-         v->name );
-      bwb_debug( bwb_ebuf );
-#endif
-      dim_getparams( l->buffer, &( l->position ), &n_params, &pp );
-      }
+   {
+      dim_getparams(l->buffer, &(l->position), &n_params, &pp);
+   }
 
-   CURTASK exps[ CURTASK expsc ].pos_adv = pos;
-   for ( n = 0; n < v->dimensions; ++n )
-      {
-      v->array_pos[ n ] = pp[ n ];
-      }
+   CURTASK         exps[CURTASK expsc].pos_adv = pos;
+   for (n = 0; n < v->dimensions; ++n)
+   {
+      v->array_pos[n] = pp[n];
+   }
 
    /* get bstring pointer */
-   d = var_findsval( v, pp );
+   d = var_findsval(v, pp);
 
    /* Get past next comma and white space */
-   adv_ws( l->buffer, &( l->position ) );
-   ++( l->position );
-   adv_ws( l->buffer, &( l->position ) );
+   adv_ws(l->buffer, &(l->position));
+   ++(l->position);
+   adv_ws(l->buffer, &(l->position));
 
    /* Get starting position (expression) */
-   adv_element( l->buffer, &( l->position ), tbuf );
+   adv_element(l->buffer, &(l->position), tbuf);
    pos = 0;
-   e = bwb_exp( tbuf, FALSE, &pos );
-   startpos = (int) exp_getnval( e );
+   e = bwb_exp(tbuf, FALSE, &pos);
+   if (ERROR_PENDING)
+   {
+      return bwb_zline(l);
+   }
+   startpos = exp_getival(e);
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_mid(): startpos <%d> buffer <%lX>",
-      startpos, (long) d->sbuffer );
-   bwb_debug( bwb_ebuf );
-#endif
 
    /* Get past next comma and white space (if they exist) */
-   adv_ws( l->buffer, &( l->position ) );
+   adv_ws(l->buffer, &(l->position));
    if (l->buffer[l->position] == ',')
-      {
+   {
       target_terminate = 0;
-      ++( l->position );
-      adv_ws( l->buffer, &( l->position ) );
-      adv_element( l->buffer, &( l->position ), tbuf );
+      ++(l->position);
+      adv_ws(l->buffer, &(l->position));
+      adv_element(l->buffer, &(l->position), tbuf);
       pos = 0;
-      e = bwb_exp( tbuf, FALSE, &pos );
-      numchars = (int) exp_getnval( e );
-      if ( numchars == 0 )
-         {
-#if PROG_ERRORS
-         sprintf( bwb_ebuf, "in bwb_mid(): destination string no. of chars out of range" );
-         bwb_error( bwb_ebuf );
-#else
-         bwb_error( "Argument out of range" );
-#endif
-         }
-      }
-   else
+      e = bwb_exp(tbuf, FALSE, &pos);
+      if (ERROR_PENDING)
       {
+         return bwb_zline(l);
+      }
+      numchars = exp_getival(e);
+      if (numchars == 0)
+      {
+         sprintf(bwb_ebuf, "in bwb_mid(): destination string no. of chars out of range");
+         bwb_error(bwb_ebuf);
+         return bwb_zline(l);
+      }
+   }
+   else
+   {
       target_terminate = 1;
       numchars = 0;
-      }
+   }
 
-   if ( numchars < 0 )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_mid(): negative string length" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( "Negative string length" );
-#endif
-      }
-
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_mid(): numchars <%d> target_terminate <%d>", numchars, target_terminate );
-   bwb_debug( bwb_ebuf );
-#endif
-
+   if (numchars < 0)
+   {
+      sprintf(bwb_ebuf, "in bwb_mid(): negative string length");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
    /* Get past equal sign */
-   adv_ws( l->buffer, &( l->position ) );
+   adv_ws(l->buffer, &(l->position));
    if (l->buffer[l->position] == ')')
-      {
+   {
       ++(l->position);
-      adv_ws( l->buffer, &( l->position ) );
-      }
+      adv_ws(l->buffer, &(l->position));
+   }
    ++(l->position);
-   adv_ws( l->buffer, &( l->position ) );
+   adv_ws(l->buffer, &(l->position));
 
    /* Evaluate string expression */
-   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
-   if ( e->type != STRING )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_mid(): assignment must be from string expression" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_syntax );
-#endif
-      }
-
+   e = bwb_exp(l->buffer, FALSE, &(l->position));
+   if (ERROR_PENDING)
+   {
+      return bwb_zline(l);
+   }
+   if (e->type != STRING)
+   {
+      sprintf(bwb_ebuf, "in bwb_mid(): assignment must be from string expression");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
    /* Prepare to MID the string */
-   str_btoc( source_string, exp_getsval( e ) );
-   str_btoc( tbuf, d );
-   target_length = strlen( tbuf );
-   if ( startpos > ( target_length + 1 ) )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_mid(): non-contiguous string created" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( "Non-contiguous string created" );
-#endif
-      }
-
-   if ( startpos < 1 )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_mid(): destination string start position out of range" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( "Argument out of range" );
-#endif
-      }
-
-   source_length = strlen( source_string );
-   if ( numchars == 0 ) numchars = source_length;
+   str_btoc(source_string, exp_getsval(e));
+   str_btoc(tbuf, d);
+   target_length = strlen(tbuf);
+   if (startpos > (target_length + 1))
+   {
+      sprintf(bwb_ebuf, "in bwb_mid(): non-contiguous string created");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
+   if (startpos < 1)
+   {
+      sprintf(bwb_ebuf, "in bwb_mid(): destination string start position out of range");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
+   source_length = strlen(source_string);
+   if (numchars == 0)
+      numchars = source_length;
    endpos = startpos + numchars - 1;
 
    /* MID the string */
-   if ( endpos < startpos ) tbuf[ startpos - 1 ] = '\0';
+   if (endpos < startpos)
+      tbuf[startpos - 1] = '\0';
    else
-      {
+   {
+      int             source_counter;
+
       source_counter = 0;
-      for ( n = startpos - 1; n < endpos; ++n )
-         {
-         if ( source_counter < source_length )
-            tbuf[ n ] = source_string[ source_counter ];
+      for (n = startpos - 1; n < endpos; ++n)
+      {
+         if (source_counter < source_length)
+            tbuf[n] = source_string[source_counter];
          else
-            tbuf[ n ] = ' ';
+            tbuf[n] = ' ';
          ++source_counter;
-         }
-      /* Terminate if indicated or characters were added */
-      if ( ( endpos > target_length ) || ( target_terminate == 1 ) )
-         tbuf[ endpos ] = '\0';
       }
-   str_ctob( d, tbuf );
-
-#if MULTISEG_LINES
-   adv_eos( l->buffer, &( l->position ));
-#endif
-
-   return bwb_zline( l );
-
+      /* Terminate if indicated or characters were added */
+      if ((endpos > target_length) || (target_terminate == 1))
+         tbuf[endpos] = '\0';
    }
+   str_ctob(d, tbuf);
+
+   adv_eos(l->buffer, &(l->position));
+
+   return bwb_zline(l);
+
+}
+
 
 /***********************************************************
-
-        Function:	var_defx()
-
-	DESCRIPTION:    This function is a generalized DEFxxx handler.
-
+  
+        FUNCTION: bwb_ddbl()
+  
+   DESCRIPTION:    This function implements the BASIC
+         DEFDBL command.
+  
+   SYNTAX:     DEFDBL letter[-letter](, letter[-letter])...
+  
 ***********************************************************/
 
-#if ANSI_C
-static int
-var_defx( struct bwb_line *l, int type )
-#else
-static int
-var_defx( l, type )
-   struct bwb_line *l;
-   int type;
-#endif
+struct bwb_line *
+bwb_DEFDBL(struct bwb_line * l)
+{
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* call generalized DEF handler with DOUBLE set */
+
+   var_defx(l, NUMBER);
+
+   return bwb_zline(l);
+
+}
+
+/***********************************************************
+  
+        FUNCTION: bwb_dint()
+  
+   DESCRIPTION:    This function implements the BASIC
+         DEFINT command.
+  
+   SYNTAX:     DEFINT letter[-letter](, letter[-letter])...
+  
+***********************************************************/
+
+struct bwb_line *
+bwb_DEFINT(struct bwb_line * l)
+{
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* call generalized DEF handler with INTEGER set */
+
+   var_defx(l, NUMBER);
+
+   return bwb_zline(l);
+
+}
+
+/***********************************************************
+  
+        FUNCTION: bwb_dsng()
+  
+   DESCRIPTION:    This function implements the BASIC
+         DEFSNG command.
+  
+   SYNTAX:     DEFSNG letter[-letter](, letter[-letter])...
+  
+***********************************************************/
+
+struct bwb_line *
+bwb_DEFSNG(struct bwb_line * l)
+{
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* call generalized DEF handler with SINGLE set */
+
+   var_defx(l, NUMBER);
+
+   return bwb_zline(l);
+
+}
+
+/***********************************************************
+  
+        FUNCTION: bwb_dstr()
+  
+   DESCRIPTION:    This function implements the BASIC
+         DEFSTR command.
+  
+   SYNTAX:     DEFSTR letter[-letter](, letter[-letter])...
+  
+***********************************************************/
+
+struct bwb_line *
+bwb_DEFSTR(struct bwb_line * l)
+{
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* call generalized DEF handler with STRING set */
+
+   var_defx(l, STRING);
+
+   return bwb_zline(l);
+
+}
+
+static
+int
+VarTypeIndex(int C)
+{
+   bwx_DEBUG(__FUNCTION__);
+
+   if (isalpha(C))
    {
-   int loop;
-   register int c;
-   static char vname[ 2 ];
+      static char     A2Z[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      char           *P;
+
+      P = strchr(A2Z, ToUpper(C));
+      if (P == NULL)
+      {
+         bwb_error("INTERNAL: VarTypeIndex() called for non-char");
+      }
+      else
+      {
+         return P - A2Z;
+      }
+   }
+   else
+   {
+      bwb_error("INTERNAL: VarTypeIndex() called for non-alpha");
+   }
+   return 0;
+}
+
+/***********************************************************
+  
+        Function: var_defx()
+  
+   DESCRIPTION:    This function is a generalized DEFxxx handler.
+  
+***********************************************************/
+
+static int
+var_defx(struct bwb_line * l, int type)
+{
+   int             loop;
+   register int    c;
+#if 0
+   char            vname[2];
    struct bwb_variable *v;
+#endif
+
+   bwx_DEBUG(__FUNCTION__);
 
    /* loop while there are variable names to process */
 
    loop = TRUE;
-   while ( loop == TRUE )
-      {
+   while (loop == TRUE)
+   {
 
       /* check for end of line or line segment */
 
-      adv_ws( l->buffer, &( l->position ) );
-      switch( l->buffer[ l->position ] )
-         {
-         case '\n':
-         case '\r':
-         case '\0':
-         case ':':
-            return FALSE;
-         }
+      adv_ws(l->buffer, &(l->position));
+      switch (l->buffer[l->position])
+      {
+      case '\0':
+         return FALSE;
+      }
+      if( l->buffer[l->position] == OptionCommentChar )
+      {
+         return FALSE;
+      }
 
       /* find a sequence of letters for variables */
 
-      if ( var_letseq( l->buffer, &( l->position ), &first, &last ) == FALSE )
-         {
+      if (var_letseq(l->buffer, &(l->position), &first, &last) == FALSE)
+      {
          return FALSE;
-         }
-
+      }
+#if 0
       /* loop through the list getting variables */
 
-      for ( c = first; c <= last; ++c )
-         {
-         vname[ 0 ] = (char) c;
-         vname[ 1 ] = '\0';
+      for (c = first; c <= last; ++c)
+      {
+         vname[0] = (char) c;
+         vname[1] = '\0';
 
-#if INTENSIVE_DEBUG
-         sprintf( bwb_ebuf, "in var_defx(): calling var_find() for <%s>",
-            vname );
-         bwb_debug( bwb_ebuf );
-#endif
 
-         v = var_find( vname );
+         v = var_find(vname);
 
-         /* but var_find() assigns on the basis of name endings
-            (so all in this case should be SINGLEs), so we must
-            force the type of the variable */
+         /* but var_find() assigns on the basis of name
+          * endings (so all in this case should be SINGLEs),
+          * so we must force the type of the variable */
 
-         var_make( v, type );
-
-         }
+         var_make(v, type);
 
       }
+#endif
+      if (isalpha(first) && isalpha(last))
+      {
+         first = VarTypeIndex(first);
+         last = VarTypeIndex(last);
+         for (c = first; c <= last; c++)
+         {
+            DefaultVariableType[c] = type;
+         }
+      }
+   }
 
    return TRUE;
 
-   }
+}
 
-#endif				/* MS_CMDS */
 
 /***********************************************************
-
-        Function:	var_letseq()
-
-	DESCRIPTION:    This function finds a sequence of letters
-			for a DEFxxx command.
-
+  
+        Function: var_letseq()
+  
+   DESCRIPTION:    This function finds a sequence of letters
+         for a DEFxxx command.
+  
 ***********************************************************/
 
-#if ANSI_C
 static int
-var_letseq( char *buffer, int *position, int *start, int *end )
-#else
-static int
-var_letseq( buffer, position, start, end )
-   char *buffer;
-   int *position;
-   int *start;
-   int *end;
-#endif
-   {
+var_letseq(char *buffer, int *position, int *start, int *end)
+{
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in var_letseq(): buffer <%s>", &( buffer[ *position ] ));
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
 
    /* advance beyond whitespace */
 
-   adv_ws( buffer, position );
+   adv_ws(buffer, position);
 
    /* check for end of line */
 
-   switch( buffer[ *position ] )
-      {
-      case '\0':
-      case '\n':
-      case '\r':
-      case ':':
-         return TRUE;
-      }
+   switch (buffer[*position])
+   {
+   case '\0':
+      return TRUE;
+   }
 
    /* character at this position must be a letter */
 
-   if ( isalpha( buffer[ *position ] ) == 0 )
-      {
-      bwb_error( err_defchar );
+   if (isalpha(buffer[*position]) == 0)
+   {
+      bwb_error(err_defchar);
       return FALSE;
-      }
-
-   *end = *start = buffer[ *position ];
+   }
+   *end = *start = buffer[*position];
 
    /* advance beyond character and whitespace */
 
-   ++( *position );
-   adv_ws( buffer, position );
+   ++(*position);
+   adv_ws(buffer, position);
 
    /* check for hyphen, indicating sequence of more than one letter */
 
-   if ( buffer[ *position ] == '-' )
-      {
+   if (buffer[*position] == '-')
+   {
 
-      ++( *position );
+      ++(*position);
 
       /* advance beyond whitespace */
 
-      adv_ws( buffer, position );
+      adv_ws(buffer, position);
 
       /* character at this position must be a letter */
 
-      if ( isalpha( buffer[ *position ] ) == 0 )
-         {
+      if (isalpha(buffer[*position]) == 0)
+      {
          *end = *start;
-         }
+      }
       else
-         {
-         *end = buffer[ *position ];
-         ++( *position );
-         }
-
+      {
+         *end = buffer[*position];
+         ++(*position);
       }
 
+   }
    /* advance beyond comma if present */
 
-   if ( buffer[ *position ] == ',' )
-      {
-      ++( *position );
-      }
-
+   if (buffer[*position] == ',')
+   {
+      ++(*position);
+   }
    return TRUE;
-   }
+}
+
 
 /***********************************************************
-
-	FUNCTION:       bwb_const()
-
-	DESCRIPTION:    This function takes the string in lb
-			(the large buffer), finds a string constant
-			(beginning and ending with quotation marks),
-			and returns it in sb (the small buffer),
-			appropriately incrementing the integer
-			pointed to by n. The string in lb should NOT
-			include the initial quotation mark.
-
+  
+   FUNCTION:       bwb_getvarname()
+  
+   DESCRIPTION:    This function takes the string in lb
+         (the large buffer), finds a variable name,
+         and returns it in sb (the small buffer),
+         appropriately incrementing the integer
+         pointed to by n.
+  
 ***********************************************************/
 
-#if ANSI_C
 int
-bwb_const( char *lb, char *sb, int *n )
-#else
-int
-bwb_const( lb, sb, n )
-   char *lb;
-   char *sb;
-   int *n;
-#endif
-   {
-   register int s;
+bwb_getvarname(char *lb, char *sb, int *n)
+{
+   /* FIXME: use BasicNameLengthMax */
+#if 0
+   register int    s;
 
-   ++*n;                        /* advance past quotation mark */
-   s = 0;
-
-   while ( TRUE )
-      {
-      switch ( lb[ *n ] )
-         {
-         case '\"':
-            sb[ s ] = 0;
-            ++*n;               /* advance past ending quotation mark */
-            return TRUE;
-         case '\n':
-         case '\r':
-         case 0:
-            sb[ s ] = 0;
-            return TRUE;
-         default:
-            sb[ s ] = lb[ *n ];
-            break;
-         }
-
-      ++*n;                     /* advance to next character in large buffer */
-      ++s;                      /* advance to next position in small buffer */
-      sb[ s ] = 0;              /* terminate with 0 */
-      }
-
-   }
-
-/***********************************************************
-
-	FUNCTION:       bwb_getvarname()
-
-	DESCRIPTION:    This function takes the string in lb
-			(the large buffer), finds a variable name,
-			and returns it in sb (the small buffer),
-			appropriately incrementing the integer
-			pointed to by n.
-
-***********************************************************/
-
-#if ANSI_C
-int
-bwb_getvarname( char *lb, char *sb, int *n )
-#else
-int
-bwb_getvarname( lb, sb, n )
-   char *lb;
-   char *sb;
-   int *n;
-#endif
-   {
-   register int s;
+   bwx_DEBUG(__FUNCTION__);
 
    s = 0;
 
    /* advance beyond whitespace */
+   adv_ws(lb, n);
 
-   adv_ws( lb, n );
-
-   while ( TRUE )
+   while (TRUE)
+   {
+      switch (lb[*n])
       {
-      switch ( lb[ *n ] )
+      case ' ':   /* whitespace */
+      case '\0':
+      case ',':
+      case ';':
+      case '(':   /* beginning of parameter list for
+             * dimensioned array */
+      case '+':   /* add variables *//* FIXME: looks like a bug */
+      case '=':   /* Don't forget this one (JBV) */
+         sb[s] = 0;
+         return TRUE;
+      default:
+         sb[s] = lb[*n];
+         break;
+      }
+
+      ++*n;    /* advance to next character in large buffer */
+      ++s;     /* advance to next position in small buffer */
+      sb[s] = 0;  /* terminate with 0 */
+
+   }
+#endif
+
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* advance beyond whitespace */
+   adv_ws(lb, n);
+
+   lb += (*n);
+   if (isalpha(*lb))
+   {
+      *sb = *lb;
+      sb++;
+      lb++;
+      (*n)++;
+
+      if (OptionFlags & OPTION_BUGS_ON)
+      {
+         /* allow '.' and '_' in variable names */
+         while (isalnum(*lb) || *lb == '.' || *lb == '_')
          {
-         case ' ':              /* whitespace */
-         case '\t':
-         case '\n':             /* end of string */
-         case '\r':
-         case 0:
-         case ':':              /* end of expression */
-         case ',':
-         case ';':
-         case '(':              /* beginning of parameter list for dimensioned array */
-         case '+':              /* add variables */
-         case '=':              /* Don't forget this one (JBV) */
-            sb[ s ] = 0;
-            return TRUE;
+            *sb = *lb;
+            sb++;
+            lb++;
+            (*n)++;
+         }
+      }
+      else
+      {
+         while (isalnum(*lb))
+         {
+            *sb = *lb;
+            sb++;
+            lb++;
+            (*n)++;
+         }
+      }
+      if (OptionFlags & OPTION_BUGS_ON)
+      {
+         /* allow '!','@','#', '%', '&' and '$' in variable names */
+         switch (*lb)
+         {
+         case BasicDoubleSuffix:
+         case BasicSingleSuffix:
+         case BasicCurrencySuffix:
+         case BasicLongSuffix:
+         case BasicIntegerSuffix:
+         case BasicStringSuffix:
+            /* suffix IS part of the name. *
+             * A$ is distinct from A. */
+            *sb = *lb;
+            sb++;
+            lb++;
+            (*n)++;
+            break;
+         }
+      }
+      else
+      {
+         switch (*lb)
+         {
+         case BasicStringSuffix:
+            /* suffix IS part of the name. *
+             * A$ is distinct from A. */
+            *sb = *lb;
+            sb++;
+            lb++;
+            (*n)++;
+            break;
+         }
+      }
+   }
+   *sb = '\0';
+   return TRUE;
+}
+
+/***************************************************************
+  
+        FUNCTION:       var_find()
+  
+   DESCRIPTION:    This C function attempts to find a variable
+         name matching the argument in buffer. If
+         it fails to find a matching name, it
+         sets up a new variable with that name.
+  
+***************************************************************/
+
+struct bwb_variable *
+var_find(char *buffer)
+{
+   struct bwb_variable *v;
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* check for NULL variable name */
+
+   if (strlen(buffer) == 0)
+   {
+      sprintf(bwb_ebuf, "in var_find(): NULL variable name received\n");
+      bwb_error(bwb_ebuf);
+      return NULL;
+   }
+   /* check for a local variable at this EXEC level */
+
+   v = var_islocal(buffer);
+   if (v != NULL)
+   {
+      return v;
+   }
+   /* now run through the global variable list and try to find a match */
+
+   for (v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next)
+   {
+
+      if (strcasecmp(v->name, buffer) == 0)
+      {
+         switch (v->type)
+         {
+         case STRING:
+         case NUMBER:
+            break;
          default:
-            sb[ s ] = lb[ *n ];
+            sprintf(bwb_ebuf, "in var_find(): inappropriate precision for variable <%s>",
+               v->name);
+            bwb_error(bwb_ebuf);
+            return NULL;
             break;
          }
 
-      ++*n;                     /* advance to next character in large buffer */
-      ++s;                      /* advance to next position in small buffer */
-      sb[ s ] = 0;              /* terminate with 0 */
-
-#if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in bwb_getvarname(): found <%s>", sb );
-      bwb_debug( bwb_ebuf );
-#endif
+         return v;
       }
-
    }
 
-/***************************************************************
-
-        FUNCTION:       var_find()
-
-	DESCRIPTION:    This C function attempts to find a variable
-			name matching the argument in buffer. If
-			it fails to find a matching name, it
-			sets up a new variable with that name.
-
-***************************************************************/
-
-#if ANSI_C
-struct bwb_variable *
-var_find( char *buffer )
-#else
-struct bwb_variable *
-var_find( buffer )
-   char *buffer;
-#endif
-   {
-   struct bwb_variable *v;
-
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in var_find(): received <%s>", buffer );
-   bwb_debug( bwb_ebuf );
-#endif
-
-   /* check for a local variable at this EXEC level */
-
-   v = var_islocal( buffer );
-   if ( v != NULL )
-      {
-      return v;
-      }
-
-   /* now run through the global variable list and try to find a match */
-
-   for ( v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next )
-      {
-
-      if ( strcmp( v->name, buffer ) == 0 )
-         {
-         switch( v->type )
-            {
-            case STRING:
-            case NUMBER:
-               break;
-            default:
-#if PROG_ERRORS
-               sprintf( bwb_ebuf, "in var_find(): inappropriate precision for variable <%s>",
-                  v->name );
-               bwb_error( bwb_ebuf );
-#endif
-               break;
-            }
-#if INTENSIVE_DEBUG
-         sprintf( bwb_ebuf, "in var_find(): found global variable <%s>", v->name );
-         bwb_debug( bwb_ebuf );
-#endif
-
-         return v;
-         }
-
-      }
-
    /* presume this is a new variable, so initialize it... */
-   /* check for NULL variable name */
-
-   if ( strlen( buffer ) == 0 )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in var_find(): NULL variable name received\n" );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_syntax );
-#endif
-      return NULL;
-      }
 
    /* initialize new variable */
 
-   v = var_new( buffer );
+   v = var_new(buffer);
 
    /* set place at beginning of variable chain */
 
    v->next = CURTASK var_start.next;
-   CURTASK var_start.next = v;
+   CURTASK         var_start.next = v;
 
    /* normally not a preset */
 
    v->preset = FALSE;
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in var_find(): initialized new variable <%s> type <%c>, dim <%d>",
-      v->name, v->type, v->dimensions );
-   bwb_debug( bwb_ebuf );
-   getchar();
-#endif
 
    return v;
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       var_new()
-
-	DESCRIPTION:    This function assigns memory for a new variable.
-
+  
+   DESCRIPTION:    This function assigns memory for a new variable.
+  
 ***************************************************************/
 
-#if ANSI_C
 struct bwb_variable *
-var_new( char *name )
-#else
-struct bwb_variable *
-var_new( name )
-   char *name;
-#endif
-   {
+var_new(char *name)
+{
    struct bwb_variable *v;
+   char            C;
+   int             type;
 
+
+   bwx_DEBUG(__FUNCTION__);
    /* get memory for new variable */
 
-   /* Revised to CALLOC pass-thru call by JBV */
-   if ( ( v = (struct bwb_variable *) CALLOC( 1, sizeof( struct bwb_variable ), "var_new" ))
-      == NULL )
-      {
-      bwb_error( err_getmem );
+   if (name == NULL)
+   {
+      bwb_error("INTERNAL ERROR - not a valid variable name - name == NULL");
       return NULL;
-      }
-
+   }
+   if (strlen(name) == 0)
+   {
+      bwb_error("INTERNAL ERROR - not a valid variable name - strlen(name) == 0");
+      return NULL;
+   }
+   if (isalpha(*name))
+   {
+      /* OK */
+   }
+   else
+   {
+      bwb_error("INTERNAL ERROR - not a valid variable name - !isalpha(*name)");
+      return NULL;
+   }
+   C = ToUpper(*name);
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ((v = (struct bwb_variable *) CALLOC(1, sizeof(struct bwb_variable), "var_new"))
+       == NULL)
+   {
+      bwb_error(err_getmem);
+      return NULL;
+   }
    /* copy the name into the appropriate structure */
 
-   strcpy( v->name, name );
+   strcpy(v->name, name);
 
+#if 0
+   var_make(v, (int) v->name[strlen(v->name) - 1]);
+#endif
    /* set memory in the new variable */
 
-   var_make( v, (int) v->name[ strlen( v->name ) - 1 ] );
+   type = NUMBER;    /* DEFAULT */
+   switch (v->name[strlen(v->name) - 1])
+   {
+   case BasicStringSuffix:
+      type = STRING;
+      break;
+   case BasicDoubleSuffix:
+   case BasicSingleSuffix:
+   case BasicCurrencySuffix:
+   case BasicLongSuffix:
+   case BasicIntegerSuffix:
+      type = NUMBER;
+      break;
+   default:
+      type = DefaultVariableType[VarTypeIndex(C)];
+      break;
+   }
+   var_make(v, type);
 
    /* and return */
 
    return v;
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       bwb_isvar()
-
-	DESCRIPTION:    This function determines if the string
-			in 'buffer' is the name of a previously-
-			existing variable.
-
+  
+   DESCRIPTION:    This function determines if the string
+         in 'buffer' is the name of a previously-
+         existing variable.
+  
 ***************************************************************/
 
-#if ANSI_C
 int
-bwb_isvar( char *buffer )
-#else
-int
-bwb_isvar( buffer )
-   char *buffer;
-#endif
-   {
+bwb_isvar(char *buffer)
+{
    struct bwb_variable *v;
+
+
+   bwx_DEBUG(__FUNCTION__);
 
    /* run through the variable list and try to find a match */
 
-   for ( v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next )
+   for (v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next)
+   {
+
+      if (strcasecmp(v->name, buffer) == 0)
       {
-
-      if ( strcmp( v->name, buffer ) == 0 )
-         {
          return TRUE;
-         }
-
       }
+   }
 
    /* search failed */
 
    return FALSE;
 
-   }
+}
 
 /***************************************************************
-
-	FUNCTION:       var_getnval()
-
-	DESCRIPTION:    This function returns the current value of
-			the variable argument as a number.
-
+  
+   FUNCTION:       var_getnval()
+  
+   DESCRIPTION:    This function returns the current value of
+         the variable argument as a number.
+  
 ***************************************************************/
 
-#if ANSI_C
-bnumber
-var_getnval( struct bwb_variable *nvar )
-#else
-bnumber
-var_getnval( nvar )
-   struct bwb_variable *nvar;
-#endif
+BasicNumberType
+var_getnval(struct bwb_variable * nvar)
+{
+
+   bwx_DEBUG(__FUNCTION__);
+
+   switch (nvar->type)
    {
-
-   switch( nvar->type )
-      {
-      case NUMBER:
-         return *( var_findnval( nvar, nvar->array_pos ) );
-      }
-
-#if PROG_ERRORS
-   sprintf( bwb_ebuf, "in var_getnval(): type is <%d>=<%c>.",
-      nvar->type, nvar->type );
-   bwb_error( bwb_ebuf );
-#else
-   bwb_error( err_mismatch );
-#endif
-
-
-   return (bnumber) 0.0;
-
+   case NUMBER:
+      return *(var_findnval(nvar, nvar->array_pos));
    }
 
+   sprintf(bwb_ebuf, "in var_getnval(): type is <%d>=<%c>.",
+      nvar->type, nvar->type);
+   bwb_error(bwb_ebuf);
+   return 0;
+
+}
+
+
 /***************************************************************
-
-	FUNCTION:       var_getsval()
-
-	DESCRIPTION:    This function returns the current value of
-			the variable argument as a pointer to a BASIC
-			string structure.
-
+  
+   FUNCTION:       var_getsval()
+  
+   DESCRIPTION:    This function returns the current value of
+         the variable argument as a pointer to a BASIC
+         string structure.
+  
 ***************************************************************/
 
-#if ANSI_C
-bstring *
-var_getsval( struct bwb_variable *nvar )
-#else
-bstring *
-var_getsval( nvar )
-   struct bwb_variable *nvar;
-#endif
-   {
-   static bstring b;
+bstring        *
+var_getsval(struct bwb_variable * nvar)
+{
+   static bstring  b;
+
+   bwx_DEBUG(__FUNCTION__);
 
    b.rab = FALSE;
 
-   switch( nvar->type )
-      {
-      case STRING:
-	 return var_findsval( nvar, nvar->array_pos );
-      case NUMBER:
-	 sprintf( bwb_ebuf, "%*f ", prn_precision( nvar ),
-	    *( var_findnval( nvar, nvar->array_pos ) ) );
-	 str_ctob( &b, bwb_ebuf );
-	 return &b;
-      default:
-#if PROG_ERRORS
-	 sprintf( bwb_ebuf, "in var_getsval(): type is <%d>=<%c>.",
-	    nvar->type, nvar->type );
-	 bwb_error( bwb_ebuf );
-#else
-	 bwb_error( err_mismatch );
-#endif
-	 return NULL;
-      }
-
+   switch (nvar->type)
+   {
+   case STRING:
+      return var_findsval(nvar, nvar->array_pos);
+   case NUMBER:
+      sprintf(bwb_ebuf, "%*f ", prn_precision(nvar),
+         *(var_findnval(nvar, nvar->array_pos)));
+      str_ctob(&b, bwb_ebuf);
+      return &b;
+   default:
+      sprintf(bwb_ebuf, "in var_getsval(): type is <%d>=<%c>.",
+         nvar->type, nvar->type);
+      bwb_error(bwb_ebuf);
+      return NULL;
    }
 
+}
+
 /***************************************************************
-
-	FUNCTION:	bwb_dim()
-
-	DESCRIPTION:	This function implements the BASIC DIM
-			statement, allocating memory for a
-			dimensioned array of variables.
-
-	SYNTAX:		DIM variable(elements...)[variable(elements...)]...
-
+  
+   FUNCTION:   bwb_dim()
+  
+   DESCRIPTION:   This function implements the BASIC DIM
+         statement, allocating memory for a
+         dimensioned array of variables.
+  
+   SYNTAX:     DIM variable(elements...)[variable(elements...)]...
+  
 ***************************************************************/
 
-#if ANSI_C
 struct bwb_line *
-bwb_dim( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_dim( l )
-   struct bwb_line *l;
-#endif
-   {
-   register int n;
-   static int n_params;                         /* number of parameters */
-   static int *pp;                              /* pointer to parameter values */
+bwb_DIM(struct bwb_line * l)
+{
+   register int    n;
+   static int      n_params;  /* number of parameters */
+   static int     *pp;  /* pointer to parameter values */
    struct bwb_variable *newvar;
-   bnumber *np;
-   int loop;
-   int old_name, old_dimensions;
-   char tbuf[ MAXSTRINGSIZE + 1 ];
+   BasicNumberType *np;
+   int             loop;
+   char            tbuf[BasicStringLengthMax + 1];
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_dim(): entered function." );
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
+
+
+
 
    loop = TRUE;
-   while ( loop == TRUE )
-      {
+   while (loop == TRUE)
+   {
+      int             old_name;
+      int             old_dimensions;
 
       old_name = FALSE;
 
       /* Get variable name */
 
-      adv_ws( l->buffer, &( l->position ) );
-      bwb_getvarname( l->buffer, tbuf, &( l->position ) );
+      adv_ws(l->buffer, &(l->position));
+      bwb_getvarname(l->buffer, tbuf, &(l->position));
+
 
       /* check for previously used variable name */
 
-      if ( bwb_isvar( tbuf ) == TRUE )
-         {
-#if INTENSIVE_DEBUG
-         sprintf( bwb_ebuf, "in bwb_dim(): variable name is already used.",
-            l->number );
-         bwb_debug( bwb_ebuf );
-#endif
+      if (bwb_isvar(tbuf) == TRUE)
+      {
          old_name = TRUE;
-         }
-
+      }
       /* get the new variable */
 
-      newvar = var_find( tbuf );
+      newvar = var_find(tbuf);
 
-#if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in bwb_dim(): new variable name is <%s>.",
-         newvar->name );
-      bwb_debug( bwb_ebuf );
-#endif
 
       /* note that DIM has been called */
 
@@ -1543,1091 +1457,1766 @@ bwb_dim( l )
       /* read parameters */
 
       old_dimensions = newvar->dimensions;
-      dim_getparams( l->buffer, &( l->position ), &n_params, &pp );
+      dim_getparams(l->buffer, &(l->position), &n_params, &pp);
       newvar->dimensions = n_params;
 
       /* Check parameters for an old variable name */
 
-      if ( old_name == TRUE )
+      if (old_name == TRUE)
+      {
+
+         /* check to be sure the number of dimensions is the
+          * same */
+
+         if (newvar->dimensions != old_dimensions)
          {
+            sprintf(bwb_ebuf, "in bwb_dim(): variable <%s> cannot be re-dimensioned",
+               newvar->name);
+            bwb_error(bwb_ebuf);
+            return bwb_zline(l);
+         }
+         /* check to be sure sizes for the old variable are
+          * the same */
 
-         /* check to be sure the number of dimensions is the same */
-
-         if ( newvar->dimensions != old_dimensions )
+         for (n = 0; n < newvar->dimensions; ++n)
+         {
+            if ((pp[n] + (1 - dim_base)) != newvar->array_sizes[n])
             {
-#if PROG_ERRORS
-            sprintf( bwb_ebuf, "in bwb_dim(): variable <%s> cannot be re-dimensioned",
-               newvar->name );
-            bwb_error( bwb_ebuf );
-#else
-            bwb_error( err_redim );
-#endif
+               sprintf(bwb_ebuf, "in bwb_dim(): variable <%s> parameter <%d> cannot be resized",
+                  newvar->name, n);
+               bwb_error(bwb_ebuf);
+               return bwb_zline(l);
             }
+         }
 
-         /* check to be sure sizes for the old variable are the same */
-
-         for ( n = 0; n < newvar->dimensions; ++n )
-            {
-#if INTENSIVE_DEBUG
-            sprintf( bwb_ebuf, "in bwb_dim(): old var <%s> parameter <%d> size <%d>.",
-               newvar->name, n, pp[ n ] );
-            bwb_debug( bwb_ebuf );
-#endif
-            if ( ( pp[ n ] + ( 1 - dim_base )) != newvar->array_sizes[ n ] )
-               {
-#if PROG_ERRORS
-               sprintf( bwb_ebuf, "in bwb_dim(): variable <%s> parameter <%d> cannot be resized",
-                  newvar->name, n );
-               bwb_error( bwb_ebuf );
-#else
-               bwb_error( err_redim );
-#endif
-               }
-            }
-
-         }         /* end of conditional for old variable */
-
-
-      /* a new variable */
+      }     /* end of conditional for old variable */
+      /*       a new variable */
 
       else
-         {
+      {
 
          /* assign memory for parameters */
 
          /* Revised to CALLOC pass-thru call by JBV */
-         if ( ( newvar->array_sizes = (int *) CALLOC( n_params, sizeof( int ), "bwb_dim"  )) == NULL )
-            {
-#if PROG_ERRORS
-            sprintf( bwb_ebuf, "in line %d: Failed to find memory for array_sizes for <%s>",
-               l->number, newvar->name );
-            bwb_error( bwb_ebuf );
-#else
-            bwb_error( err_getmem );
-#endif
-            return bwb_zline( l );
-            }
-
-         for ( n = 0; n < newvar->dimensions; ++n )
-            {
-            newvar->array_sizes[ n ] = pp[ n ] + ( 1 - dim_base );
-#if INTENSIVE_DEBUG
-            sprintf( bwb_ebuf, "in bwb_dim(): array_sizes dim <%d> value <%d>",
-               n, newvar->array_sizes[ n ] );
-            bwb_debug( bwb_ebuf );
-#endif
-            }
+         if ((newvar->array_sizes = (int *) CALLOC(n_params, sizeof(int), "bwb_dim")) == NULL)
+         {
+            sprintf(bwb_ebuf, "in line %d: Failed to find memory for array_sizes for <%s>",
+               l->number, newvar->name);
+            bwb_error(bwb_ebuf);
+            return bwb_zline(l);
+         }
+         for (n = 0; n < newvar->dimensions; ++n)
+         {
+            newvar->array_sizes[n] = pp[n] + (1 - dim_base);
+         }
 
          /* assign memory for current position */
 
          /* Revised to CALLOC pass-thru call by JBV */
-         if ( ( newvar->array_pos = (int *) CALLOC( n_params, sizeof( int ), "bwb_dim" )) == NULL )
-            {
-#if PROG_ERRORS
-            sprintf( bwb_ebuf, "in line %d: Failed to find memory for array_pos for <%s>",
-               l->number, newvar->name );
-            bwb_error( bwb_ebuf );
-#else
-            bwb_error( err_getmem );
-#endif
-            return bwb_zline( l );
-            }
-
-         for ( n = 0; n < newvar->dimensions; ++n )
-            {
-            newvar->array_pos[ n ] = dim_base;
-            }
+         if ((newvar->array_pos = (int *) CALLOC(n_params, sizeof(int), "bwb_dim")) == NULL)
+         {
+            sprintf(bwb_ebuf, "in line %d: Failed to find memory for array_pos for <%s>",
+               l->number, newvar->name);
+            bwb_error(bwb_ebuf);
+            return bwb_zline(l);
+         }
+         for (n = 0; n < newvar->dimensions; ++n)
+         {
+            newvar->array_pos[n] = dim_base;
+         }
 
          /* calculate the array size */
+#define MAXINTSIZE      2147483647  /* this is a HACK */
 
-	 newvar->array_units = (size_t) MAXINTSIZE;	/* avoid error in dim_unit() */
-	 newvar->array_units = dim_unit( newvar, pp ) + 1;
+         newvar->array_units = (size_t) MAXINTSIZE;   /* avoid error in
+                            * dim_unit() */
+         newvar->array_units = dim_unit(newvar, pp) + 1;
 
-#if INTENSIVE_DEBUG
-         sprintf( bwb_ebuf, "in bwb_dim(): array memory requires <%ld> units",
-            (long) newvar->array_units );
-         bwb_debug( bwb_ebuf );
-#endif
 
          /* assign array memory */
 
-         switch( newvar->type )
+         switch (newvar->type)
+         {
+         case STRING:
+            /*------------------------------------------------------*/
+            /* memnum, not memstr, was used here --
+             * incorrect (JBV) */
+            /* Revised to CALLOC pass-thru call by JBV              */
+            /*------------------------------------------------------*/
+            if ((newvar->memstr = (bstring *)
+                 CALLOC(newvar->array_units, sizeof(bstring), "bwb_dim")) == NULL)
             {
-            case STRING:
-#if INTENSIVE_DEBUG
-               sprintf( bwb_ebuf, "in bwb_dim(): 1 STRING requires <%ld> bytes",
-                  (long) sizeof( bstring ));
-               bwb_debug( bwb_ebuf );
-               sprintf( bwb_ebuf, "in bwb_dim(): STRING array memory requires <%ld> bytes",
-        	  (long) ( newvar->array_units + 1 ) * sizeof( bstring ));
-               bwb_debug( bwb_ebuf );
-#endif
-               /*------------------------------------------------------*/
-               /* memnum, not memstr, was used here -- incorrect (JBV) */
-               /* Revised to CALLOC pass-thru call by JBV              */
-               /*------------------------------------------------------*/
-               if ( ( newvar->memstr = (bstring *)
-                  CALLOC( newvar->array_units, sizeof( bstring), "bwb_dim" )) == NULL )
-               {
-#if PROG_ERRORS
-                  sprintf( bwb_ebuf, "in line %d: Failed to find memory for array <%s>",
-                     l->number, newvar->name );
-                  bwb_error( bwb_ebuf );
-#else
-                  bwb_error( err_getmem );
-#endif
-                  return bwb_zline( l );
-                  }
-               break;
-            case NUMBER:
-#if INTENSIVE_DEBUG
-               sprintf( bwb_ebuf, "in bwb_dim(): 1 DOUBLE requires <%ld> bytes",
-                  (long) sizeof( double ));
-               bwb_debug( bwb_ebuf );
-               sprintf( bwb_ebuf, "in bwb_dim(): DOUBLE array memory requires <%ld> bytes",
-        	  (long) ( newvar->array_units + 1 ) * sizeof( double ));
-               bwb_debug( bwb_ebuf );
-#endif
-
-               /* Revised to CALLOC pass-thru call by JBV */
-               if ( ( np = (bnumber *)
-                  CALLOC( newvar->array_units, sizeof( bnumber ), "bwb_dim" )) == NULL )
-                  {
-#if PROG_ERRORS
-                  sprintf( bwb_ebuf, "in line %d: Failed to find memory for array <%s>",
-                  l->number, newvar->name );
-                  bwb_error( bwb_ebuf );
-#else
-                  bwb_error( err_getmem );
-#endif
-                  return bwb_zline( l );
-                  }
-	       newvar->memnum = np;
-	       break;
-	    default:
-#if PROG_ERRORS
-               sprintf( bwb_ebuf, "in line %d: New variable has unrecognized type.",
-                  l->number );
-               bwb_error( bwb_ebuf );
-#else
-               bwb_error( err_syntax );
-#endif
-               return bwb_zline( l );
+               sprintf(bwb_ebuf, "in line %d: Failed to find memory for array <%s>",
+                  l->number, newvar->name);
+               bwb_error(bwb_ebuf);
+               return bwb_zline(l);
             }
+            break;
+         case NUMBER:
 
-         }			/* end of conditional for new variable */
+            /* Revised to CALLOC pass-thru call by JBV */
+            if ((np = (BasicNumberType *)
+                 CALLOC(newvar->array_units, sizeof(BasicNumberType), "bwb_dim")) == NULL)
+            {
+               sprintf(bwb_ebuf, "in line %d: Failed to find memory for array <%s>",
+                  l->number, newvar->name);
+               bwb_error(bwb_ebuf);
+               return bwb_zline(l);
+            }
+            newvar->memnum = np;
+            break;
+         default:
+            sprintf(bwb_ebuf, "in line %d: New variable has unrecognized type.",
+               l->number);
+            bwb_error(bwb_ebuf);
+            return bwb_zline(l);
+         }
+
+      }     /* end of conditional for new variable */
 
       /* now check for end of string */
 
-      if ( l->buffer[ l->position ] == ')' )
+      if (l->buffer[l->position] == ')')
+      {
+         ++(l->position);
+      }
+      adv_ws(l->buffer, &(l->position));
+      if (l->buffer[l->position] == OptionCommentChar)
+      {
+         loop = FALSE;
+      }
+      else
+      {
+         switch (l->buffer[l->position])
          {
-         ++( l->position );
-         }
-      adv_ws( l->buffer, &( l->position ));
-      switch( l->buffer[ l->position ] )
-         {
-         case '\n':			/* end of line */
-         case '\r':
-         case ':':			/* end of line segment */
-         case '\0':			/* end of string */
+         case '\0':  /* end of string */
             loop = FALSE;
             break;
          case ',':
-            ++( l->position );
-            adv_ws( l->buffer, &( l->position ) );
+            ++(l->position);
+            adv_ws(l->buffer, &(l->position));
             loop = TRUE;
             break;
          default:
-#if PROG_ERRORS
-            sprintf( bwb_ebuf, "in bwb_dim(): unexpected end of string, buf <%s>",
-               &( l->buffer[ l->position ] ) );
-            bwb_error( bwb_ebuf );
-#else
-            bwb_error( err_syntax );
-#endif
             loop = FALSE;
+            sprintf(bwb_ebuf, "in bwb_dim(): unexpected end of string, buf <%s>",
+               &(l->buffer[l->position]));
+            bwb_error(bwb_ebuf);
+            return bwb_zline(l);
             break;
          }
+      }
 
-      }				/* end of loop through variables */
+   }        /* end of loop through variables */
 
    /* return */
 
-   return bwb_zline( l );
+   return bwb_zline(l);
 
+}
+
+int
+DetermineNumberOfDimensions(char *expression, int LastPosition)
+{
+   /* MUST be a dynamically created array, READ A(10) = ... ' variable
+    * "A" has NOT been dimensioned */
+   int             ParenLevel = 0;
+   int             NumDimensions = 1;
+   int             Loop = TRUE;
+
+   bwx_DEBUG(__FUNCTION__);
+
+   while (Loop == TRUE)
+   {
+      char            C;
+      C = expression[LastPosition];
+      /* check the current character */
+
+
+      switch (C)
+      {
+      case '\0':
+         return 0;
+         break;
+
+      case '=':
+         Loop = FALSE;
+         break;
+
+      case '(':
+         LastPosition++;
+         ParenLevel++;
+         break;
+      case ')':
+         LastPosition++;
+         ParenLevel--;
+         if (ParenLevel == 0)
+         {
+            Loop = FALSE;
+         }
+         break;
+      case ',':
+         LastPosition++;
+         if (ParenLevel == 1)
+         {
+            NumDimensions++;
+         }
+         break;
+      case '\"':  /* embedded string constant */
+         LastPosition++;
+         while ((expression[LastPosition] != '\"')
+                && (expression[LastPosition] != '\0'))
+         {
+            LastPosition++;
+         }
+         if (expression[LastPosition] == '\"')
+         {
+            LastPosition++;
+         }
+         break;
+      default:
+         LastPosition++;
+      }
    }
 
+   return NumDimensions;
+}
+
+int
+ImplicitDim(char *tbuf, int n_params)
+{
+   /* This is only for ECMA-55.  ECMA-116 requires arrays to be
+    * dimensioned prior to being used. */
+
+
+   register int    n;   /* number of parameters */
+   BasicNumberType *np;
+   static int     *pp;  /* pointer to parameter values */
+   struct bwb_variable *newvar;
+   static int      params[MAX_DIMS];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   if (OptionFlags & OPTION_STRICT_ON)
+   {
+      /* Implicit DIM is not allowed */
+      return FALSE;
+   }
+   for (n = 0; n < MAX_DIMS; n++)
+   {
+      params[n] = 10;   /* UBOUND() = 10, LBOUND() = OPTION BASE */
+   }
+   pp = &params[0];
+
+   /* get the new variable */
+
+   newvar = var_find(tbuf);
+
+   /* note that DIM has been (implicitly) called */
+
+   dimmed = TRUE;
+
+   newvar->dimensions = n_params;
+
+
+
+   /* assign memory for parameters */
+
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ((newvar->array_sizes = (int *) CALLOC(n_params, sizeof(int), "bwb_dim")) == NULL)
+   {
+      bwb_error(err_getmem);
+      return FALSE;
+   }
+   for (n = 0; n < newvar->dimensions; ++n)
+   {
+      newvar->array_sizes[n] = pp[n] + (1 - dim_base);
+   }
+
+   /* assign memory for current position */
+
+   /* Revised to CALLOC pass-thru call by JBV */
+   if ((newvar->array_pos = (int *) CALLOC(n_params, sizeof(int), "bwb_dim")) == NULL)
+   {
+      bwb_error(err_getmem);
+      return FALSE;
+   }
+   for (n = 0; n < newvar->dimensions; ++n)
+   {
+      newvar->array_pos[n] = dim_base;
+   }
+
+   /* calculate the array size */
+#define MAXINTSIZE      2147483647  /* this is a HACK */
+   newvar->array_units = (size_t) MAXINTSIZE;   /* avoid error in
+                      * dim_unit() */
+   newvar->array_units = dim_unit(newvar, pp) + 1;
+
+   /* assign array memory */
+
+   switch (newvar->type)
+   {
+   case STRING:
+      /*------------------------------------------------------*/
+      /* memnum, not memstr, was used here -- incorrect (JBV) */
+      /* Revised to CALLOC pass-thru call by JBV              */
+      /*------------------------------------------------------*/
+      if ((newvar->memstr = (bstring *)
+           CALLOC(newvar->array_units, sizeof(bstring), "bwb_dim")) == NULL)
+      {
+         bwb_error(err_getmem);
+         return FALSE;
+      }
+      break;
+   case NUMBER:
+
+      /* Revised to CALLOC pass-thru call by JBV */
+      if ((np = (BasicNumberType *)
+           CALLOC(newvar->array_units, sizeof(BasicNumberType), "bwb_dim")) == NULL)
+      {
+         bwb_error(err_getmem);
+         return FALSE;
+      }
+      newvar->memnum = np;
+      break;
+   default:
+      bwb_error(err_syntax);
+      return FALSE;
+   }
+
+   return TRUE;
+}
+
+
+
+
 /***************************************************************
-
+  
         FUNCTION:       dim_unit()
-
+  
         DESCRIPTION:    This function calculates the unit
-        		position for an array.
-
+            position for an array.
+  
 ***************************************************************/
 
-#if ANSI_C
-static size_t
-dim_unit( struct bwb_variable *v, int *pp )
-#else
-static size_t
-dim_unit( v, pp )
-   struct bwb_variable *v;
-   int *pp;
-#endif
-   {
-   size_t r;
-   size_t b;
-   register int n;
+static          size_t
+dim_unit(struct bwb_variable * v, int *pp)
+{
+   size_t          r;
+   size_t          b;
+   register int    n;
+
+   bwx_DEBUG(__FUNCTION__);
 
    /* Calculate and return the address of the dimensioned array */
 
+   /* Check EACH dimension for out-of-bounds, AND check correct number
+    * of dimensions.  NBS_P076_0250 errors correctly. */
+
    b = 1;
    r = 0;
-   for ( n = 0; n < v->dimensions; ++n )
+   for (n = 0; n < v->dimensions; ++n)
+   {
+
+      /* newvar->array_sizes[ n ] = pp[ n ] + ( 1 - dim_base ); */
+      if ((pp[n] < dim_base) || ((pp[n] + (1 - dim_base)) > v->array_sizes[n]))
       {
-      r += b * ( pp[ n ] - dim_base );
-      b *= v->array_sizes[ n ];
+         sprintf(bwb_ebuf, "SUBSCRIPT OUT OF RANGE %s(%d)", v->name, pp[n]);
+         bwb_error(bwb_ebuf);
+         return 0;
       }
-
-#if INTENSIVE_DEBUG
-   for ( n = 0; n < v->dimensions; ++n )
-      {
-      sprintf( bwb_ebuf,
-         "in dim_unit(): variable <%s> pos <%d> val <%d>.",
-         v->name, n, pp[ n ] );
-      bwb_debug( bwb_ebuf );
-      }
-   sprintf( bwb_ebuf, "in dim_unit(): return unit: <%ld>", (long) r );
-   bwb_debug( bwb_ebuf );
-#endif
-
-   if ( r > v->array_units )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in dim_unit(): unit value <%ld> exceeds array units <%ld>",
-         r, v->array_units );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_valoorange );
-#endif
-      return 0;
-      }
-
-   return r;
-
+      r += b * (pp[n] - dim_base);
+      b *= v->array_sizes[n];
    }
 
+   if (r > v->array_units)
+   {
+
+
+
+      sprintf(bwb_ebuf, "SUBSCRIPT OUT OF RANGE %s(%ld)", v->name, (long) r);
+      bwb_error(bwb_ebuf);
+
+      return 0;
+   }
+   return r;
+
+}
+
 /***************************************************************
-
+  
         FUNCTION:       dim_getparams()
-
-	DESCRIPTION:    This function reads a string in <buffer>
+  
+   DESCRIPTION:    This function reads a string in <buffer>
                         beginning at position <pos> and finds a
                         list of parameters surrounded by paren-
                         theses, returning in <n_params> the number
                         of parameters found, and returning in
                         <pp> an array of n_params integers giving
                         the sizes for each dimension of the array.
-
+  
 ***************************************************************/
 
-#if ANSI_C
 int
-dim_getparams( char *buffer, int *pos, int *n_params, int **pp )
-#else
-int
-dim_getparams( buffer, pos, n_params, pp )
-   char *buffer;
-   int *pos;
-   int *n_params;
-   int **pp;
-#endif
-   {
-   int loop;
-   static int params[ MAX_DIMS ];
-   int x_pos, s_pos;
+dim_getparams_FIXED(char *buffer, int *pos, int params[ /* MAX_DIMS */ ])
+{
+   int             n_params;
+   int             loop;
+   int             x_pos, s_pos;
    struct exp_ese *e;
-   char tbuf[ MAXSTRINGSIZE + 1 ];
-   int paren_level, quote_level; /* JBV 1/97 */
-#if INTENSIVE_DEBUG
-   register int n;
-#endif
+   char            tbuf[BasicStringLengthMax + 1];
+   int             paren_level, quote_level; /* JBV 1/97 */
+
+   bwx_DEBUG(__FUNCTION__);
 
    /* set initial values */
 
-   *n_params = 0;
-#if OLDSTUFF
-   paren_found = FALSE;
-#endif
+   n_params = 0;
 
    /* advance and check for undimensioned variable */
 
-   adv_ws( buffer, pos );
-   if ( buffer[ *pos ] != '(' )
-      {
-      *n_params = 1;
-      params[ 0 ] = dim_base;
-      *pp = params;
-      return TRUE;
-      }
+   adv_ws(buffer, pos);
+   if (buffer[*pos] != '(')
+   {
+      n_params = 1;
+      params[0] = dim_base;
+      return n_params;
+   }
    else
-      {
+   {
       ++(*pos);
-      }
+   }
 
    /* Variable has DIMensions: Find each parameter */
 
    s_pos = 0;
-   tbuf[ 0 ] = '\0';
+   tbuf[0] = '\0';
    loop = TRUE;
-   paren_level = 1; /* JBV 1/97 */
-   quote_level = 0; /* JBV 1/97 */
-   while( loop == TRUE )
+   paren_level = 1;  /* JBV 1/97 */
+   quote_level = 0;  /* JBV 1/97 */
+   while (loop == TRUE)
+   {
+      switch (buffer[*pos])
       {
-      switch( buffer[ *pos ] )
+      case ')':   /* end of parameter list */
+         /*-----------------------------------------------------*/
+         /* paren_level and quote_level check added by JBV
+          * 1/97 */
+         /*-----------------------------------------------------*/
+         if (quote_level == 0)
+            --paren_level;
+         if (paren_level != 0 || quote_level != 0) /* Still not done? */
          {
-         case ')':                      /* end of parameter list */
-            /*-----------------------------------------------------*/
-            /* paren_level and quote_level check added by JBV 1/97 */
-            /*-----------------------------------------------------*/
-            if ( quote_level == 0 ) --paren_level;
-            if ( paren_level != 0 || quote_level != 0 ) /* Still not done? */
-            {
-            tbuf[ s_pos ] = buffer[ *pos ];
+            tbuf[s_pos] = buffer[*pos];
             ++(*pos);
             ++s_pos;
-            tbuf[ s_pos ] = '\0';
-            break;
-            }
-
-            x_pos = 0;
-            if ( tbuf[ 0 ] == '\0' )
-               {
-               params[ *n_params ] = DEF_SUBSCRIPT;
-               }
-            else
-               {
-#if INTENSIVE_DEBUG
-               sprintf( bwb_ebuf, "in dim_getparams(): call bwb_exp() for last element" );
-               bwb_debug( bwb_ebuf );
-#endif
-               e = bwb_exp( tbuf, FALSE, &x_pos );
-#if INTENSIVE_DEBUG
-               sprintf( bwb_ebuf, "in dim_getparams(): return from bwb_exp() for last element" );
-               bwb_debug( bwb_ebuf );
-#endif
-               params[ *n_params ] = (int) exp_getnval( e );
-               }
-            ++(*n_params);
-            loop = FALSE;
-            ++( *pos );
-            break;
-
-         case ',':                      /* end of a parameter */
-            /*-----------------------------------------------------*/
-            /* paren_level and quote_level check added by JBV 1/97 */
-            /*-----------------------------------------------------*/
-            if ( paren_level != 1 || quote_level != 0 ) /* Still not done? */
-            {
-            tbuf[ s_pos ] = buffer[ *pos ];
-            ++(*pos);
-            ++s_pos;
-            tbuf[ s_pos ] = '\0';
-            break;
-            }
-
-            x_pos = 0;
-            if ( tbuf[ 0 ] == '\0' )
-               {
-               params[ *n_params ] = DEF_SUBSCRIPT;
-               }
-            else
-               {
-#if INTENSIVE_DEBUG
-               sprintf( bwb_ebuf, "in dim_getparams(): call bwb_exp() for element (not last)" );
-               bwb_debug( bwb_ebuf );
-#endif
-               e = bwb_exp( tbuf, FALSE, &x_pos );
-               params[ *n_params ] = (int) exp_getnval( e );
-               }
-            ++(*n_params);
-            tbuf[ 0 ] = '\0';
-            ++(*pos);
-            s_pos = 0;
-            break;
-
-         case ' ':                      /* whitespace -- skip */
-         case '\t':
-            ++(*pos);
-            break;
-
-         default:
-            if( buffer[ *pos ] == '(' && quote_level == 0 )
-               ++paren_level; /* JBV 1/97 */
-            if( buffer[ *pos ] == (char) 34 )
-            {
-               if (quote_level == 0) quote_level = 1;
-               else quote_level = 0;
-            }
-            tbuf[ s_pos ] = buffer[ *pos ];
-            ++(*pos);
-            ++s_pos;
-            tbuf[ s_pos ] = '\0';
+            tbuf[s_pos] = '\0';
             break;
          }
+         x_pos = 0;
+         if (tbuf[0] == '\0')
+         {
+            params[n_params] = DEF_SUBSCRIPT;
+         }
+         else
+         {
+
+
+
+
+
+            e = bwb_exp(tbuf, FALSE, &x_pos);
+            if (ERROR_PENDING)
+            {
+               return 0;
+            }
+            /* Subscripts are rounded */
+            params[n_params] = exp_getival(e);
+
+
+
+
+         }
+         n_params++;
+         loop = FALSE;
+         ++(*pos);
+         break;
+
+      case ',':   /* end of a parameter */
+         /*-----------------------------------------------------*/
+         /* paren_level and quote_level check added by JBV
+          * 1/97 */
+         /*-----------------------------------------------------*/
+         if (paren_level != 1 || quote_level != 0) /* Still not done? */
+         {
+            tbuf[s_pos] = buffer[*pos];
+            ++(*pos);
+            ++s_pos;
+            tbuf[s_pos] = '\0';
+            break;
+         }
+         x_pos = 0;
+         if (tbuf[0] == '\0')
+         {
+            params[n_params] = DEF_SUBSCRIPT;
+         }
+         else
+         {
+
+
+            e = bwb_exp(tbuf, FALSE, &x_pos);
+            if (ERROR_PENDING)
+            {
+               return 0;
+            }
+            /* Subscripts are rounded */
+            params[n_params] = exp_getival(e);
+
+
+         }
+         n_params++;
+         tbuf[0] = '\0';
+         ++(*pos);
+         s_pos = 0;
+         break;
+
+      case ' ':   /* whitespace -- skip */
+         ++(*pos);
+         break;
+
+      default:
+         if (buffer[*pos] == '(' && quote_level == 0)
+            ++paren_level; /* JBV 1/97 */
+         if (buffer[*pos] == (char) 34)
+         {
+            if (quote_level == 0)
+               quote_level = 1;
+            else
+               quote_level = 0;
+         }
+         tbuf[s_pos] = buffer[*pos];
+         ++(*pos);
+         ++s_pos;
+         tbuf[s_pos] = '\0';
+         break;
       }
 
-#if INTENSIVE_DEBUG
-   for ( n = 0; n < *n_params; ++n )
+      if (n_params >= MAX_DIMS)
       {
-      sprintf( bwb_ebuf, "in dim_getparams(): Parameter <%d>: <%d>",
-         n, params[ n ] );
-      bwb_debug( bwb_ebuf );
+         loop = FALSE;
       }
-#endif
+   }
+
+
+   /* return params stack */
+
+
+
+
+
+
+   return n_params;
+
+
+}
+
+
+
+
+
+int
+dim_getparams(char *buffer, int *pos, int *n_params, int **pp)
+{
+   int             loop;
+   static int      params[MAX_DIMS];   /* can NOT be called via
+                   * bwb_exp() */
+   int             x_pos, s_pos;
+   struct exp_ese *e;
+   char            tbuf[BasicStringLengthMax + 1];
+   int             paren_level, quote_level; /* JBV 1/97 */
+
+   bwx_DEBUG(__FUNCTION__);
+
+   /* set initial values */
+
+   *n_params = 0;
+
+   /* advance and check for undimensioned variable */
+
+   adv_ws(buffer, pos);
+   if (buffer[*pos] != '(')
+   {
+      *n_params = 1;
+      params[0] = dim_base;
+      *pp = params;
+      return TRUE;
+   }
+   else
+   {
+      ++(*pos);
+   }
+
+   /* Variable has DIMensions: Find each parameter */
+
+   s_pos = 0;
+   tbuf[0] = '\0';
+   loop = TRUE;
+   paren_level = 1;  /* JBV 1/97 */
+   quote_level = 0;  /* JBV 1/97 */
+   while (loop == TRUE)
+   {
+      switch (buffer[*pos])
+      {
+      case ')':   /* end of parameter list */
+         /*-----------------------------------------------------*/
+         /* paren_level and quote_level check added by JBV
+          * 1/97 */
+         /*-----------------------------------------------------*/
+         if (quote_level == 0)
+            --paren_level;
+         if (paren_level != 0 || quote_level != 0) /* Still not done? */
+         {
+            tbuf[s_pos] = buffer[*pos];
+            ++(*pos);
+            ++s_pos;
+            tbuf[s_pos] = '\0';
+            break;
+         }
+         x_pos = 0;
+         if (tbuf[0] == '\0')
+         {
+            params[*n_params] = DEF_SUBSCRIPT;
+         }
+         else
+         {
+
+
+
+            e = bwb_exp(tbuf, FALSE, &x_pos);
+            if (ERROR_PENDING)
+            {
+               return FALSE;
+            }
+            /* Subscripts are rounded */
+            params[*n_params] = exp_getival(e);
+
+
+
+
+         }
+         ++(*n_params);
+         loop = FALSE;
+         ++(*pos);
+         break;
+
+      case ',':   /* end of a parameter */
+         /*-----------------------------------------------------*/
+         /* paren_level and quote_level check added by JBV
+          * 1/97 */
+         /*-----------------------------------------------------*/
+         if (paren_level != 1 || quote_level != 0) /* Still not done? */
+         {
+            tbuf[s_pos] = buffer[*pos];
+            ++(*pos);
+            ++s_pos;
+            tbuf[s_pos] = '\0';
+            break;
+         }
+         x_pos = 0;
+         if (tbuf[0] == '\0')
+         {
+            params[*n_params] = DEF_SUBSCRIPT;
+         }
+         else
+         {
+
+
+            e = bwb_exp(tbuf, FALSE, &x_pos);
+            if (ERROR_PENDING)
+            {
+               return FALSE;
+            }
+            /* Subscripts are rounded */
+            params[*n_params] = exp_getival(e);
+
+
+         }
+         ++(*n_params);
+         tbuf[0] = '\0';
+         ++(*pos);
+         s_pos = 0;
+         break;
+
+      case ' ':   /* whitespace -- skip */
+         ++(*pos);
+         break;
+
+      default:
+         if (buffer[*pos] == '(' && quote_level == 0)
+            ++paren_level; /* JBV 1/97 */
+         if (buffer[*pos] == (char) 34)
+         {
+            if (quote_level == 0)
+               quote_level = 1;
+            else
+               quote_level = 0;
+         }
+         tbuf[s_pos] = buffer[*pos];
+         ++(*pos);
+         ++s_pos;
+         tbuf[s_pos] = '\0';
+         break;
+      }
+   }
+
 
    /* return params stack */
 
    *pp = params;
 
+
+
+
+
    return TRUE;
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       bwb_option()
-
+  
         DESCRIPTION:    This function implements the BASIC OPTION
                         BASE statement, designating the base (1 or
                         0) for addressing DIM arrays.
-
-	SYNTAX:		OPTION BASE number
-
+  
+   SYNTAX:     OPTION BASE number
+  
 ***************************************************************/
 
-#if ANSI_C
-struct bwb_line *
-bwb_option( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_option( l )
-   struct bwb_line *l;
-#endif
-   {
-   register int n;
-   int newval;
-   struct exp_ese *e;
+void
+OptionBaseHelper(int newval, struct bwb_line * l   /* just for error
+           messages */ )
+{
    struct bwb_variable *current;
-   char tbuf[ MAXSTRINGSIZE ];
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_option(): entered function." );
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
+
+   /* OPTION BASE ... */
 
    /* If DIM has already been called, do not allow OPTION BASE */
 
-   if ( dimmed != FALSE )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "at line %d: OPTION BASE must be called before DIM.",
-         l->number );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_obdim );
-#endif
-      return bwb_zline( l );
-      }
-
-   /* capitalize first element in tbuf */
-
-   adv_element( l->buffer, &( l->position ), tbuf );
-   for ( n = 0; tbuf[ n ] != '\0'; ++n )
-      {
-      if ( islower( tbuf[ n ] ) != FALSE )
-         {
-         tbuf[ n ] = (char) toupper( tbuf[ n ] );
-         }
-      }
-
-   /* check for BASE statement */
-
-   if ( strncmp( tbuf, "BASE", (size_t) 4 ) != 0 )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "at line %d: Unknown statement <%s> following OPTION.",
-         l->number, tbuf );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_syntax );
-#endif
-      return bwb_zline( l );
-      }
-
-   /* Get new value from argument. */
-
-   adv_ws( l->buffer, &( l->position ) );
-   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
-   newval = (int) exp_getnval( e );
-
+   if (dimmed != FALSE)
+   {
+      sprintf(bwb_ebuf, "at line %d: OPTION BASE must be called before DIM.",
+         l->number);
+      bwb_error(bwb_ebuf);
+      return;
+   }
    /* Test the new value. */
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in bwb_option(): New value received is <%d>.", newval );
-   bwb_debug( bwb_ebuf );
-#endif
 
-   if ( ( newval < 0 ) || ( newval > 1 ) )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "at line %d: value for OPTION BASE must be 1 or 0.",
-         l->number );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_valoorange );
-#endif
-      return bwb_zline( l );
-      }
-
+   if ((newval < 0) || (newval > 1))
+   {
+      sprintf(bwb_ebuf, "at line %d: value for OPTION BASE must be 1 or 0.",
+         l->number);
+      bwb_error(bwb_ebuf);
+      return;
+   }
    /* Set the new value. */
 
    dim_base = newval;
 
    /* run through the variable list and change any positions that had
-      set 0 before OPTION BASE was run */
+    * set 0 before OPTION BASE was run */
 
-   for ( current = CURTASK var_start.next; current != &CURTASK var_end; current = current->next )
-      {
-      current->array_pos[ 0 ] = dim_base;
-      }
-
-   /* Return. */
-
-   return bwb_zline( l );
-
+   for (current = CURTASK var_start.next; current != &CURTASK var_end; current = current->next)
+   {
+      current->array_pos[0] = dim_base;
    }
 
+
+}
+
+void
+OptionVersionSet(int i)
+{
+   bwx_DEBUG(__FUNCTION__);
+
+   OptionVersion = bwb_vertable[i].OptionVersionBitmask;
+   OptionFlags = bwb_vertable[i].OptionFlags;
+   OptionCommentChar = bwb_vertable[i].OptionCommentChar;
+   OptionStatementChar = bwb_vertable[i].OptionStatementChar;
+   strcpy(OptionDateFormat,bwb_vertable[i].OptionDateFormat);
+   strcpy(OptionTimeFormat,bwb_vertable[i].OptionTimeFormat);
+
+}
+
+struct bwb_line *
+bwb_OPTION(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION  ... */
+   bwb_error(err_syntax);
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ANGLE_DEGREES(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ANGLE DEGREES */
+   OptionFlags |= OPTION_ANGLE_DEGREES;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ANGLE_RADIANS(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ANGLE RADIANS */
+   OptionFlags &= ~OPTION_ANGLE_DEGREES;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ARITHMETIC_DECIMAL(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ARITHMETIC DECIMAL */
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ARITHMETIC_FIXED(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ARITHMETIC FIXED */
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ARITHMETIC_NATIVE(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ARITHMETIC NATIVE */
+   return bwb_zline(l);
+}
+
+
+struct bwb_line *
+bwb_OPTION_BASE_1(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION BASE 1 */
+   OptionFlags |= OPTION_BASE_ONE;
+   OptionBaseHelper(1, l);
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_BASE_0(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION BASE 0 */
+   OptionFlags &= ~OPTION_BASE_ONE;
+   OptionBaseHelper(0, l);
+   return bwb_zline(l);
+}
+
+
+struct bwb_line *
+bwb_OPTION_BUGS_ON(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION BUGS ON */
+   OptionFlags |= OPTION_BUGS_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_BUGS_OFF(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION BUGS OFF */
+   OptionFlags &= ~OPTION_BUGS_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_COMMENT(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION COMMENT char */
+   OptionCommentChar = l->buffer[l->position];
+   if( OptionCommentChar != '\0' )
+   {
+      l->position++;
+   }
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_COMPARE_BINARY(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION COMPARE BINARY */
+   OptionFlags &= ~OPTION_COMPARE_TEXT;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_COMPARE_DATABASE(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION COMPARE DATABASE */
+   OptionFlags |= OPTION_COMPARE_TEXT;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_COMPARE_TEXT(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION COMPARE TEXT */
+   OptionFlags |= OPTION_COMPARE_TEXT;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_COVERAGE_ON(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION COVERAGE ON */
+   OptionFlags |= OPTION_COVERAGE_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_COVERAGE_OFF(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION COVERAGE OFF */
+   OptionFlags &= ~OPTION_COVERAGE_ON;
+   return bwb_zline(l);
+}
+
+static void
+StripQuotes( char * tbuf )
+{
+   /* Remove Leading & Trailing Quotes */
+   if( tbuf[0] == '"' )
+   {
+      char * Q;
+      strcpy( tbuf, &(tbuf[1]) );
+      Q = strchr( tbuf, '"' );
+      if( Q != NULL )
+      {
+         *Q = '\0';
+      }
+   }
+}
+
+struct bwb_line *
+bwb_OPTION_DATE(struct bwb_line * l)
+{
+   /* OPTION DATE format */
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+   /* Get FORMAT */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   tbuf[ 80 ] = '\0';
+   strcpy( OptionDateFormat, tbuf ); 
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_DISABLE_COMMAND(struct bwb_line * l)
+{
+   /* OPTION DISABLE COMMAND ... */
+   int             IsFound;
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   IsFound = FALSE;
+   /* Get COMMAND */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   {
+      /* Name */
+      int i;
+      for( i = 0; i < NUM_COMMANDS; i++ )
+      {
+          if( strcasecmp( tbuf, bwb_cmdtable[i].name ) == 0 )
+          {
+              /* FOUND */
+              /* DISABLE COMMAND */
+              bwb_cmdtable[i].OptionVersionBitmask &= ~OptionVersion;
+              IsFound = TRUE;
+          }
+      }
+   }
+   if( IsFound == FALSE )
+   {
+       /* display warning message */
+       sprintf( bwb_ebuf, "IGNORED: %s", l->buffer);      
+       puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
+
+struct bwb_line *
+bwb_OPTION_DISABLE_FUNCTION(struct bwb_line * l)
+{
+   /* OPTION DISABLE FUNCTION ... */
+   int             IsFound;
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   IsFound = FALSE;
+   /* Get FUNCTION */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   {
+      /* Name */
+      int i;
+      for( i = 0; i < NUM_FUNCTIONS; i++ )
+      {
+          if( strcasecmp( tbuf, bwb_prefuncs[i].Name ) == 0 )
+          {
+              /* FOUND */
+              /* DISABLE FUNCTION */
+              bwb_prefuncs[i].OptionVersionBitmask &= ~OptionVersion;
+              IsFound = TRUE;
+          }
+      }
+   }
+   if( IsFound == FALSE )
+   {
+       /* display warning message */
+       sprintf( bwb_ebuf, "IGNORED: %s", l->buffer);      
+       puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_DISABLE_OPERATOR(struct bwb_line * l)
+{
+   /* OPTION DISABLE OPERATOR ... */
+   int             IsFound;
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   IsFound = FALSE;
+   /* Get OPERATOR */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   {
+      /* Name */
+      int i;
+      for( i = 0; i < NUM_OPERATORS; i++ )
+      {
+          if( strcasecmp( tbuf, exp_ops[i].symbol ) == 0 )
+          {
+              /* FOUND */
+              /* DISABLE OPERATOR */
+              exp_ops[i].OptionVersionBitmask &= ~OptionVersion;
+              IsFound = TRUE;
+          }
+      }
+   }
+   if( IsFound == FALSE )
+   {
+       /* display warning message */
+       sprintf( bwb_ebuf, "IGNORED: %s", l->buffer);      
+       puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
+
+
+struct bwb_line *
+bwb_OPTION_ENABLE_COMMAND(struct bwb_line * l)
+{
+   /* OPTION ENABLE COMMAND ... */
+   int             IsFound;
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   IsFound = FALSE;
+   /* Get COMMAND */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   {
+      /* Name */
+      int i;
+      for( i = 0; i < NUM_COMMANDS; i++ )
+      {
+          if( strcasecmp( tbuf, bwb_cmdtable[i].name ) == 0 )
+          {
+              /* FOUND */
+              /* ENABLE COMMAND */
+              bwb_cmdtable[i].OptionVersionBitmask |= OptionVersion;
+              IsFound = TRUE;
+          }
+      }
+   }
+   if( IsFound == FALSE )
+   {
+       /* display warning message */
+       sprintf( bwb_ebuf, "IGNORED: %s", l->buffer);      
+       puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
+
+struct bwb_line *
+bwb_OPTION_ENABLE_FUNCTION(struct bwb_line * l)
+{
+   /* OPTION ENABLE FUNCTION ... */
+   int             IsFound;
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   IsFound = FALSE;
+   /* Get FUNCTION */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   {
+      /* Name */
+      int i;
+      for( i = 0; i < NUM_FUNCTIONS; i++ )
+      {
+          if( strcasecmp( tbuf, bwb_prefuncs[i].Name ) == 0 )
+          {
+              /* FOUND */
+              /* ENABLE FUNCTION */
+              bwb_prefuncs[i].OptionVersionBitmask |= OptionVersion;
+              IsFound = TRUE;
+          }
+      }
+   }
+   if( IsFound == FALSE )
+   {
+       /* display warning message */
+       sprintf( bwb_ebuf, "IGNORED: %s", l->buffer);      
+       puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ENABLE_OPERATOR(struct bwb_line * l)
+{
+   /* OPTION ENABLE OPERATOR ... */
+   int             IsFound;
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+
+   IsFound = FALSE;
+   /* Get OPERATOR */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   {
+      /* Name */
+      int i;
+      for( i = 0; i < NUM_OPERATORS; i++ )
+      {
+          if( strcasecmp( tbuf, exp_ops[i].symbol ) == 0 )
+          {
+              /* FOUND */
+              /* ENABLE OPERATOR */
+              exp_ops[i].OptionVersionBitmask |= OptionVersion;
+              IsFound = TRUE;
+          }
+      }
+   }
+   if( IsFound == FALSE )
+   {
+       /* display warning message */
+       sprintf( bwb_ebuf, "IGNORED: %s", l->buffer);      
+       puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ERROR_GOSUB(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ERROR GOSUB */
+   OptionFlags |= OPTION_ERROR_GOSUB;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_ERROR_GOTO(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION ERROR GOTO */
+   OptionFlags &= ~OPTION_ERROR_GOSUB;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_INDENT(struct bwb_line * l)
+{
+   /* OPTION VERSION ... */
+   char            tbuf[BasicStringLengthMax + 1];
+   struct exp_ese *e;
+   int             pos;
+
+   /* Get starting position (expression) */
+   adv_element(l->buffer, &(l->position), tbuf);
+   pos = 0;
+   e = bwb_exp(tbuf, FALSE, &pos);
+   if (ERROR_PENDING)
+   {
+      return bwb_zline(l);
+   }
+   if (e->type == STRING)
+   {
+      sprintf(bwb_ebuf, "Type Mismatch");
+      bwb_error(bwb_ebuf);
+      return bwb_zline(l);
+   }
+   OptionIndentValue = exp_getival(e);
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_LABELS_ON(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION LABELS ON */
+   OptionFlags |= OPTION_LABELS_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_LABELS_OFF(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION LABELS OFF */
+   OptionFlags &= ~OPTION_LABELS_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_STATEMENT(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION STATEMENT char */
+   OptionStatementChar = l->buffer[l->position];
+   if( OptionStatementChar != '\0' )
+   {
+      l->position++;
+   }
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_STRICT_ON(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION STRICT ON */
+   OptionFlags |= OPTION_STRICT_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_STRICT_OFF(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION STRICT OFF */
+   OptionFlags &= ~OPTION_STRICT_ON;
+   return bwb_zline(l);
+}
+
+
+struct bwb_line *
+bwb_OPTION_TERMINAL_NONE(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION TERMINAL NONE */
+   OptionTerminalType = C_OPTION_TERMINAL_NONE;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_TERMINAL_ADM_3A(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION TERMINAL ADM-3A */
+   OptionTerminalType = C_OPTION_TERMINAL_ADM_3A;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_TERMINAL_ANSI(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION TERMINAL ANSI */
+   OptionTerminalType = C_OPTION_TERMINAL_ANSI;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_TIME(struct bwb_line * l)
+{
+   /* OPTION TIME format */
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
+   /* Get FORMAT */
+   adv_element(l->buffer, &(l->position), tbuf);
+   StripQuotes( tbuf );
+   tbuf[80] = '\0';
+   strcpy( OptionTimeFormat, tbuf );
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_TRACE_ON(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION TRACE ON */
+   OptionFlags |= OPTION_TRACE_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_TRACE_OFF(struct bwb_line * l)
+{
+   bwx_DEBUG(__FUNCTION__);
+   /* OPTION TRACE OFF */
+   OptionFlags &= ~OPTION_TRACE_ON;
+   return bwb_zline(l);
+}
+
+struct bwb_line *
+bwb_OPTION_VERSION(struct bwb_line * l)
+{
+   /* OPTION VERSION ... */
+   char            tbuf[BasicStringLengthMax + 1];
+   int             i;
+
+
+   bwx_DEBUG(__FUNCTION__);
+
+
+
+   adv_element(l->buffer, &(l->position), tbuf);
+   for (i = 0; i < NUM_VERSIONS; i++)
+   {
+      if (strcasecmp(tbuf, bwb_vertable[i].Name) == 0)
+      {
+         /* FOUND */
+         OptionVersionSet(i);
+         return bwb_zline(l);
+      }
+   }
+   /* NOT FOUND */
+   sprintf(bwb_ebuf, "OPTION VERSION %s IS INVALID.  VALID CHOICES ARE:", tbuf);
+   puts(bwb_ebuf);
+   for (i = 0; i < NUM_VERSIONS; i++)
+   {
+      sprintf(bwb_ebuf, "OPTION VERSION %s ' %s",
+         bwb_vertable[i].Name, bwb_vertable[i].Description);
+      puts(bwb_ebuf);
+   }
+   return bwb_zline(l);
+}
+
 /***************************************************************
-
+  
         FUNCTION:       var_findnval()
-
+  
         DESCRIPTION:    This function returns the address of
                         the number for the variable <v>.  If
                         <v> is a dimensioned array, the address
-                        returned is for the double at the
+                        returned is for the BasicNumberType at the
                         position indicated by the integer array
                         <pp>.
-
+  
 ***************************************************************/
 
 
-#if ANSI_C
-bnumber *
-var_findnval( struct bwb_variable *v, int *pp )
-#else
-bnumber *
-var_findnval( v, pp )
-   struct bwb_variable *v;
-   int *pp;
-#endif
-   {
-   size_t offset;
-   bnumber *p;
-#if INTENSIVE_DEBUG
-   register int n;
-#endif
+BasicNumberType *
+var_findnval(struct bwb_variable * v, int *pp)
+{
+   size_t          offset;
+   BasicNumberType *p;
 
+   bwx_DEBUG(__FUNCTION__);
    /* Check for appropriate type */
 
-   if ( v->type != NUMBER )
-      {
-#if PROG_ERRORS
-      sprintf ( bwb_ebuf, "in var_findnval(): Variable <%s> is not a number.",
-         v->name );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_mismatch );
-#endif
+   if (v->type != NUMBER)
+   {
+      sprintf(bwb_ebuf, "in var_findnval(): Variable <%s> is not a number.",
+         v->name);
+      bwb_error(bwb_ebuf);
       return NULL;
-      }
-
+   }
    /* Check subscripts */
 
-   if ( dim_check( v, pp ) == FALSE )
-      {
+   if (dim_check(v, pp) == FALSE)
+   {
       return NULL;
-      }
-
+   }
    /* Calculate and return the address of the dimensioned array */
 
-   offset = dim_unit( v, pp );
+   offset = dim_unit(v, pp);
 
-#if INTENSIVE_DEBUG
-   for ( n = 0; n < v->dimensions; ++n )
-      {
-      sprintf( bwb_ebuf,
-         "in var_findnval(): dimensioned variable pos <%d> <%d>.",
-         n, pp[ n ] );
-      bwb_debug( bwb_ebuf );
-      }
-#endif
 
    p = v->memnum;
    return (p + offset);
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       var_findsval()
-
+  
         DESCRIPTION:    This function returns the address of
                         the string for the variable <v>.  If
                         <v> is a dimensioned array, the address
                         returned is for the string at the
                         position indicated by the integer array
                         <pp>.
-
+  
 ***************************************************************/
 
-#if ANSI_C
-bstring *
-var_findsval( struct bwb_variable *v, int *pp )
-#else
-bstring *
-var_findsval( v, pp )
-   struct bwb_variable *v;
-   int *pp;
-#endif
-   {
-   size_t offset;
-   bstring *p;
+bstring        *
+var_findsval(struct bwb_variable * v, int *pp)
+{
+   size_t          offset;
+   bstring        *p;
 
-#if INTENSIVE_DEBUG
-   register int n;
-
-   sprintf( bwb_ebuf, "in var_findsval(): entered, var <%s>", v->name );
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
 
    /* Check for appropriate type */
 
-   if ( v->type != STRING )
-      {
-#if PROG_ERRORS
-      sprintf ( bwb_ebuf, "in var_findsval(): Variable <%s> is not a string.", v->name );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_mismatch );
-#endif
+   if (v->type != STRING)
+   {
+      sprintf(bwb_ebuf, "in var_findsval(): Variable <%s> is not a string.", v->name);
+      bwb_error(bwb_ebuf);
       return NULL;
-      }
-
+   }
    /* Check subscripts */
 
-   if ( dim_check( v, pp ) == FALSE )
-      {
+   if (dim_check(v, pp) == FALSE)
+   {
       return NULL;
-      }
-
+   }
    /* Calculate and return the address of the dimensioned array */
 
-   offset = dim_unit( v, pp );
+   offset = dim_unit(v, pp);
 
-#if INTENSIVE_DEBUG
-   for ( n = 0; n < v->dimensions; ++n )
-      {
-      sprintf( bwb_ebuf,
-         "in var_findsval(): dimensioned variable pos <%d> val <%d>.",
-         n, pp[ n ] );
-      bwb_debug( bwb_ebuf );
-      }
-#endif
 
    p = v->memstr;
    return (p + offset);
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       dim_check()
-
+  
         DESCRIPTION:    This function checks subscripts of a
                         specific variable to be sure that they
                         are within the correct range.
-
+  
 ***************************************************************/
 
-#if ANSI_C
 static int
-dim_check( struct bwb_variable *v, int *pp )
-#else
-static int
-dim_check( v, pp )
-   struct bwb_variable *v;
-   int *pp;
-#endif
-   {
-   register int n;
+dim_check(struct bwb_variable * v, int *pp)
+{
+   register int    n;
 
    /* Check for dimensions */
 
-   if ( v->dimensions < 1 )
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in dim_check(): var <%s> dimensions <%d>",
-         v->name, v->dimensions );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_valoorange );
-#endif
+   if (v->dimensions < 1)
+   {
+      sprintf(bwb_ebuf, "in dim_check(): var <%s> dimensions <%d>",
+         v->name, v->dimensions);
+      bwb_error(bwb_ebuf);
       return FALSE;
-      }
-
+   }
    /* Check for validly allocated array */
 
-   if (( v->type == NUMBER ) && ( v->memnum == NULL ))
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in dim_check(): numerical var <%s> memnum not allocated",
-	 v->name );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_valoorange );
-#endif
+   if ((v->type == NUMBER) && (v->memnum == NULL))
+   {
+      sprintf(bwb_ebuf, "in dim_check(): numerical var <%s> memnum not allocated",
+         v->name);
+      bwb_error(bwb_ebuf);
       return FALSE;
-      }
-
-   if (( v->type == STRING ) && ( v->memstr == NULL ))
-      {
-#if PROG_ERRORS
-      sprintf( bwb_ebuf, "in dim_check(): string var <%s> memstr not allocated",
-	 v->name );
-      bwb_error( bwb_ebuf );
-#else
-      bwb_error( err_valoorange );
-#endif
+   }
+   if ((v->type == STRING) && (v->memstr == NULL))
+   {
+      sprintf(bwb_ebuf, "in dim_check(): string var <%s> memstr not allocated",
+         v->name);
+      bwb_error(bwb_ebuf);
       return FALSE;
-      }
-
+   }
    /* Now check subscript values */
 
-   for ( n = 0; n < v->dimensions; ++n )
+   for (n = 0; n < v->dimensions; ++n)
+   {
+
+
+      if ((pp[n] < dim_base) || ((pp[n] + (1 - dim_base)) > v->array_sizes[n]))
       {
-      if ( ( pp[ n ] < dim_base ) || ( ( pp[ n ] - dim_base )
-         > v->array_sizes[ n ] ))
-         {
-#if PROG_ERRORS
-         sprintf( bwb_ebuf, "in dim_check(): array subscript var <%s> pos <%d> val <%d> out of range <%d>-<%d>.",
-            v->name, n, pp[ n ], dim_base, v->array_sizes[ n ]  );
-         bwb_error( bwb_ebuf );
-#else
-         bwb_error( err_valoorange );
-#endif
+
+         sprintf(bwb_ebuf, "SUBSCRIPT OUT OF RANGE %s(%d)", v->name, pp[n]);
+         bwb_error(bwb_ebuf);
+
+
          return FALSE;
-         }
       }
+   }
 
    /* No problems found */
 
    return TRUE;
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       var_make()
-
-        DESCRIPTION:	This function initializes a variable,
-        		allocating necessary memory for it.
-
+  
+        DESCRIPTION: This function initializes a variable,
+            allocating necessary memory for it.
+  
 ***************************************************************/
 
-#if ANSI_C
 int
-var_make( struct bwb_variable *v, int type )
-#else
-int
-var_make( v, type )
-   struct bwb_variable *v;
-   int type;
-#endif
-   {
-   size_t data_size;
-   bstring *b;
-   bstring *sp; /* JBV */
-   register int n; /* JBV */
-#if TEST_BSTRING
-   static int tnumber = 0;
-#endif
+var_make(struct bwb_variable * v, int type)
+{
+   bwx_DEBUG(__FUNCTION__);
 
-   switch( type )
-      {
-      case STRING:
-         v->type = STRING;
-         data_size = sizeof( bstring );
-         break;
-      default:
-         v->type = NUMBER;
-         data_size = sizeof( bnumber );
-         break;
-      }
+   switch (type)
+   {
+   case STRING:
+      v->type = STRING;
+      break;
+   default:
+      v->type = NUMBER;
+      break;
+   }
 
    /* get memory for array */
 
    /* First kleanup the joint (JBV) */
    if (v->memnum != NULL)
    {
-       /* Revised to FREE pass-thru call by JBV */
-       FREE(v->memnum, "var_make");
-       v->memnum = NULL;
+      /* Revised to FREE pass-thru call by JBV */
+      FREE(v->memnum, "var_make");
+      v->memnum = NULL;
    }
    if (v->memstr != NULL)
    {
-       /* Remember to deallocate those far-flung branches! (JBV) */
-       sp = v->memstr;
-       for ( n = 0; n < (int) v->array_units; ++n )
-       {
-           if ( sp[ n ].sbuffer != NULL )
-           {
-               /* Revised to FREE pass-thru call by JBV */
-               FREE( sp[ n ].sbuffer, "var_make" );
-               sp[ n ].sbuffer = NULL;
-           }
-           sp[ n ].rab = FALSE;
-           sp[ n ].length = 0;
-       }
-       /* Revised to FREE pass-thru call by JBV */
-       FREE(v->memstr, "var_make");
-       v->memstr = NULL;
+      /* Remember to deallocate those far-flung branches! (JBV) */
+      bstring        *sp;  /* JBV */
+      register int    n;   /* JBV */
+
+      sp = v->memstr;
+      for (n = 0; n < (int) v->array_units; ++n)
+      {
+         if (sp[n].sbuffer != NULL)
+         {
+            /* Revised to FREE pass-thru call by JBV */
+            FREE(sp[n].sbuffer, "var_make");
+            sp[n].sbuffer = NULL;
+         }
+         sp[n].rab = FALSE;
+         sp[n].length = 0;
+      }
+      /* Revised to FREE pass-thru call by JBV */
+      FREE(v->memstr, "var_make");
+      v->memstr = NULL;
    }
    /* Revised to FREE pass-thru calls by JBV */
    if (v->array_sizes != NULL)
    {
-       FREE(v->array_sizes, "var_make");
-       v->array_sizes = NULL; /* JBV */
+      FREE(v->array_sizes, "var_make");
+      v->array_sizes = NULL;  /* JBV */
    }
    if (v->array_pos != NULL)
    {
-       FREE(v->array_pos, "var_make");
-       v->array_pos = NULL; /* JBV */
+      FREE(v->array_pos, "var_make");
+      v->array_pos = NULL; /* JBV */
    }
-
-   if ( v->type == NUMBER )
-      {
+   if (v->type == NUMBER)
+   {
       /* Revised to CALLOC pass-thru call by JBV */
-      if ( ( v->memnum = CALLOC( 2, sizeof( bnumber ), "var_make" )) == NULL )
-	 {
-	 bwb_error( err_getmem );
-	 return FALSE;
-	 }
+      if ((v->memnum = CALLOC(2, sizeof(BasicNumberType), "var_make")) == NULL)
+      {
+         bwb_error(err_getmem);
+         return FALSE;
       }
+   }
    else
-      {
+   {
       /* Revised to CALLOC pass-thru call by JBV */
-      if ( ( v->memstr = CALLOC( 2, sizeof( bstring ), "var_make" )) == NULL )
-	 {
-	 bwb_error( err_getmem );
-	 return FALSE;
-	 }
+      if ((v->memstr = CALLOC(2, sizeof(bstring), "var_make")) == NULL)
+      {
+         bwb_error(err_getmem);
+         return FALSE;
       }
+   }
 
    /* get memory for array_sizes and array_pos */
 
    /* Revised to CALLOC pass-thru call by JBV */
-   if ( ( v->array_sizes = (int *) CALLOC( 2, sizeof( int ), "var_make" )) == NULL )
-      {
-      bwb_error( err_getmem );
+   if ((v->array_sizes = (int *) CALLOC(2, sizeof(int), "var_make")) == NULL)
+   {
+      bwb_error(err_getmem);
       return FALSE;
-      }
-
+   }
    /* Revised to CALLOC pass-thru call by JBV */
-   if ( ( v->array_pos = (int *) CALLOC( 2, sizeof( int ), "var_make" )) == NULL )
-      {
-      bwb_error( err_getmem );
+   if ((v->array_pos = (int *) CALLOC(2, sizeof(int), "var_make")) == NULL)
+   {
+      bwb_error(err_getmem);
       return FALSE;
-      }
-
-   v->array_pos[ 0 ] = dim_base;
-   v->array_sizes[ 0 ] = 1;
+   }
+   v->array_pos[0] = dim_base;
+   v->array_sizes[0] = 1;
    v->dimensions = 1;
    v->common = FALSE;
    v->array_units = 1;
+   v->IsInDim = 0;
 
-   if ( type == STRING )
-      {
-      b = var_findsval( v, v->array_pos );
+   if (type == STRING)
+   {
+      bstring        *b;
+
+
+      b = var_findsval(v, v->array_pos);
       b->rab = FALSE;
-      }
-
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in var_make(): made variable <%s> type <%c> pos[ 0 ] <%d>",
-      v->name, v->type, v->array_pos[ 0 ] );
-   bwb_debug( bwb_ebuf );
-#endif
-
-#if TEST_BSTRING
-   if ( type == STRING )
-      {
-      b = var_findsval( v, v->array_pos );
-      sprintf( b->name, "bstring# %d", tnumber );
-      ++tnumber;
-      sprintf( bwb_ebuf, "in var_make(): new string variable <%s>",
-         b->name );
-      bwb_debug( bwb_ebuf );
-      }
-#endif
-
+   }
    return TRUE;
 
-   }
+}
 
 /***************************************************************
-
-	FUNCTION:       var_islocal()
-
-	DESCRIPTION:    This function determines whether the string
-			pointed to by 'buffer' has the name of
-			a local variable at the present EXEC stack
-			level.
-
+  
+   FUNCTION:       var_islocal()
+  
+   DESCRIPTION:    This function determines whether the string
+         pointed to by 'buffer' has the name of
+         a local variable at the present EXEC stack
+         level.
+  
 ***************************************************************/
 
-#if ANSI_C
-extern struct bwb_variable *
-var_islocal( char *buffer )
-#else
-struct bwb_variable *
-var_islocal( buffer )
-   char *buffer;
-#endif
-   {
+static struct bwb_variable *
+var_islocal(char *buffer)
+{
    struct bwb_variable *v;
 
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in var_islocal(): check for local variable <%s> EXEC level <%d>",
-      buffer, CURTASK exsc );
-   bwb_debug( bwb_ebuf );
-#endif
+   bwx_DEBUG(__FUNCTION__);
 
    /* Prevent the expression in the initial value of the for loop below
-      from violating the lower bound of the "excs" array. This would
-      happen during startup when "exsc" is initially set to -1 and
-      bwbasic.exe would fail with a memory exception when compiled with
-      Open Watcom C. */
+    * from violating the lower bound of the "excs" array. This would
+    * happen during startup when "exsc" is initially set to -1 and
+    * bwbasic.exe would fail with a memory exception when compiled with
+    * Open Watcom C. */
 
-   if ( CURTASK exsc >= 0 )
+
+   if (CURTASK exsc >= 0)
+   {
+      int             i;
+      for (i = CURTASK exsc; i >= 0; i--)
       {
-
-   /* run through the local variable list and try to find a match */
-
-   for ( v = CURTASK excs[ CURTASK exsc ].local_variable; v != NULL; v = v->next )
-      {
-
-#if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "in var_islocal(): checking var <%s> level <%d>...",
-         v->name, CURTASK exsc );
-      bwb_debug( bwb_ebuf );
-#endif
-
-      if ( strcmp( v->name, buffer ) == 0 )
+         for (v = CURTASK excs[i].local_variable; v != NULL; v = v->next)
          {
-
-#if PROG_ERRORS
-         switch( v->type )
+            if (strcasecmp(v->name, buffer) == 0)
             {
-            case STRING:
-            case NUMBER:
-               break;
-            default:
-               sprintf( bwb_ebuf, "in var_islocal(): inappropriate precision for variable <%s>",
-                  v->name );
-               bwb_error( bwb_ebuf );
+               /* FOUND */
+               return v;
+            }
+         }
+         if (CURTASK excs[i].LoopTopLine != NULL)
+         {
+            switch (CURTASK excs[i].LoopTopLine->cmdnum)
+            {
+            case C_FUNCTION:
+            case C_SUB:
+               /* we have checked all the way to a
+                * FUNCTION or SUB boundary */
+               /* NOT FOUND */
+               return NULL;
                break;
             }
-#endif
-
-#if INTENSIVE_DEBUG
-         sprintf( bwb_ebuf, "in var_islocal(): found local variable <%s>", v->name );
-         bwb_debug( bwb_ebuf );
-#endif
-
-         return v;
          }
-
       }
-      } /* check of exsc >= 0 */
-   /* search failed, return NULL */
-
-#if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "in var_islocal(): Failed to find local variable <%s> level <%d>",
-      buffer, CURTASK exsc );
-   bwb_debug( bwb_ebuf );
-#endif
+   }
+   /* NOT FOUND */
 
    return NULL;
 
-   }
+}
 
 /***************************************************************
-
+  
         FUNCTION:       bwb_vars()
-
+  
         DESCRIPTION:    This function implements the Bywater-
-        		specific debugging command VARS, which
-        		gives a list of all variables defined
-        		in memory.
-
+            specific debugging command VARS, which
+            gives a list of all variables defined
+            in memory.
+  
 ***************************************************************/
 
-#if PERMANENT_DEBUG
 
-#if ANSI_C
 struct bwb_line *
-bwb_vars( struct bwb_line *l )
-#else
-struct bwb_line *
-bwb_vars( l )
-   struct bwb_line *l;
-#endif
-   {
+bwb_VARS(struct bwb_line * l)
+{
    struct bwb_variable *v;
-   char tbuf[ MAXSTRINGSIZE + 1 ];
+   char            tbuf[BasicStringLengthMax + 1];
+
+   bwx_DEBUG(__FUNCTION__);
 
    /* run through the variable list and print variables */
 
-   for ( v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next )
+   for (v = CURTASK var_start.next; v != &CURTASK var_end; v = v->next)
+   {
+      sprintf(bwb_ebuf, "variable <%s>\t", v->name);
+      prn_xprintf(bwb_ebuf);
+      switch (v->type)
       {
-      sprintf( bwb_ebuf, "variable <%s>\t", v->name );
-      prn_xprintf( stdout, bwb_ebuf );
-      switch( v->type )
-         {
-         case STRING:
-            str_btoc( tbuf, var_getsval( v ) );
-	    sprintf( bwb_ebuf, "STRING\tval: <%s>\n", tbuf );
-	    prn_xprintf( stdout, bwb_ebuf );
-            break;
-         case NUMBER:
-#if NUMBER_DOUBLE
-	    sprintf( bwb_ebuf, "NUMBER\tval: <%lf>\n", var_getnval( v ) );
-	    prn_xprintf( stdout, bwb_ebuf );
-#else
-	    sprintf( bwb_ebuf, "NUMBER\tval: <%f>\n", var_getnval( v ) );
-	    prn_xprintf( stdout, bwb_ebuf );
-#endif
-            break;
-         default:
-	    sprintf( bwb_ebuf, "ERROR: type is <%c>", (char) v->type );
-	    prn_xprintf( stdout, bwb_ebuf );
-            break;
-         }
+      case STRING:
+         str_btoc(tbuf, var_getsval(v));
+         sprintf(bwb_ebuf, "STRING\tval: <%s>\n", tbuf);
+         prn_xprintf(bwb_ebuf);
+         break;
+      case NUMBER:
+         sprintf(bwb_ebuf, "NUMBER\tval: <" BasicNumberPrintFormat ">\n", var_getnval(v));
+         prn_xprintf(bwb_ebuf);
+         break;
+      default:
+         sprintf(bwb_ebuf, "ERROR: type is <%c>", (char) v->type);
+         prn_xprintf(bwb_ebuf);
+         break;
       }
-
-   return bwb_zline( l );
    }
 
-#endif
+   return bwb_zline(l);
+}
 
+
+/* EOF */

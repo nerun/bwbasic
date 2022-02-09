@@ -1,0 +1,50 @@
+         OPPORTUNITY LOSS TABLE                                                 
+THIS PROGRAM ASSUMES THERE ARE FROM 1 TO 6 STATES OF NATURE.                    
+THERE ARE ALSO FROM 1 TO 6 POSSIBLE ACTIONS WE CAN TAKE. IF THE                 
+STATE OF NATURE(S OF N) IS KNOWN THEN EACH ACTION LEADS TO                      
+A KNOWN MONETARY RESULT. THIS RESULT IS A CONDITIONAL PROFIT.                   
+FOR EXAMPLE, IF ACTION 3 LEADS TO A $35 PAYOFF WHEN STATE OF                    
+NATURE 4 IS TRUE THEN 35 IS THE CONDITIONAL PROFIT OF ACTION                    
+3 GIVEN STATE OF NATURE 4. IF WE LOOK AT THE CONDITIONAL                        
+PROFIT OF EACH ACTION WITH RESPECT TO A PARTICULAR S OF N                       
+THEN THERE IS A LARGEST PROFIT. THE AMOUNT BY WHICH EACH OF                     
+THE OTHER PROFITS DIFFER FROM THE MAXIMUM IS CALLED THE                         
+OPPORTUNITY LOSS OF THE CORRESPONDING ACTION FOR THE                            
+PARTICULAR STATE OF NATURE. IN THIS PROGRAM ALL OF THE                          
+CONDITIONAL PROFITS ARE ENTERED AND AN OPPORTUNITY LOSS                         
+TABLE IS CONSTRUCTED. EXPECTED OPORTUNITY LOSSES ARE ALSO COMP.                 
+PRESS ENTER TO BEGIN?                                                           
+ENTER NUMBER OF POSSIBLE STATES OF NATURE? 3                                    
+                                                                                
+ENTER PROBABILITY OF S OF N 1 ? 22                                              
+ENTER PROBABILITY OF S OF N 2 ? 33                                              
+ENTER PROBABILITY OF S OF N 3 ? 44                                              
+                                                                                
+PROBABILITIES DO NOT SUM TO 1.                                                  
+ENTER 1 TO STANDARDIZE,0 TO BEGIN OVER? 1                                       
+                                                                                
+ENTER NUMBER OF POSSIBLE ACTIONS(<=5)? 2                                        
+NO PAYOFF MORE THAN 9999.99                                                     
+                                                                                
+                                                                                
+ACTION 1                                                                        
+    PAYOFF WHEN S OF N IS 1 ? 101                                               
+    PAYOFF WHEN S OF N IS 2 ? 102                                               
+    PAYOFF WHEN S OF N IS 3 ? 103                                               
+                                                                                
+ACTION 2                                                                        
+    PAYOFF WHEN S OF N IS 1 ? 201                                               
+    PAYOFF WHEN S OF N IS 2 ? 202                                               
+    PAYOFF WHEN S OF N IS 3 ? 203                                               
+COMPUTING                                                                       
+                                                                                
+IS LINE PRINTER OUTPUT DESIRED(Y/N)? Y                                          
+ OPPORTUNITY LOSSES OF ACTION GIVEN S OF N                                      
+                                                                                
+S N  PR                  ACTION                                                 
+         ACTION 1 ACTION 2                                                      
+ 1  0.22   100.00     0.00                                                      
+ 2  0.33   100.00     0.00                                                      
+ 3  0.44   100.00     0.00                                                      
+                                                                                
+EXP EOL.   100.00     0.00                                                      
