@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.40"          /* Current version number */
+#define VERSION         "2.50"          /* Current version number */
 
 /***************************************************************
 
@@ -158,6 +158,10 @@
 #define HAVE_SYSSTAT	FALSE
 #else
 #define HAVE_SYSSTAT	TRUE	/* Compiler has <sys/stat.h> header */
+#endif
+
+#ifndef HAVE_MATHERR
+#define HAVE_MATHERR	FALSE	/* Compiler doesn't call matherr */
 #endif
 
 /***************************************************************

@@ -3,7 +3,7 @@
                               README file for
 
 
-               Bywater BASIC Interpreter/Shell, version 2.40
+               Bywater BASIC Interpreter/Shell, version 2.50
                ---------------------------------------------
 
                     Copyright (c) 1993, Ted A. Campbell
@@ -23,6 +23,9 @@
 
                Version 2.40 modifications by Paul Edwards,
                                 26 Jan 2009
+
+               Version 2.50 modifications by Paul Edwards,
+                                4 June 2009
 
 
 
@@ -195,6 +198,13 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
 CHANGE HISTORY
 
 
+
+
+CHANGES FROM 2.40 to 2.50
+
+   * Bug fixes
+   
+   * New compilation procedure for MVS and CMS
 
 
 CHANGES FROM 2.30 to 2.40

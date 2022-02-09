@@ -378,7 +378,15 @@ bwx_shell( l )
                         the error message, then calls the
                         break_handler() routine.
 
+                        Note that this function isn't supported
+                        by all compilers (it's not part of C90).
+                        If it exists, it's an extension in math.h
+                        and it will be called whenever there's
+                        a divide by zero or something like that.
+
 ***************************************************************/
+
+#if HAVE_MATHERR
 
 #if ANSI_C
 int
@@ -395,6 +403,8 @@ matherr( except )
 
    return FALSE;
    }
+
+#endif
 
 #if COMMON_CMDS
 

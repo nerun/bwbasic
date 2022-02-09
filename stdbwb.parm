@@ -1,1 +1,1 @@
--w -S -ansi -o dd:out -
+-Os -S -ansi -o dd:out -
