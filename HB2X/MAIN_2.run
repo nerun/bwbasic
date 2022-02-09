@@ -1,7 +1,0 @@
-before Prior declaration                                                        
-between Prior and Main declaration                                              
-between Main and Subsequent declaration                                         
-after Subsequent declaration                                                    
-This is the MAIN subroutine.                                                    
-This should print.                                                              
-after Main call                                                                 

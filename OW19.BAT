@@ -7,6 +7,6 @@ rem  Example:
 rem            cd \sdcard\Download\BASIC\bwbasic3\
 rem            OW19.BAT
 rem
-wcl386 -bc -c -ox -q -wx -za -D_DOS -D__WATCOM__ bw*.c
+wcl386 -bc -c -ox -q -wx -za -DHAVE_MSDOS=1 -D__WATCOM__ bw*.c
 wlink option quiet file bw*.obj name bwbasic.exe
 rem EOF

@@ -1,9 +1,0 @@
-10 REM Purpose:  Verify UNTIL-UEND
-20 REM  Author:  Howard Wulf, AF5NE
-30 REM    Date: 2015-10-20
-40 REM
-50 UNTIL X = 12
-60   X = X + 1
-70   PRINT X, X*X, SQR(X)
-80 UEND
-99 END

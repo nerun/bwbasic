@@ -1,0 +1,9 @@
+A= 1.234       B= 4.567       C= 8.901       D= 2.345       E= 6.789            
+F= 14.702 G= 15.813           H= 18.035      I= 18.035      J= 18.035           
+ERL= 330       ERR= 70        ERROR$=Variable Not Declared                      
+ERL= 340       ERR= 70        ERROR$=Variable Not Declared                      
+ERL= 350       ERR= 70        ERROR$=Variable Not Declared                      
+ERL= 360       ERR= 70        ERROR$=Variable Not Declared                      
+ERL= 370       ERR= 70        ERROR$=Variable Not Declared                      
+A= 4           B= 3           C= 2           D= 1           E= 0                
+F= 14.702 G= 15.813           H= 18.035      I= 18.035      J= 18.035           

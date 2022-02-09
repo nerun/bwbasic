@@ -1,0 +1,30 @@
+Name                                     Type   Dims Value                      
+@                                        NUMBER 0     3                         
+#                                        NUMBER 0     2                         
+$                                        STRING 0    A                          
+$-STRING        #-NUMBER       @-NUMBER                                         
+A               2              3                                                
+AA              4              6                                                
+Name                                     Type   Dims Value                      
+@@                                       NUMBER 0     99                        
+##                                       NUMBER 0     11                        
+$$                                       STRING 0    AB                         
+@                                        NUMBER 0     6                         
+#                                        NUMBER 0     4                         
+$                                        STRING 0    AA                         
+$$-STRING       ##-NUMBER      @@-NUMBER                                        
+AB              11             99                                               
+ABAB            22             198                                              
+Name                                     Type   Dims Value                      
+$@#                                      NUMBER 0     333                       
+#$@                                      NUMBER 0     222                       
+@#$                                      STRING 0    AAA                        
+@@                                       NUMBER 0     198                       
+##                                       NUMBER 0     22                        
+$$                                       STRING 0    ABAB                       
+@                                        NUMBER 0     6                         
+#                                        NUMBER 0     4                         
+$                                        STRING 0    AA                         
+@#$-STRING     #$@-NUMBER     $@#-NUMBER                                        
+AAA             222            333                                              
+AAAAAA          444            666                                              

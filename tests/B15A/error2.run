@@ -1,0 +1,255 @@
+ERL= 130 , ERR= 1 , ERR$=NEXT without FOR                                       
+ERL= 130 , ERR= 2 , ERR$=Syntax error                                           
+ERL= 130 , ERR= 3 , ERR$=RETURN without GOSUB                                   
+ERL= 130 , ERR= 4 , ERR$=Out of DATA                                            
+ERL= 130 , ERR= 5 , ERR$=Illegal function call                                  
+ERL= 130 , ERR= 6 , ERR$=Overflow                                               
+ERL= 130 , ERR= 7 , ERR$=Out of memory                                          
+ERL= 130 , ERR= 8 , ERR$=Undefined line                                         
+ERL= 130 , ERR= 9 , ERR$=Subscript out of range                                 
+ERL= 130 , ERR= 10 , ERR$=Redimensioned array                                   
+ERL= 130 , ERR= 11 , ERR$=Division by zero                                      
+ERL= 130 , ERR= 12 , ERR$=Illegal direct                                        
+ERL= 130 , ERR= 13 , ERR$=Type mismatch                                         
+ERL= 130 , ERR= 14 , ERR$=Out of string space                                   
+ERL= 130 , ERR= 15 , ERR$=String too long                                       
+ERL= 130 , ERR= 16 , ERR$=String formula too complex                            
+ERL= 130 , ERR= 17 , ERR$=Can't continue                                        
+ERL= 130 , ERR= 18 , ERR$=Undefined user function                               
+ERL= 130 , ERR= 19 , ERR$=No RESUME                                             
+ERL= 130 , ERR= 20 , ERR$=RESUME without error                                  
+ERL= 130 , ERR= 21 , ERR$=Unprintable error                                     
+ERL= 130 , ERR= 22 , ERR$=Missing operand                                       
+ERL= 130 , ERR= 23 , ERR$=Line buffer overflow                                  
+ERL= 130 , ERR= 24 , ERR$=                                                      
+ERL= 130 , ERR= 25 , ERR$=                                                      
+ERL= 130 , ERR= 26 , ERR$=FOR without NEXT                                      
+ERL= 130 , ERR= 27 , ERR$=Bad DATA                                              
+ERL= 130 , ERR= 28 , ERR$=                                                      
+ERL= 130 , ERR= 29 , ERR$=WHILE without WEND                                    
+ERL= 130 , ERR= 30 , ERR$=WEND without WHILE                                    
+ERL= 130 , ERR= 31 , ERR$=EXIT FUNCTION without FUNCTION                        
+ERL= 130 , ERR= 32 , ERR$=END FUNCTION without FUNCTION                         
+ERL= 130 , ERR= 33 , ERR$=EXIT SUB without SUB                                  
+ERL= 130 , ERR= 34 , ERR$=END SUB without SUB                                   
+ERL= 130 , ERR= 35 , ERR$=EXIT FOR without FOR                                  
+ERL= 130 , ERR= 36 , ERR$=                                                      
+ERL= 130 , ERR= 37 , ERR$=                                                      
+ERL= 130 , ERR= 38 , ERR$=                                                      
+ERL= 130 , ERR= 39 , ERR$=                                                      
+ERL= 130 , ERR= 40 , ERR$=                                                      
+ERL= 130 , ERR= 41 , ERR$=                                                      
+ERL= 130 , ERR= 42 , ERR$=                                                      
+ERL= 130 , ERR= 43 , ERR$=                                                      
+ERL= 130 , ERR= 44 , ERR$=                                                      
+ERL= 130 , ERR= 45 , ERR$=                                                      
+ERL= 130 , ERR= 46 , ERR$=                                                      
+ERL= 130 , ERR= 47 , ERR$=                                                      
+ERL= 130 , ERR= 48 , ERR$=                                                      
+ERL= 130 , ERR= 49 , ERR$=                                                      
+ERL= 130 , ERR= 50 , ERR$=Field overflow                                        
+ERL= 130 , ERR= 51 , ERR$=Internal error                                        
+ERL= 130 , ERR= 52 , ERR$=Bad file number                                       
+ERL= 130 , ERR= 53 , ERR$=File not found                                        
+ERL= 130 , ERR= 54 , ERR$=Bad file mode                                         
+ERL= 130 , ERR= 55 , ERR$=File already open                                     
+ERL= 130 , ERR= 56 , ERR$=                                                      
+ERL= 130 , ERR= 57 , ERR$=Disk I/O error                                        
+ERL= 130 , ERR= 58 , ERR$=File already exists                                   
+ERL= 130 , ERR= 59 , ERR$=                                                      
+ERL= 130 , ERR= 60 , ERR$=                                                      
+ERL= 130 , ERR= 61 , ERR$=Disk full                                             
+ERL= 130 , ERR= 62 , ERR$=Input past end                                        
+ERL= 130 , ERR= 63 , ERR$=Bad record number                                     
+ERL= 130 , ERR= 64 , ERR$=Bad file name                                         
+ERL= 130 , ERR= 65 , ERR$=                                                      
+ERL= 130 , ERR= 66 , ERR$=Direct statement in file                              
+ERL= 130 , ERR= 67 , ERR$=Too many files                                        
+ERL= 130 , ERR= 68 , ERR$=                                                      
+ERL= 130 , ERR= 69 , ERR$=                                                      
+ERL= 130 , ERR= 70 , ERR$=Variable Not Declared                                 
+ERL= 130 , ERR= 71 , ERR$=                                                      
+ERL= 130 , ERR= 72 , ERR$=                                                      
+ERL= 130 , ERR= 73 , ERR$=Advanced Feature                                      
+ERL= 130 , ERR= 74 , ERR$=                                                      
+ERL= 130 , ERR= 75 , ERR$=                                                      
+ERL= 130 , ERR= 76 , ERR$=                                                      
+ERL= 130 , ERR= 77 , ERR$=                                                      
+ERL= 130 , ERR= 78 , ERR$=                                                      
+ERL= 130 , ERR= 79 , ERR$=                                                      
+ERL= 130 , ERR= 80 , ERR$=                                                      
+ERL= 130 , ERR= 81 , ERR$=                                                      
+ERL= 130 , ERR= 82 , ERR$=                                                      
+ERL= 130 , ERR= 83 , ERR$=                                                      
+ERL= 130 , ERR= 84 , ERR$=                                                      
+ERL= 130 , ERR= 85 , ERR$=                                                      
+ERL= 130 , ERR= 86 , ERR$=                                                      
+ERL= 130 , ERR= 87 , ERR$=                                                      
+ERL= 130 , ERR= 88 , ERR$=                                                      
+ERL= 130 , ERR= 89 , ERR$=                                                      
+ERL= 130 , ERR= 90 , ERR$=                                                      
+ERL= 130 , ERR= 91 , ERR$=                                                      
+ERL= 130 , ERR= 92 , ERR$=                                                      
+ERL= 130 , ERR= 93 , ERR$=                                                      
+ERL= 130 , ERR= 94 , ERR$=                                                      
+ERL= 130 , ERR= 95 , ERR$=                                                      
+ERL= 130 , ERR= 96 , ERR$=                                                      
+ERL= 130 , ERR= 97 , ERR$=                                                      
+ERL= 130 , ERR= 98 , ERR$=                                                      
+ERL= 130 , ERR= 99 , ERR$=                                                      
+ERL= 130 , ERR= 100 , ERR$=                                                     
+ERL= 130 , ERR= 101 , ERR$=                                                     
+ERL= 130 , ERR= 102 , ERR$=                                                     
+ERL= 130 , ERR= 103 , ERR$=                                                     
+ERL= 130 , ERR= 104 , ERR$=                                                     
+ERL= 130 , ERR= 105 , ERR$=                                                     
+ERL= 130 , ERR= 106 , ERR$=                                                     
+ERL= 130 , ERR= 107 , ERR$=                                                     
+ERL= 130 , ERR= 108 , ERR$=                                                     
+ERL= 130 , ERR= 109 , ERR$=                                                     
+ERL= 130 , ERR= 110 , ERR$=                                                     
+ERL= 130 , ERR= 111 , ERR$=                                                     
+ERL= 130 , ERR= 112 , ERR$=                                                     
+ERL= 130 , ERR= 113 , ERR$=                                                     
+ERL= 130 , ERR= 114 , ERR$=                                                     
+ERL= 130 , ERR= 115 , ERR$=                                                     
+ERL= 130 , ERR= 116 , ERR$=                                                     
+ERL= 130 , ERR= 117 , ERR$=                                                     
+ERL= 130 , ERR= 118 , ERR$=                                                     
+ERL= 130 , ERR= 119 , ERR$=                                                     
+ERL= 130 , ERR= 120 , ERR$=                                                     
+ERL= 130 , ERR= 121 , ERR$=                                                     
+ERL= 130 , ERR= 122 , ERR$=                                                     
+ERL= 130 , ERR= 123 , ERR$=                                                     
+ERL= 130 , ERR= 124 , ERR$=                                                     
+ERL= 130 , ERR= 125 , ERR$=                                                     
+ERL= 130 , ERR= 126 , ERR$=                                                     
+ERL= 130 , ERR= 127 , ERR$=                                                     
+ERL= 130 , ERR= 128 , ERR$=                                                     
+ERL= 130 , ERR= 129 , ERR$=                                                     
+ERL= 130 , ERR= 130 , ERR$=                                                     
+ERL= 130 , ERR= 131 , ERR$=                                                     
+ERL= 130 , ERR= 132 , ERR$=                                                     
+ERL= 130 , ERR= 133 , ERR$=                                                     
+ERL= 130 , ERR= 134 , ERR$=                                                     
+ERL= 130 , ERR= 135 , ERR$=                                                     
+ERL= 130 , ERR= 136 , ERR$=                                                     
+ERL= 130 , ERR= 137 , ERR$=                                                     
+ERL= 130 , ERR= 138 , ERR$=                                                     
+ERL= 130 , ERR= 139 , ERR$=                                                     
+ERL= 130 , ERR= 140 , ERR$=                                                     
+ERL= 130 , ERR= 141 , ERR$=                                                     
+ERL= 130 , ERR= 142 , ERR$=                                                     
+ERL= 130 , ERR= 143 , ERR$=                                                     
+ERL= 130 , ERR= 144 , ERR$=                                                     
+ERL= 130 , ERR= 145 , ERR$=                                                     
+ERL= 130 , ERR= 146 , ERR$=                                                     
+ERL= 130 , ERR= 147 , ERR$=                                                     
+ERL= 130 , ERR= 148 , ERR$=                                                     
+ERL= 130 , ERR= 149 , ERR$=                                                     
+ERL= 130 , ERR= 150 , ERR$=                                                     
+ERL= 130 , ERR= 151 , ERR$=                                                     
+ERL= 130 , ERR= 152 , ERR$=                                                     
+ERL= 130 , ERR= 153 , ERR$=                                                     
+ERL= 130 , ERR= 154 , ERR$=                                                     
+ERL= 130 , ERR= 155 , ERR$=                                                     
+ERL= 130 , ERR= 156 , ERR$=                                                     
+ERL= 130 , ERR= 157 , ERR$=                                                     
+ERL= 130 , ERR= 158 , ERR$=                                                     
+ERL= 130 , ERR= 159 , ERR$=                                                     
+ERL= 130 , ERR= 160 , ERR$=                                                     
+ERL= 130 , ERR= 161 , ERR$=                                                     
+ERL= 130 , ERR= 162 , ERR$=                                                     
+ERL= 130 , ERR= 163 , ERR$=                                                     
+ERL= 130 , ERR= 164 , ERR$=                                                     
+ERL= 130 , ERR= 165 , ERR$=                                                     
+ERL= 130 , ERR= 166 , ERR$=                                                     
+ERL= 130 , ERR= 167 , ERR$=                                                     
+ERL= 130 , ERR= 168 , ERR$=                                                     
+ERL= 130 , ERR= 169 , ERR$=                                                     
+ERL= 130 , ERR= 170 , ERR$=                                                     
+ERL= 130 , ERR= 171 , ERR$=                                                     
+ERL= 130 , ERR= 172 , ERR$=                                                     
+ERL= 130 , ERR= 173 , ERR$=                                                     
+ERL= 130 , ERR= 174 , ERR$=                                                     
+ERL= 130 , ERR= 175 , ERR$=                                                     
+ERL= 130 , ERR= 176 , ERR$=                                                     
+ERL= 130 , ERR= 177 , ERR$=                                                     
+ERL= 130 , ERR= 178 , ERR$=                                                     
+ERL= 130 , ERR= 179 , ERR$=                                                     
+ERL= 130 , ERR= 180 , ERR$=                                                     
+ERL= 130 , ERR= 181 , ERR$=                                                     
+ERL= 130 , ERR= 182 , ERR$=                                                     
+ERL= 130 , ERR= 183 , ERR$=                                                     
+ERL= 130 , ERR= 184 , ERR$=                                                     
+ERL= 130 , ERR= 185 , ERR$=                                                     
+ERL= 130 , ERR= 186 , ERR$=                                                     
+ERL= 130 , ERR= 187 , ERR$=                                                     
+ERL= 130 , ERR= 188 , ERR$=                                                     
+ERL= 130 , ERR= 189 , ERR$=                                                     
+ERL= 130 , ERR= 190 , ERR$=                                                     
+ERL= 130 , ERR= 191 , ERR$=                                                     
+ERL= 130 , ERR= 192 , ERR$=                                                     
+ERL= 130 , ERR= 193 , ERR$=                                                     
+ERL= 130 , ERR= 194 , ERR$=                                                     
+ERL= 130 , ERR= 195 , ERR$=                                                     
+ERL= 130 , ERR= 196 , ERR$=                                                     
+ERL= 130 , ERR= 197 , ERR$=                                                     
+ERL= 130 , ERR= 198 , ERR$=                                                     
+ERL= 130 , ERR= 199 , ERR$=                                                     
+ERL= 130 , ERR= 200 , ERR$=                                                     
+ERL= 130 , ERR= 201 , ERR$=                                                     
+ERL= 130 , ERR= 202 , ERR$=                                                     
+ERL= 130 , ERR= 203 , ERR$=                                                     
+ERL= 130 , ERR= 204 , ERR$=                                                     
+ERL= 130 , ERR= 205 , ERR$=                                                     
+ERL= 130 , ERR= 206 , ERR$=                                                     
+ERL= 130 , ERR= 207 , ERR$=                                                     
+ERL= 130 , ERR= 208 , ERR$=                                                     
+ERL= 130 , ERR= 209 , ERR$=                                                     
+ERL= 130 , ERR= 210 , ERR$=                                                     
+ERL= 130 , ERR= 211 , ERR$=                                                     
+ERL= 130 , ERR= 212 , ERR$=                                                     
+ERL= 130 , ERR= 213 , ERR$=                                                     
+ERL= 130 , ERR= 214 , ERR$=                                                     
+ERL= 130 , ERR= 215 , ERR$=                                                     
+ERL= 130 , ERR= 216 , ERR$=                                                     
+ERL= 130 , ERR= 217 , ERR$=                                                     
+ERL= 130 , ERR= 218 , ERR$=                                                     
+ERL= 130 , ERR= 219 , ERR$=                                                     
+ERL= 130 , ERR= 220 , ERR$=                                                     
+ERL= 130 , ERR= 221 , ERR$=                                                     
+ERL= 130 , ERR= 222 , ERR$=                                                     
+ERL= 130 , ERR= 223 , ERR$=                                                     
+ERL= 130 , ERR= 224 , ERR$=                                                     
+ERL= 130 , ERR= 225 , ERR$=                                                     
+ERL= 130 , ERR= 226 , ERR$=                                                     
+ERL= 130 , ERR= 227 , ERR$=                                                     
+ERL= 130 , ERR= 228 , ERR$=                                                     
+ERL= 130 , ERR= 229 , ERR$=                                                     
+ERL= 130 , ERR= 230 , ERR$=                                                     
+ERL= 130 , ERR= 231 , ERR$=                                                     
+ERL= 130 , ERR= 232 , ERR$=                                                     
+ERL= 130 , ERR= 233 , ERR$=                                                     
+ERL= 130 , ERR= 234 , ERR$=                                                     
+ERL= 130 , ERR= 235 , ERR$=                                                     
+ERL= 130 , ERR= 236 , ERR$=                                                     
+ERL= 130 , ERR= 237 , ERR$=                                                     
+ERL= 130 , ERR= 238 , ERR$=                                                     
+ERL= 130 , ERR= 239 , ERR$=                                                     
+ERL= 130 , ERR= 240 , ERR$=                                                     
+ERL= 130 , ERR= 241 , ERR$=                                                     
+ERL= 130 , ERR= 242 , ERR$=                                                     
+ERL= 130 , ERR= 243 , ERR$=                                                     
+ERL= 130 , ERR= 244 , ERR$=                                                     
+ERL= 130 , ERR= 245 , ERR$=                                                     
+ERL= 130 , ERR= 246 , ERR$=                                                     
+ERL= 130 , ERR= 247 , ERR$=                                                     
+ERL= 130 , ERR= 248 , ERR$=                                                     
+ERL= 130 , ERR= 249 , ERR$=                                                     
+ERL= 130 , ERR= 250 , ERR$=                                                     
+ERL= 130 , ERR= 251 , ERR$=                                                     
+ERL= 130 , ERR= 252 , ERR$=                                                     
+ERL= 130 , ERR= 253 , ERR$=                                                     
+ERL= 130 , ERR= 254 , ERR$=                                                     
+ERL= 130 , ERR= 255 , ERR$=                                                     

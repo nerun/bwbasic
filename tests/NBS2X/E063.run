@@ -1,0 +1,37 @@
+AT END OF NEW EMPTY FILE                                                        
+LOC = 1                                                                         
+LOF = 0                                                                         
+SEEK= 1                                                                         
+                                                                                
+AT END OF NON-EMPTY FILE < 128                                                  
+LOC = 1                                                                         
+LOF = 8                                                                         
+SEEK= 9                                                                         
+                                                                                
+AT END OF NON-EMPTY FILE = 128                                                  
+LOC = 2                                                                         
+LOF = 128                                                                       
+SEEK= 129                                                                       
+                                                                                
+AT START OF NON-EMPTY FILE = 128                                                
+LOC = 1                                                                         
+LOF = 128                                                                       
+SEEK= 1                                                                         
+                                                                                
+AT END OF NON-EMPTY FILE = 128                                                  
+LOC = 1                                                                         
+LOF = 128                                                                       
+SEEK= 128                                                                       
+                                                                                
+REAAD CHAR AT START OF NON-EMPTY FILE = 128                                     
+  A$=[1]                                                                        
+LOC = 1                                                                         
+LOF = 128                                                                       
+SEEK= 2                                                                         
+                                                                                
+READ CHAR AT END OF NON-EMPTY FILE = 128                                        
+  A$=[0]                                                                        
+LOC = 2                                                                         
+LOF = 128                                                                       
+SEEK= 129                                                                       
+                                                                                

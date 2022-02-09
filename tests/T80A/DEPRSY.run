@@ -1,0 +1,18 @@
+   DEPRECIATION SCHEDULE-SUM OF DIGITS                                          
+THIS PROGRAM PRINTS A SCHEDULE FOR DEPRECIATING AN ASSET                        
+BY THE SUM OF DIGITS METHOD.                                                    
+INPUTS ARE ITEM COST,ESTIMATED SALVAGE VALUE & LIFE IN YEARS.                   
+OUTPUT IS A YEAR BY YEAR SCHEDULE OF CURRENT DEPRECIATION,                      
+ACCUMULATED DEPRECIATION AND BOOK VALUE.                                        
+ PRESS ENTER TO BEGIN?                                                          
+DO YOU WANT OUTPUT ON LINEPRINTER(Y/N)? Y                                       
+ENTER  COST              ? 567234                                               
+ENTER SALVAGE VALUE      ? 891                                                  
+ENTER LIFE IN YEARS      ? 3                                                    
+PRESS ENTER WHEN PRINTER READY?                                                 
+                                                                                
+YEAR    CURR.DEP.     ACCUM.DEP.       BOOK VAL.                                
+  0                                    567234.00                                
+  1     283171.50       283171.50       284062.50                               
+  2     188781.00       471952.50        95281.50                               
+  3     94390.50       566343.00          891.00                                

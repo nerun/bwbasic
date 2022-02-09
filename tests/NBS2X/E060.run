@@ -1,0 +1,19 @@
+maxdev= 17                                                                      
+These should match: 1  1                                                        
+These should match: 2  2                                                        
+These should match: 3  3                                                        
+These should match: 4  4                                                        
+These should match: 5  5                                                        
+These should match: 6  6                                                        
+These should match: 7  7                                                        
+These should match: 8  8                                                        
+These should match: 9  9                                                        
+These should match: 10  10                                                      
+These should match: 11  11                                                      
+These should match: 12  12                                                      
+These should match: 13  13                                                      
+These should match: 14  14                                                      
+These should match: 15  15                                                      
+These should match: 16  16                                                      
+These should match: 17  17                                                      
+This should be zero: 0                                                          

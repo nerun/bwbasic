@@ -1,0 +1,5 @@
+OPTION VERSION "CALL/360"
+REM OPTION VERSION "SYSTEM/360"
+REM OPTION VERSION "SYSTEM/370"
+REM maintainer debug on
+option enable command "vars"

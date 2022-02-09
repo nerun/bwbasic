@@ -1,8 +1,0 @@
-bwBASIC: CLOAD "CLOAD_1.DAT"                                                    
-bwBASIC: LIST                                                                   
-   10 REM 'CLOAD' TEST PROGRAM                                                  
-   20 PRINT "THIS PROGRAM TESTS THE CLOAD FEATURE"                              
-   99 END                                                                       
-                                                                                
-bwBASIC: RUN                                                                    
-THIS PROGRAM TESTS THE CLOAD FEATURE                                            

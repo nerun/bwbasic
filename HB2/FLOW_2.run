@@ -1,6 +1,0 @@
-Trace is OFF                                                                    
-FLOW TRACES EACH LINE                                                           
-OF THIS TEST PROGRAM.                                                           
-Trace is ON                                                                     
-[ 40 GOTO 70 ][ 70 PRINT "END OF TEST PROGRAM." ]END OF TEST PROGRAM.           
-[ 99 END ]                                                                      

@@ -1,3 +1,0 @@
-LET X = 12.3
-PRINT USING "ABC ###.### DEF";X
-

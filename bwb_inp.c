@@ -34,6 +34,8 @@
 /*                                                               */
 /* Version 3.10 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.20 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
 
 
@@ -41,29 +43,124 @@
 #include "bwbasic.h"
 
 
+static LineType *C77_file_input (LineType * Line, int FileNumber);
+static LineType *C77_file_input_finish (LineType * Line);
+static LineType *C77_file_input_line (LineType * Line);
+static LineType *C77_user_input_line (LineType * Line, char *Prompt,
+                                      int IsDisplayQuestionMark);
+static void CleanTextInput (char *buffer);
+static LineType *D71_GET (LineType * Line);
+static LineType *data_if_end (LineType * Line);
+static LineType *data_restore (LineType * Line);
+static ResultType file_data (VariableType * Variable, char *tbuf, int tlen);
+static LineType *file_if_end (LineType * Line);
+static LineType *file_input (LineType * Line);
+static LineType *file_read_matrix (LineType * Line);
+static LineType *file_restore (LineType * Line);
+static LineType *H14_GET (LineType * Line);
+static ResultType input_data (VariableType * Variable, char *tbuf, int tlen);
+static ResultType parse_number (char *buffer, int *position, VariantType * X,
+                                int IsConsoleInput);
+static ResultType parse_string (char *buffer, int *position, VariantType * X);
+static ResultType parse_string_isquoted (char *buffer, int *position,
+                                         VariantType * X);
+static ResultType parse_string_unquoted (char *buffer, int *position,
+                                         VariantType * X);
+static ResultType read_data (VariableType * Variable);
+static LineType *read_file (LineType * Line);
+static LineType *read_list (LineType * Line);
+static LineType *S70_GET (LineType * Line);
+static LineType *user_input_loop (LineType * Line);
+static ResultType user_input_values (LineType * Line, char *buffer,
+                                     int IsReal);
 
 
+int
+bwb_is_eof (FILE * fp)
+{
+  /* 
+     Have you ever wondered why C file I/O is slow?   Here is the reason:
+     feof() is not set until after a file read error occurs; sad but true. 
+     In order to determine whether you are at the end-of-file,
+     you have to call both ftell() and fseek() twice,
+     which effectively trashes any I/O cache scheme.  
+   */
+   
+  assert (fp != NULL);
 
-/* Declarations of functions visible to this file only */
+  if (fp != NULL)
+  {
+    long current;
+    long total;
+
+    current = ftell (fp);
+    fseek (fp, 0, SEEK_END);
+    total = ftell (fp);
+    if (total == current)
+    {
+      /* EOF */
+      return TRUE;
+    }
+    else
+    {
+      /* NOT EOF */
+      fseek (fp, current, SEEK_SET);
+      return FALSE;
+    }
+  }
+  /* a closed file is always EOF */
+  return TRUE;
+}
 
 
-
-
-static LineType *bwb_xinp(LineType * l, FILE * f, char delimit);
-static int       inp_str( /* LineType * l, */ char *buffer, char *var_list, int *position, int IsFake);
-static int       inp_const(char *m_buffer, char *s_buffer, int *position);
-static int       inp_assign(char *b, VariableType * v, int IsFake, int IsInput);
-static int       read_data(VariableType *v);
-
-
-
-
-/* ResultCode */
-#define RESULT_OK 0
-#define RESULT_UNKNOWN 1
-#define RESULT_TYPE_MMISMATCH 2
-#define RESULT_ARITHMETIC_OVERFLOW 3
-
+static void
+CleanTextInput (char *buffer)
+{
+  /*
+   **
+   ** Clean the TEXT in the INPUT buffer after fgets().  Not for RANDOM or BINARY.
+   **
+   */
+  char *E;
+   
+  assert (buffer != NULL);
+  /*
+   **
+   ** some compilers remove CR, but not LF.
+   ** some compilers remove LF, but not CR.
+   ** some compilers remove CR/LF but not LF/CR.
+   ** some compilers remove both CR and LF.
+   ** some compilers remove the first CR or LF, but not the second LF or CR.
+   ** some compilers don't remove either CR or LF.
+   ** and so on.
+   **
+   */
+  E = bwb_strchr (buffer, '\r');
+  if (E != NULL)
+  {
+    *E = NulChar;
+  }
+  E = bwb_strchr (buffer, '\n');
+  if (E != NULL)
+  {
+    *E = NulChar;
+  }
+  /*
+   **
+   ** Suppress all control characters.
+   ** In theory, there should not be any control characters at all.
+   ** In reality, they occassionally occur.
+   ** 
+   */
+  while (*buffer)
+  {
+    if (bwb_isprint (*buffer) == FALSE)
+    {
+      *buffer = ' ';
+    }
+    buffer++;
+  }
+}
 
 
 
@@ -77,252 +174,271 @@ static int       read_data(VariableType *v);
   
 ***************************************************************/
 
-int bwb_is_eof( FILE * fp )
+extern int
+bwx_input (char *prompt, int IsDisplayQuestionMark, char *answer, int MaxLen)
 {
-   /* 
-   Have you ever wondered why C file I/O is slow?   Here is the reason:
-   feof() is not set until after a file read error occurs; sad but true. 
-   In order to determine whether you are at the end-of-file,
-   you have to call both ftell() and fseek() twice,
-   which effectively trashes any I/O cache scheme.  
-   */
-   if( fp != NULL )
-   {
-      long current;
-      long total;
    
-      current = ftell( fp );
-      fseek( fp, 0, SEEK_END );
-      total = ftell( fp ) ;
-      if( total == current )
+  assert (answer != NULL);
+  assert(My != NULL);
+  assert(My->SYSOUT != NULL);
+  assert(My->SYSOUT->cfp != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+
+  if (prompt != NULL)
+  {
+    while (*prompt)
+    {
+      if (*prompt == '\n')
       {
-         /* EOF */
-         return TRUE;
+        My->SYSOUT->col = 0;        /* incremented below */
+        My->SYSOUT->row++;
       }
       else
+        if (My->SYSOUT->width > 0
+            && My->SYSOUT->col > My->SYSOUT->width /* && *prompt != '\n' */ )
       {
-         /* NOT EOF */
-         fseek( fp, current, SEEK_SET );
-         return FALSE;
+        fputc ('\n', My->SYSOUT->cfp);
+        My->SYSOUT->col = 0;        /* incremented below */
+        My->SYSOUT->row++;
       }
-   }
-   /* a closed file is always EOF */
-   return TRUE;
-}
-
-
-static void clean_cr_lf( char * buffer )
-{
-   /* 
-   some compilers remove CR, but not LF.
-   some compilers remove LF, but not CR.
-   some compilers remove CR/LF but not LF/CR.
-   some compilers remove either CR or LF.
-   some compilers remove first CR or LF, but not second LF or CR.
+      fputc (*prompt, My->SYSOUT->cfp);
+      My->SYSOUT->col++;
+      prompt++;
+    }
+  }
+  if (IsDisplayQuestionMark)
+  {
+    fputs ("? ", My->SYSOUT->cfp);
+    My->SYSOUT->col += 2;
+  }
+  fflush (My->SYSOUT->cfp);
+  /*
+   **
+   ** for PTR or OPTION STDIN ...
+   **
    */
+  if (My->SYSIN->cfp != stdin)
+  {
+    /* this file was opened by PTR or OPTION STDIN commands */
+    if (fgets (answer, MaxLen, My->SYSIN->cfp))        /* bwx_input */
+    {
+      answer[MaxLen] = NulChar;
+      CleanTextInput (answer);
+      fputs (answer, My->SYSOUT->cfp);
+      fputc ('\n', My->SYSOUT->cfp);
+      fflush (My->SYSOUT->cfp);
+      ResetConsoleColumn ();
+      return TRUE;
+    }
+    /* stop reading from PTR or OPTION STDIN once all INPUT lines have been read */
+    bwb_fclose (My->SYSIN->cfp);
+    My->SYSIN->cfp = stdin;
+    /* INPUT reverts to stdin */
+  }
+  /* My->SYSIN->cfp == stdin */
+  /*
+   **
+   ** ... for PTR or OPTION STDIN
+   **
+   */
+  /*
+   **
+   ** for automated testing ... 
+   **
+   */
+  if (My->ExternalInputFile != NULL)
+  {
+    /* this file was opened by --TAPE command line parameter */
+    if (fgets (answer, MaxLen, My->ExternalInputFile))        /* bwx_input */
+    {
+      answer[MaxLen] = NulChar;
+      CleanTextInput (answer);
+      fputs (answer, My->SYSOUT->cfp);
+      fputc ('\n', My->SYSOUT->cfp);
+      fflush (My->SYSOUT->cfp);
+      ResetConsoleColumn ();
+      return TRUE;
+    }
+    /* stop reading from --TAPE once all INPUT lines have been read */
+    bwb_fclose (My->ExternalInputFile);
+    My->ExternalInputFile = NULL;
+    /* INPUT reverts to My->SYSIN->cfp */
+  }
+  /*
+   **
+   ** ... for automated testing
+   **
+   */
+  if (fgets (answer, MaxLen, My->SYSIN->cfp))        /* bwx_input */
+  {
+    /* this is stdin */
+    answer[MaxLen] = NulChar;
+    CleanTextInput (answer);
+    ResetConsoleColumn ();
+    return TRUE;
+  }
+  /* nothing was read from stdin */
+  answer[0] = NulChar;
+  CleanTextInput (answer);
+  ResetConsoleColumn ();
+  return FALSE;
+}
+
+
+extern LineType *
+bwb_BACKSPACE (LineType * Line)
+{
+
    
-    char *E;
-    E = bwb_strchr(buffer, '\r');
-    if( E != NULL )
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+
+  My->CurrentFile = My->SYSIN;
+
+  if (line_skip_FilenumChar (Line))
+  {
+    /* BACKSPACE # filenum */
+    int FileNumber;
+
+    if (line_read_integer_expression (Line, &FileNumber) == FALSE)
     {
-       *E = BasicNulChar;
+      WARN_SYNTAX_ERROR;
+      return (Line);
     }
-    E = bwb_strchr(buffer, '\n');
-    if( E != NULL )
+    if (FileNumber < 0)
     {
-       *E = BasicNulChar;
+      /* "BACKSPACE # -1" is silently ignored */
+      return (Line);
     }
-}
+    if (FileNumber == 0)
+    {
+      /* "BACKSPACE # 0" is silently ignored */
+      return (Line);
+    }
+    My->CurrentFile = find_file_by_number (FileNumber);
+    if (My->CurrentFile == NULL)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    /* not for the console */
+    /* if( TRUE ) */
+    {
+      FILE *f;
+      long Offset;
+      int DelimiterCount;
+      int InQuote;
+      int C;
 
-int
-bwx_input(char *prompt, char *buffer)
-{
+      f = My->CurrentFile->cfp;
+      Offset = ftell (f);
+      Offset--;
+      DelimiterCount = 0;
+      InQuote = FALSE;
 
-   bwx_DEBUG(__FUNCTION__);
-
-   prn_xprintf(prompt);
-
-   fflush( My->SYSOUT->cfp );
-
-   /* for automated testing, TAPE command */
-   if (My->IsCommandLineFile == TRUE)
-   {
-      if ( My->ExternalInputFile != NULL )
+    AGAIN:
+      if (Offset <= 0)
       {
-         if( fgets(buffer, BasicStringLengthMax, My->ExternalInputFile) == NULL
-         ||  feof( My->ExternalInputFile )
-         )
-         {
-            /* stop reading from external file once all INPUT lines have been read */
-            fclose(My->ExternalInputFile); /* My->ExternalInputFile != NULL */
-            My->ExternalInputFile = NULL;
-         }
-         else
-         {
-            fputs( buffer, My->SYSOUT->cfp );
-            fflush(My->SYSOUT->cfp);
-            clean_cr_lf( buffer );
-            ResetConsoleColumn();
-            return TRUE;
-         }
+        goto DONE;
       }
-   }
-   fgets(buffer, BasicStringLengthMax, My->SYSIN->cfp);
-   clean_cr_lf( buffer );
-   ResetConsoleColumn();
-   return TRUE;
-}
+      fseek (f, Offset, SEEK_SET);
+      C = fgetc (f);
 
-
-LineType *
-bwb_BACKSPACE(LineType * l)
-{
-
-   bwx_DEBUG(__FUNCTION__);
-
-   My->CurrentFile = My->SYSIN;
-
-   if ( line_skip_char(l,BasicFileNumberPrefix) )
-   {
-      /* BACKSPACE # filenum */
-      int             FileNumber;
-
-      if( line_read_integer_expression(l, &FileNumber) == FALSE )
+      if (InQuote)
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      } 
-      if( FileNumber < 0 )
-      {
-         /* "BACKSPACE # -1" is silently ignored */
-         return bwb_zline(l);
-      }   
-      if( FileNumber == 0 )
-      {
-         /* "BACKSPACE # 0" is silently ignored */
-         return bwb_zline(l);
-      }   
-      My->CurrentFile = find_file_by_number( FileNumber );
-      if( My->CurrentFile == NULL )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
+        if (C == My->CurrentVersion->OptionQuoteChar)
+        {
+          InQuote = FALSE;
+        }
+        Offset--;
+        goto AGAIN;
       }
-      if ((My->CurrentFile->mode & DEVMODE_READ) == 0)
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      /* not for the console */
-      /* if( TRUE ) */
-      {
-         FILE * f;
-         long Offset;
-         int DelimiterCount;
-         int InQuote;
-         int C;
 
-         f = My->CurrentFile->cfp;
-         Offset = ftell( f );
-         Offset--;
-         DelimiterCount = 0;
-         InQuote = FALSE;
-         
-         AGAIN:
-         if( Offset <= 0 )
-         {
-            goto DONE;
-         }
-         fseek( f, Offset, SEEK_SET );
-         C = fgetc( f );
-         
-         if( InQuote )
-         {
-            if( C == BasicQuoteChar )
-            {
-               InQuote = FALSE;
-            }
-            Offset--;
-            goto AGAIN;
-         }
-         
-         if( C == BasicQuoteChar )
-         {
-            InQuote = TRUE;
-            Offset--;
-            goto AGAIN;
-         }
-         
-         
-         if( C == ',' )
-         {
-            DelimiterCount++;
-            if( DelimiterCount > 1 )
-            {
-               Offset++;
-               goto DONE;
-            }
-            Offset--;
-            goto AGAIN;
-         }
-         
-         if( C == '\n' )
-         {
-            DelimiterCount++;
-            if( DelimiterCount > 1 )
-            {
-               Offset++;
-               goto DONE;
-            }
-            Offset--;
-            if( Offset <= 0 )
-            {
-               goto DONE;
-            }
-            fseek( f, Offset, SEEK_SET );
-            C = fgetc( f );
-            if( C == '\r' )
-            {
-               Offset--;
-            }
-            goto AGAIN;
-         }
-         
-         if( C == '\r' )
-         {
-            DelimiterCount++;
-            if( DelimiterCount > 1 )
-            {
-               Offset++;
-               goto DONE;
-            }
-            Offset--;
-            if( Offset <= 0 )
-            {
-               goto DONE;
-            }
-            fseek( f, Offset, SEEK_SET );
-            C = fgetc( f );
-            if( C == '\n' )
-            {
-               Offset--;
-            }
-            goto AGAIN;
-         }
-         
-         Offset--;
-         goto AGAIN;
-         
-         DONE:
-         if( Offset < 0 )
-         {
-            Offset = 0;
-         }
-         fseek( f, Offset, SEEK_SET );
+      if (C == My->CurrentVersion->OptionQuoteChar)
+      {
+        InQuote = TRUE;
+        Offset--;
+        goto AGAIN;
       }
-   }
-   /* BACKSPACE for console is silently ignored */
-   return bwb_zline(l);
+
+
+      if (C == ',')
+      {
+        DelimiterCount++;
+        if (DelimiterCount > 1)
+        {
+          Offset++;
+          goto DONE;
+        }
+        Offset--;
+        goto AGAIN;
+      }
+
+      if (C == '\n')
+      {
+        DelimiterCount++;
+        if (DelimiterCount > 1)
+        {
+          Offset++;
+          goto DONE;
+        }
+        Offset--;
+        if (Offset <= 0)
+        {
+          goto DONE;
+        }
+        fseek (f, Offset, SEEK_SET);
+        C = fgetc (f);
+        if (C == '\r')
+        {
+          Offset--;
+        }
+        goto AGAIN;
+      }
+
+      if (C == '\r')
+      {
+        DelimiterCount++;
+        if (DelimiterCount > 1)
+        {
+          Offset++;
+          goto DONE;
+        }
+        Offset--;
+        if (Offset <= 0)
+        {
+          goto DONE;
+        }
+        fseek (f, Offset, SEEK_SET);
+        C = fgetc (f);
+        if (C == '\n')
+        {
+          Offset--;
+        }
+        goto AGAIN;
+      }
+
+      Offset--;
+      goto AGAIN;
+
+    DONE:
+      if (Offset < 0)
+      {
+        Offset = 0;
+      }
+      fseek (f, Offset, SEEK_SET);
+    }
+  }
+  /* BACKSPACE for console is silently ignored */
+  return (Line);
 }
 
 
@@ -339,159 +455,306 @@ bwb_BACKSPACE(LineType * l)
   
 ***************************************************************/
 
-LineType *
-bwb_READ(LineType * l)
+static LineType *
+C77_file_input (LineType * Line, int FileNumber)
+{
+  /* 
+     CBASIC-II: SERIAL & RANDOM file reads
+     READ  # FileNumber                ; [ scalar   [ , ... ] ] ' SERIAL
+     READ  # FileNumber , RecordNumber ; [ scalar   [ , ... ] ] ' RANDOM
+   */
+  assert (Line != NULL);
+  assert(My != NULL);
+
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  /* normal file */
+  My->CurrentFile = find_file_by_number (FileNumber);
+  if (My->CurrentFile == NULL)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (line_skip_CommaChar (Line) /* comma-specific */ )
+  {
+    /* 
+       READ # FileNumber , RecordNumber ; [ scalar   [ , ... ] ] ' RANDOM
+     */
+    /* get the RecordNumber */
+    int RecordNumber;
+
+    if ((My->CurrentFile->DevMode & DEVMODE_RANDOM) == 0)
+    {
+      WARN_BAD_FILE_MODE;
+      return (Line);
+    }
+    if (My->CurrentFile->width <= 0)
+    {
+      WARN_FIELD_OVERFLOW;
+      return (Line);
+    }
+    if (line_read_integer_expression (Line, &RecordNumber) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (RecordNumber <= 0)
+    {
+      WARN_BAD_RECORD_NUMBER;
+      return (Line);
+    }
+    RecordNumber--;                /* BASIC to C */
+    /* if( TRUE ) */
+    {
+      long offset;
+      offset = RecordNumber;
+      offset *= My->CurrentFile->width;
+      fseek (My->CurrentFile->cfp, offset, SEEK_SET);
+    }
+  }
+
+  if (line_is_eol (Line))
+  {
+    /* READ # filenum          */
+    /* READ # filenum , recnum */
+    return (Line);
+  }
+
+  if (line_skip_SemicolonChar (Line) /* semicolon specific */ )
+  {
+    /* READ # filenum          ; */
+    /* READ # filenum , recnum ; */
+  }
+  else
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (line_is_eol (Line))
+  {
+    return (Line);
+  }
+  /* input is not from #0, so branch to file_input() */
+  return file_input (Line);
+}
+
+static LineType *
+data_if_end (LineType * Line)
+{
+  WARN_OUT_OF_DATA;
+  return (Line);
+}
+
+static ResultType
+read_data (VariableType * Variable)
+{
+  /*
+   **
+   ** read one DATA item
+   **
+   */
+  ResultType Result;
+  VariantType Variant;
+  VariantType *X;
+   
+  assert (Variable != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert (My->CurrentFile == My->SYSIN);
+  assert(My->DataLine != NULL);
+  assert(My->EndMarker != NULL);
+
+  Result = RESULT_UNPARSED;
+  X = &Variant;
+  CLEAR_VARIANT (X);
+  if (My->DataLine == My->EndMarker)
+  {
+    return RESULT_UNPARSED;
+  }
+  if (My->DataLine->cmdnum != C_DATA)
+  {
+    WARN_INTERNAL_ERROR;
+    return RESULT_UNPARSED;
+  }
+  if (VAR_IS_STRING (Variable))
+  {
+    Result = parse_string (My->DataLine->buffer, &My->DataPosition, X);
+  }
+  else
+  {
+    Result = parse_number (My->DataLine->buffer, &My->DataPosition, X, FALSE);
+  }
+  if (Result == RESULT_UNPARSED)
+  {
+    WARN_BAD_DATA;
+  }
+  if (Result != RESULT_SUCCESS)
+  {
+    return Result;
+  }
+  /*
+   **
+   ** OK
+   **
+   */
+  if (X->VariantTypeCode == StringTypeCode
+      && My->CurrentVersion->OptionFlags & OPTION_BUGS_ON ) /* DATA allows embedded quote pairs */
+  {
+    int i;
+    int n;
+    n = X->Length;
+    for (i = 0; i < n; i++)
+    {
+      if (X->Buffer[i + 0] == My->CurrentVersion->OptionQuoteChar
+          && X->Buffer[i + 1] == My->CurrentVersion->OptionQuoteChar)
+      {
+        bwb_strncpy (&X->Buffer[i + 0], &X->Buffer[i + 1], n - i);
+        n--;
+      }
+    }
+    X->Length = n;
+  }
+  if (var_set (Variable, X) == FALSE)
+  {
+    WARN_VARIABLE_NOT_DECLARED;
+    return RESULT_UNPARSED;
+  }
+  /*
+   **
+   ** Note: do NOT free() or RELEASE_VARIANT because 'X->Buffer' points into 'buffer'
+   **
+   */
+  if (buff_is_eol (My->DataLine->buffer, &My->DataPosition))
+  {
+    /* at the end of the current DATA statement */
+    if (My->CurrentVersion->OptionFlags & OPTION_COVERAGE_ON)
+    {
+      /* this line has been READ */
+      My->DataLine->LineFlags |= LINE_EXECUTED;
+    }
+    My->DataLine = My->DataLine->OtherLine;
+    My->DataPosition = My->DataLine->Startpos;
+    return RESULT_SUCCESS;
+  }
+  if (buff_skip_char (My->DataLine->buffer, &My->DataPosition, My->CurrentFile->delimit))        /* buff_skip_comma */
+  {
+    return RESULT_SUCCESS;
+  }
+  /* garbage after the value we just READ */
+  WARN_BAD_DATA;
+  return RESULT_UNPARSED;
+}
+
+static LineType *
+read_list (LineType * Line)
+{
+  /* READ varlist */
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert (My->CurrentFile == My->SYSIN);
+
+  do
+  {
+    VariableType *Variable;
+
+    /* get a variable */
+    if ((Variable = line_read_scalar (Line)) == NULL)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    /* READ data into the variable */
+    if (read_data (Variable) != RESULT_SUCCESS)
+    {
+      return data_if_end (Line);
+    }
+  }
+  while (line_skip_seperator (Line));
+  return (Line);
+}
+
+static LineType *
+read_file (LineType * Line)
+{
+  /* READ # filenum, varlist */
+  int FileNumber;
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+
+  if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (C77))
+  {
+    return C77_file_input (Line, FileNumber);
+  }
+  /* 
+     SERIAL file reads:
+     READ # FileNumber   
+     READ # FileNumber [, scalar]
+   */
+  if (line_skip_seperator (Line))
+  {
+    /* required */
+  }
+  else
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (FileNumber < 0)
+  {
+    /* "READ # -1" is an error */
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (FileNumber > 0)
+  {
+    /* normal file */
+    My->CurrentFile = find_file_by_number (FileNumber);
+    if (My->CurrentFile == NULL)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    /* input is not from #0, so branch to file_input() */
+    return file_input (Line);
+  }
+  /* "READ # 0, varlist" is the same as "READ varlist" */
+  return read_list (Line);
+}
+
+extern LineType *
+bwb_READ (LineType * Line)
 {
 
-   bwx_DEBUG(__FUNCTION__);
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
 
-   My->CurrentFile = My->SYSIN;
+  My->CurrentFile = My->SYSIN;
 
-   if ( line_skip_char(l,BasicFileNumberPrefix) )
-   {
-      /* READ # filenum, varlist */
-      int             FileNumber;
-
-      if( line_read_integer_expression(l, &FileNumber) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-
-      if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
-      {
-         /* 
-         CBASIC-II: SERIAL & RANDOM file reads
-         READ  # file_number                 ; [ scalar_variable   [ , ... ] ] ' SERIAL
-         READ  # file_number , record_number ; [ scalar_variable   [ , ... ] ] ' RANDOM
-         */
-         if( FileNumber <= 0 )
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         /* normal file */
-         My->CurrentFile = find_file_by_number( FileNumber );
-         if( My->CurrentFile == NULL )
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if( line_skip_char( l, ',' )  /* comma-specific */ )
-         {
-            /* 
-            READ # file_number , record_number ; scalar [, scalar] ' RANDOM read
-            */
-            /* get the RecordNumber */
-            int RecordNumber;
-            
-            if( (My->CurrentFile->mode & DEVMODE_RANDOM) == 0 )
-            {
-               WARN_BAD_FILE_MODE;
-               return bwb_zline(l);
-            }
-            if( My->CurrentFile->width <= 0 )
-            {
-               WARN_FIELD_OVERFLOW;
-               return bwb_zline(l);
-            }
-            if( line_read_integer_expression( l, &RecordNumber ) == FALSE )
-            {
-               WARN_SYNTAX_ERROR;
-               return bwb_zline(l);
-            }
-            if( RecordNumber <= 0 )
-            {
-               WARN_BAD_RECORD_NUMBER;
-               return bwb_zline(l);
-            }
-            RecordNumber--; /* BASIC to C */
-            /* if( TRUE ) */
-            {
-               long offset;
-               offset = RecordNumber;
-               offset *= My->CurrentFile->width;
-               fseek( My->CurrentFile->cfp, offset, SEEK_SET );
-            }
-         }
-         if( line_is_eol( l ) )
-         {
-            /* READ # filenum          */
-            /* READ # filenum , recnum */
-         }
-         else
-         if( line_skip_char( l, ';' ) )
-         {
-            /* READ # filenum          ; */
-            /* READ # filenum , recnum ; */
-         }
-         else
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline(l);
-         }
-         /* input is not from #0, so branch to bwb_xinp() */
-         return bwb_xinp(l, My->CurrentFile->cfp, My->CurrentFile->delimit);
-      }
-      /* 
-      SERIAL file reads:
-      READ # file_number   
-      READ # file_number [, scalar]
-      */
-      if ( line_skip_comma(l) )
-      {
-         /* OK */
-      }
-      else
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( FileNumber < 0 )
-      {
-         /* "READ # -1" is an error */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if( FileNumber > 0 )
-      {
-         /* normal file */
-         My->CurrentFile = find_file_by_number( FileNumber );
-         if( My->CurrentFile == NULL )
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if ((My->CurrentFile->mode & DEVMODE_READ) == 0)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         /* input is not from #0, so branch to bwb_xinp() */
-         return bwb_xinp(l, My->CurrentFile->cfp, My->CurrentFile->delimit);
-      }
-      /* "READ # 0, varlist" is the same as "READ varlist" */
-   }
-   /* READ varlist */
-   do
-   {
-      VariableType *v;
-
-      /* get a variable */
-      if( (v = line_read_scalar( l )) == NULL )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      /* READ data into the variable */
-      if( read_data(v) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-   }
-   while( line_skip_comma(l) );
-   return bwb_zline(l);
+  if (line_skip_FilenumChar (Line))
+  {
+    return read_file (Line);
+  }
+  return read_list (Line);
 }
 
 /***************************************************************
@@ -509,15 +772,19 @@ bwb_READ(LineType * l)
   
 ***************************************************************/
 
-LineType *
-bwb_DATA(LineType * l)
+extern LineType *
+bwb_DATA (LineType * Line)
 {
+   
+  assert (Line != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
-
-   line_skip_eol(l);
-
-   return bwb_zline(l);
+  if (Line->LineFlags & (LINE_USER))
+  {
+    WARN_ILLEGAL_DIRECT;
+    return (Line);
+  }
+  line_skip_eol (Line);
+  return (Line);
 }
 
 
@@ -536,236 +803,277 @@ bwb_DATA(LineType * l)
   
 ***************************************************************/
 
-LineType *
-bwb_RESET(LineType * l)
+extern LineType *
+bwb_RESET (LineType * Line)
 {
-   /* RESET filename$ [, ...] */      
-   VariantType E;
-   VariantType *e = &E;  /* no leaks */
+  /* RESET filename$ [, ...] */
+  VariantType E;
+  VariantType *e;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
+  e = &E;                        /* no leaks */
+  My->CurrentFile = My->SYSIN;
 
-   My->CurrentFile = My->SYSIN;
-
-   do
-   {
-      line_skip_spaces(l);
-      if( line_read_expression( l, e ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( e->TypeChar == BasicStringSuffix )
-      {
-         /* STRING */
-         /* RESET filename$ ... */
-         My->CurrentFile = find_file_by_name( e->Buffer );
-      }
-      else
-      {
-         /* NUMBER -- file must already be OPEN */
-         /* RESET filenumber ... */
-         My->CurrentFile = find_file_by_number( (int) bwb_rint( e->Number ) );
-      }  
-      RELEASE( e );  
-      if( My->CurrentFile == NULL )
-      {
-         /* file not OPEN */
-         /* silently ignored */
-      }
-      else
-      if( My->CurrentFile == My->SYSIN )
-      {
-         /* silently ignored */
-      }
-      else
-      if( My->CurrentFile == My->SYSOUT )
-      {
-         /* silently ignored */
-      }
-      else
-      if( My->CurrentFile == My->SYSPRN )
-      {
-         /* silently ignored */
-      }
-      else
-      {
-         /* normal file is OPEN */
-         My->CurrentFile->width = 0;
-         My->CurrentFile->col = 1;
-         My->CurrentFile->row = 1;
-         My->CurrentFile->delimit = ',';
-         fseek( My->CurrentFile->cfp, 0, SEEK_SET );
-      }
-   }
-   while( line_skip_comma(l) );
-   return bwb_zline(l);
-}
-
-LineType *
-bwb_CLOSE(LineType * l)
-{
-   /* CLOSE filename$ [, ...] */      
-   VariantType E;
-   VariantType *e = &E;  /* no leaks */
-
-   bwx_DEBUG(__FUNCTION__);
-
-   My->CurrentFile = My->SYSIN;
-
-   do
-   {
-      line_skip_spaces(l);
-      if( line_read_expression( l, e ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( e->TypeChar == BasicStringSuffix )
-      {
-         /* STRING */
-         /* CLOSE filename$ ... */
-         My->CurrentFile = find_file_by_name( e->Buffer );
-      }
-      else
-      {
-         /* NUMBER -- file must already be OPEN */
-         /* CLOSE filenumber ... */
-         My->CurrentFile = find_file_by_number(  (int) bwb_rint( e->Number ) );
-      }  
-      RELEASE( e );  
-      if( My->CurrentFile == NULL )
-      {
-         /* file not OPEN */
-         /* silently ignored */
-      }
-      else
-      if( My->CurrentFile == My->SYSIN )
-      {
-         /* silently ignored */
-      }
-      else
-      if( My->CurrentFile == My->SYSOUT )
-      {
-         /* silently ignored */
-      }
-      else
-      if( My->CurrentFile == My->SYSPRN )
-      {
-         /* silently ignored */
-      }
-      else
-      {
-         /* normal file is OPEN */
-         file_clear( My->CurrentFile );
-      }
-   }
-   while( line_skip_comma(l) );
-   return bwb_zline(l);
-}
-
-
-LineType *
-bwb_RESTORE(LineType * l)
-{
-   int LineNumber;
-   LineType *x;
-
-   bwx_DEBUG(__FUNCTION__);
-
-   My->CurrentFile = My->SYSIN;
-
-   if( My->CurrentVersion->OptionVersionBitmask & ( I70 ) )
-   {
-      /* RESTORE [comment] */      
-      line_skip_eol(l);
-      My->data_line =  My->bwb_start.next;
-      My->data_pos =  My->data_line->Startpos;
-      return bwb_zline(l);
-   }
-
-
-   /* get the first element beyond the starting position */
-
-   if( line_skip_char(l, BasicFileNumberPrefix ) )
-   {
-      /* RESTORE # X */
-      int FileNumber;
-
-      if( line_read_integer_expression( l, &FileNumber ) == FALSE )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if( FileNumber < 0 )
-      {
-         /* "RESTORE # -1" is silently ignored */
-         return bwb_zline(l);
-      }
-      if( FileNumber > 0 )
-      {
-         /* normal file */
-         My->CurrentFile = find_file_by_number( FileNumber );
-         if( My->CurrentFile == NULL )
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if( My->CurrentFile->mode != DEVMODE_CLOSED )
-         {
-            if( My->CurrentFile->cfp != NULL )
-            {
-               fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
-            }
-            if( My->CurrentFile->buffer != NULL )
-            {
-               FREE( My->CurrentFile->buffer, "bwb_FILES" );
-            }
-         }
-         My->CurrentFile->width = 0;
-         My->CurrentFile->col = 1;
-         My->CurrentFile->row = 1;
-         My->CurrentFile->delimit = ',';
-         My->CurrentFile->buffer = NULL;
-         My->CurrentFile->mode = DEVMODE_CLOSED;
-         if( bwb_strcmp( My->CurrentFile->filename, "*" ) != 0 )
-         {
-            if( (My->CurrentFile->cfp = fopen( My->CurrentFile->filename, "r" )) == NULL )
-            {
-               WARN_BAD_FILE_NAME;
-               return bwb_zline(l);
-            }
-            My->CurrentFile->mode = DEVMODE_INPUT;
-         }
-         /* OK */
-         return bwb_zline(l);
-      }
-      /* "RESTORE # 0" is the same as "RESTORE"  */
-   }
-   if( line_is_eol(l) == TRUE )
-   {
-      /* RESTORE */
-      My->data_line =  My->bwb_start.next;
-      My->data_pos =  My->data_line->Startpos;
-      return bwb_zline(l);
-   }
-   /* RESTORE linenumber */
-   if( line_read_integer_expression(l, &LineNumber) == FALSE )
-   {
+  do
+  {
+    CLEAR_VARIANT (e);
+    if (line_read_expression (Line, e) == FALSE)        /* bwb_RESET */
+    {
       WARN_SYNTAX_ERROR;
-      return bwb_zline(l);
-   }
-   /* check for target label */
-   x = find_line_number( LineNumber, TRUE );
-   if (x != NULL)
-   {
-      /* reassign  My->data_line */
-      My->data_line = x;
-      My->data_pos = x->Startpos;
-      return bwb_zline(l);
-   }
-   WARN_SYNTAX_ERROR;
-   return bwb_zline(l);
+      return (Line);
+    }
+    if (e->VariantTypeCode == StringTypeCode)
+    {
+      /* STRING */
+      /* RESET filename$ ... */
+      My->CurrentFile = find_file_by_name (e->Buffer);
+    }
+    else
+    {
+      /* NUMBER -- file must already be OPEN */
+      /* RESET filenumber ... */
+      My->CurrentFile = find_file_by_number ((int) bwb_rint (e->Number));
+    }
+    RELEASE_VARIANT (e);
+    if (My->CurrentFile == NULL)
+    {
+      /* file not OPEN */
+      /* silently ignored */
+    }
+    else if (My->CurrentFile == My->SYSIN)
+    {
+      /* silently ignored */
+    }
+    else if (My->CurrentFile == My->SYSOUT)
+    {
+      /* silently ignored */
+    }
+    else if (My->CurrentFile == My->SYSPRN)
+    {
+      /* silently ignored */
+    }
+    else
+    {
+      /* normal file is OPEN */
+      My->CurrentFile->width = 0;
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
+      My->CurrentFile->delimit = ',';
+      fseek (My->CurrentFile->cfp, 0, SEEK_SET);
+    }
+  }
+  while (line_skip_seperator (Line));
+  return (Line);
+}
+
+extern LineType *
+bwb_CLOSE (LineType * Line)
+{
+  /* CLOSE filename$  ' can be any string expression */
+  /* CLOSE filenumber ' can be any numeric expression */
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert(My->SYSOUT != NULL);
+  assert(My->SYSOUT->cfp != NULL);
+  assert(My->SYSPRN != NULL);
+  assert(My->SYSPRN->cfp != NULL);
+
+  My->CurrentFile = My->SYSIN;
+
+  if (line_is_eol (Line))
+  {
+    /* CLOSE */
+    FileType *F;
+
+    for (F = My->FileHead; F != NULL; F = F->next)
+    {
+      field_close_file (F);
+      file_clear (F);
+    }
+    return (Line);
+  }
+
+  do
+  {
+    VariantType E;
+    VariantType *e;
+    e = &E;
+
+    if (line_read_expression (Line, e) == FALSE)        /* bwb_CLOSE */
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (e->VariantTypeCode == StringTypeCode)
+    {
+      /* STRING */
+      /* CLOSE filename$ ... */
+      My->CurrentFile = find_file_by_name (e->Buffer);
+    }
+    else
+    {
+      /* CLOSE filenumber */
+      My->CurrentFile = find_file_by_number (e->Number);
+    }
+    if (My->CurrentFile == NULL)
+    {
+      /* file not OPEN */
+      /* silently ignored */
+    }
+    else if (My->CurrentFile == My->SYSIN)
+    {
+      /* silently ignored */
+    }
+    else if (My->CurrentFile == My->SYSOUT)
+    {
+      /* silently ignored */
+    }
+    else if (My->CurrentFile == My->SYSPRN)
+    {
+      /* silently ignored */
+    }
+    else
+    {
+      /* normal file is OPEN */
+      field_close_file (My->CurrentFile);
+      file_clear (My->CurrentFile);
+    }
+    RELEASE_VARIANT (e);
+  }
+  while (line_skip_seperator (Line));
+  return (Line);
+}
+
+static LineType *
+data_restore (LineType * Line)
+{
+  int LineNumber;
+  LineType *x;
+  assert (Line != NULL);
+  assert(My != NULL);
+
+  if (line_is_eol (Line))
+  {
+    /* RESTORE */
+    assert (My->StartMarker != NULL);
+    My->DataLine = My->StartMarker->OtherLine;
+    assert (My->DataLine != NULL);
+    My->DataPosition = My->DataLine->Startpos;
+    return (Line);
+  }
+  if (line_read_integer_expression (Line, &LineNumber))
+  {
+    /* RESTORE linenumber */
+    x = find_line_number (LineNumber);        /* RESTORE 100 */
+    if (x != NULL)
+    {
+      for (; x->cmdnum != C_DATA && x != My->EndMarker; x = x->next);
+      My->DataLine = x;
+      assert (My->DataLine != NULL);
+      My->DataPosition = My->DataLine->Startpos;
+      return (Line);
+    }
+  }
+  WARN_SYNTAX_ERROR;
+  return (Line);
+}
+static LineType *
+file_restore (LineType * Line)
+{
+  /* RESTORE # FileNumber */
+  int FileNumber;
+  assert (Line != NULL);
+  assert(My != NULL);
+
+  if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (FileNumber < 0)
+  {
+    /* "RESTORE # -1" is silently ignored */
+    return (Line);
+  }
+  if (FileNumber > 0)
+  {
+    /* normal file */
+    My->CurrentFile = find_file_by_number (FileNumber);
+    if (My->CurrentFile == NULL)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (My->CurrentFile->DevMode != DEVMODE_CLOSED)
+    {
+      My->CurrentFile->DevMode = DEVMODE_CLOSED;
+    }
+    if (My->CurrentFile->cfp != NULL)
+    {
+      bwb_fclose (My->CurrentFile->cfp);
+      My->CurrentFile->cfp = NULL;
+    }
+    if (My->CurrentFile->buffer != NULL)
+    {
+      free (My->CurrentFile->buffer);
+      My->CurrentFile->buffer = NULL;
+    }
+    My->CurrentFile->width = 0;
+    My->CurrentFile->col = 1;
+    My->CurrentFile->row = 1;
+    My->CurrentFile->delimit = ',';
+    if (is_empty_string (My->CurrentFile->FileName))
+    {
+      WARN_BAD_FILE_NAME;
+      return (Line);
+    }
+    if (bwb_strcmp (My->CurrentFile->FileName, "*") != 0)
+    {
+      if ((My->CurrentFile->cfp =
+           fopen (My->CurrentFile->FileName, "r")) == NULL)
+      {
+        WARN_BAD_FILE_NAME;
+        return (Line);
+      }
+      My->CurrentFile->DevMode = DEVMODE_INPUT;
+    }
+    /* OK */
+    return (Line);
+  }
+  /* "RESTORE # 0" is the same as "RESTORE"  */
+  return data_restore (Line);
+}
+
+extern LineType *
+bwb_RESTORE (LineType * Line)
+{
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+
+  My->CurrentFile = My->SYSIN;
+
+  if (line_skip_FilenumChar (Line))
+  {
+    return file_restore (Line);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (S70 | I70 | I73))
+  {
+    /* RESTORE [comment] */
+    line_skip_eol (Line);
+    /* fall-thru */
+  }
+  return data_restore (Line);
 }
 
 /***************************************************************
@@ -780,737 +1088,903 @@ bwb_RESTORE(LineType * l)
   
 ***************************************************************/
 
-LineType *
-bwb_GET(LineType * l)
+static LineType *
+S70_GET (LineType * Line)
 {
-   bwx_DEBUG(__FUNCTION__);
+  /* GET filename$ , scalar [, ...] */
+  VariantType E;
+  VariantType *e;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
 
-   if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
-   {
-      /* GET filename$ , scalar [, ...] */
-      VariantType E;
-      VariantType *e = &E;  
-   
-   
-      My->CurrentFile = My->SYSIN;
-   
-      line_skip_spaces(l);
-      if( line_read_expression( l, e ) == FALSE )
+  e = &E;
+  My->CurrentFile = My->SYSIN;
+
+  if (line_read_expression (Line, e) == FALSE)        /* bwb_GET */
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (e->VariantTypeCode == StringTypeCode)
+  {
+    /* STRING */
+    /* GET filename$ ... */
+    if (is_empty_string (e->Buffer))
+    {
+      /* GET "", ... is an error */
+      WARN_BAD_FILE_NAME;
+      return (Line);
+    }
+    My->CurrentFile = find_file_by_name (e->Buffer);
+    if (My->CurrentFile == NULL)
+    {
+      /* implicitly OPEN for reading */
+      My->CurrentFile = file_new ();
+      My->CurrentFile->cfp = fopen (e->Buffer, "r");
+      if (My->CurrentFile->cfp == NULL)
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
+        WARN_BAD_FILE_NAME;
+        return (Line);
       }
-      if( e->TypeChar == BasicStringSuffix )
+      My->CurrentFile->FileNumber = file_next_number ();
+      My->CurrentFile->DevMode = DEVMODE_INPUT;
+      My->CurrentFile->width = 0;
+      /* WIDTH == RECLEN */
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
+      My->CurrentFile->delimit = ',';
+      My->CurrentFile->buffer = NULL;
+      if (My->CurrentFile->FileName != NULL)
       {
-         /* STRING */
-         /* GET filename$ ... */
-         if( is_empty_filename( e->Buffer ) )
-         {
-            /* "GET # 0" is an error */
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         My->CurrentFile = find_file_by_name( e->Buffer );
-         if( My->CurrentFile == NULL )
-         {
-            /* implicitly OPEN for reading */
-            My->CurrentFile = file_new();
-            My->CurrentFile->cfp = fopen(e->Buffer, "r");
-            if( My->CurrentFile->cfp == NULL )
-            {
-               /* bad file name */
-               WARN_BAD_FILE_NUMBER;
-               return bwb_zline(l);
-            }
-            My->CurrentFile->FileNumber = file_next_number();
-            My->CurrentFile->mode = DEVMODE_INPUT;
-            My->CurrentFile->width = 0;
-            /* WIDTH == RECLEN */
-            My->CurrentFile->col = 1;
-            My->CurrentFile->row = 1;
-            My->CurrentFile->delimit = ',';
-            My->CurrentFile->buffer = NULL;
-            bwb_strcpy(My->CurrentFile->filename, e->Buffer);
-         }
+        free (My->CurrentFile->FileName);
+        My->CurrentFile->FileName = NULL;
       }
-      else
-      {
-         /* NUMBER -- file must already be OPEN */
-         /* GET filenumber ... */
-         if( e->Number < 0 )
-         {
-            /* "GET # -1" is an error */
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if( e->Number == 0 )
-         {
-            /* "GET # 0" is an error */
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         My->CurrentFile = find_file_by_number( (int) bwb_rint( e->Number ) );
-         if( My->CurrentFile == NULL )
-         {
-            /* file not OPEN */
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-      }  
-      RELEASE( e );  
-      if( My->CurrentFile == NULL )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if (( My->CurrentFile->mode & DEVMODE_READ) == 0)
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if ( line_skip_comma(l) )
-      {
-         /* OK */
-      }
-      else
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      return bwb_xinp(l, My->CurrentFile->cfp, My->CurrentFile->delimit);
-   }
-   else
-   if( My->CurrentVersion->OptionVersionBitmask & ( D71 ) )
-   {
-      /* GET # file_number [ , RECORD record_number ] */
-      int file_number = 0;
-      if( line_skip_char( l, BasicFileNumberPrefix ) == FALSE )
-      {
-         /* OPTIONAL */
-      }
-      if( line_read_integer_expression( l, &file_number ) == FALSE )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( file_number < 1 )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      My->CurrentFile = find_file_by_number( file_number );
-      if( My->CurrentFile == NULL )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( My->CurrentFile->mode != DEVMODE_RANDOM )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( My->CurrentFile->width <= 0 )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( line_is_eol( l ) )
-      {
-         /* GET # file_number */
-      }
-      else
-      {
-         /* GET # file_number , RECORD record_number */
-         int record_number = 0;
-         long offset = 0;
-         if( line_skip_comma( l ) == FALSE )
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline( l );
-         }
-         if( line_skip_word( l, "RECORD" ) == FALSE )
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline( l );
-         }
-         if( line_read_integer_expression( l, &record_number ) == FALSE )
-         {
-            WARN_BAD_RECORD_NUMBER;
-            return bwb_zline( l );
-         }
-         if( record_number <= 0 )
-         {
-            WARN_BAD_RECORD_NUMBER;
-            return bwb_zline( l );
-         }
-         record_number--; /* BASIC to C */
-         offset = record_number;
-         offset *= My->CurrentFile->width;
-         if (fseek(My->CurrentFile->cfp, offset, SEEK_SET) != 0)
-         {
-            WARN_BAD_RECORD_NUMBER;
-            return bwb_zline( l );
-         }
-      }
-      /* if( TRUE ) */
-      {
-         int i;
-         for (i = 0; i < My->CurrentFile->width; i++)
-         {
-            int c;
-            c = fgetc( My->CurrentFile->cfp );
-            if( /* EOF */ c < 0 )
-            {
-               c = BasicNulChar;
-            }
-            My->CurrentFile->buffer[i] = c;
-         }
-      }
-      field_get( My->CurrentFile );
-      /* OK */
-      return bwb_zline( l );
-   }
-   WARN_SYNTAX_ERROR;
-   return bwb_zline(l);
+      My->CurrentFile->FileName = e->Buffer;
+      e->Buffer = NULL;
+    }
+  }
+  else
+  {
+    /* NUMBER -- file must already be OPEN */
+    /* GET filenumber ... */
+    if (e->Number < 0)
+    {
+      /* "GET # -1" is an error */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (e->Number == 0)
+    {
+      /* "GET # 0" is an error */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    My->CurrentFile = find_file_by_number ((int) bwb_rint (e->Number));
+    if (My->CurrentFile == NULL)
+    {
+      /* file not OPEN */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+  }
+  if (My->CurrentFile == NULL)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (line_skip_seperator (Line))
+  {
+    /* OK */
+  }
+  else
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  return file_input (Line);
 }
 
-LineType *
-bwb_INPUT(LineType * l)
+static LineType *
+D71_GET (LineType * Line)
 {
-   int             is_prompt;
-   int             suppress_qm;
-   char            tbuf[BasicStringLengthMax + 1];
-   char            pstring[BasicStringLengthMax + 1];
-   int             Loop;
-   int             LastPosition;
+  /* GET # FileNumber [ , RECORD RecordNumber ] */
+  int FileNumber;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
+  FileNumber = 0;
+  if (line_skip_FilenumChar (Line))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (FileNumber < 1)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  My->CurrentFile = find_file_by_number (FileNumber);
+  if (My->CurrentFile == NULL)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (My->CurrentFile->DevMode != DEVMODE_RANDOM)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (My->CurrentFile->width <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (line_is_eol (Line))
+  {
+    /* GET # FileNumber */
+  }
+  else
+  {
+    /* GET # FileNumber , RECORD RecordNumber */
+    int RecordNumber;
+    long offset;
 
-   My->CurrentFile = My->SYSIN;
-
-   pstring[0] = BasicNulChar;
-
-   if ( line_skip_char(l,BasicFileNumberPrefix) )
-   {
-      /* INPUT # X */
-      int FileNumber;
-
-      if( line_read_integer_expression(l, &FileNumber) == FALSE )
+    RecordNumber = 0;
+    offset = 0;
+    if (line_skip_seperator (Line) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (line_skip_word (Line, "RECORD") == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (line_read_integer_expression (Line, &RecordNumber) == FALSE)
+    {
+      WARN_BAD_RECORD_NUMBER;
+      return (Line);
+    }
+    if (RecordNumber <= 0)
+    {
+      WARN_BAD_RECORD_NUMBER;
+      return (Line);
+    }
+    RecordNumber--;                /* BASIC to C */
+    offset = RecordNumber;
+    offset *= My->CurrentFile->width;
+    if (fseek (My->CurrentFile->cfp, offset, SEEK_SET) != 0)
+    {
+      WARN_BAD_RECORD_NUMBER;
+      return (Line);
+    }
+  }
+  /* if( TRUE ) */
+  {
+    int i;
+    for (i = 0; i < My->CurrentFile->width; i++)
+    {
+      int c;
+      c = fgetc (My->CurrentFile->cfp);
+      if ( /* EOF */ c < 0)
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
+        c = NulChar;
       }
-      if ( line_skip_comma(l) )
+      My->CurrentFile->buffer[i] = c;
+    }
+  }
+  field_get (My->CurrentFile);
+  /* OK */
+  return (Line);
+}
+
+extern int
+binary_get_put (VariableType * Variable, int IsPUT)
+{
+  VariantType variant;
+  VariantType *Variant;
+   
+  assert(My != NULL);
+  assert (My->CurrentFile != NULL);
+  assert (My->CurrentFile->cfp != NULL);
+  assert (My->CurrentFile->DevMode == DEVMODE_BINARY);
+
+  Variant = &variant;
+  CLEAR_VARIANT (Variant);
+  if (var_get (Variable, Variant) == FALSE)
+  {
+    WARN_VARIABLE_NOT_DECLARED;
+    return FALSE;
+  }
+  switch (Variant->VariantTypeCode)
+  {
+  case ByteTypeCode:
+    {
+      ByteType Value;
+      Value = (ByteType) Variant->Number;
+      if (IsPUT)
       {
-         /* OK */
-      }
-      else
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( FileNumber < 0 )
-      {
-         /* "INPUT # -1" is an error */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if( FileNumber > 0 )
-      {
-         /* normal file */
-         My->CurrentFile = find_file_by_number( FileNumber );
-         if( My->CurrentFile == NULL )
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if ((My->CurrentFile->mode & DEVMODE_READ) == 0)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         return bwb_xinp(l, My->CurrentFile->cfp, ',' );
-      }
-      /* "INPUT #0, varlist" is the same as "INPUT varlist"  */
-   }
-   /* from this point we presume that input is from My->SYSIN */
-
-   /* check for a semicolon or a quotation mark, not in first position:
-    * this should indicate a prompt string */
-
-   suppress_qm = is_prompt = FALSE;
-
-   line_skip_spaces(l);
-
-   if( line_skip_comma( l ) )
-   {
-      /* INPUT ; "prompt" ... */
-      /* INPUT , "prompt" ... */
-      suppress_qm = TRUE;
-   }
-   if( line_peek_char( l, BasicQuoteChar ) )
-   {
-      is_prompt = TRUE;
-   }
-
-   /* get prompt string and print it */
-
-   if (is_prompt == TRUE)
-   {
-      /* get string element */
-      inp_const(l->buffer, pstring, &(l->position)); /* bwb_INPUT prompt */
-
-      /* advance past semicolon to beginning of variable */
-      /*--------------------------------------------------------*/
-      /* Since inp_const was just called and inp_adv is called  */
-      /* within that, it will have already noted and passed the */
-      /* comma by the time it gets here.  Therefore one must    */
-      /* refer instead to the last returned value for inp_adv!  */
-      /* (JBV, 10/95)                                           */
-      /*--------------------------------------------------------*/
-      /* suppress_qm = inp_adv( l->buffer, &( l->position ) ); */
-      suppress_qm = My->last_inp_adv_rval;
-
-   }        /* end condition: prompt string */
-   /* print out the question mark delimiter unless it has been suppressed */
-
-   if (suppress_qm != TRUE)
-   {
-      pstring[ BasicStringLengthMax - 2 ] = BasicNulChar;
-      bwb_strcat(pstring, "? ");
-   }
-
-   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
-   {
-      /* 
-      CBASIC-II: INPUT "prompt" ; LINE variable$
-      */
-      if( line_skip_word( l, "LINE" ) )
-      {
-         /* INPUT "prompt" ; LINE variable$ */
-         VariableType * v;
-         
-         if( (v = line_read_scalar( l )) == NULL )
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline( l );
-         }
-         if ( VAR_IS_STRING( v ) )
-         {
-            VariantType variant;
-            
-            bwx_input(pstring, tbuf);
-            bwb_stripcr(tbuf);
-            
-            variant.TypeChar = '$';
-            variant.Buffer = tbuf;
-            variant.Length = bwb_strlen( variant.Buffer );
-            if( var_set( v, &variant ) == FALSE )
-            {
-               WARN_VARIABLE_NOT_DECLARED;
-               return bwb_zline( l );
-            }
-            return bwb_zline( l );
-         }
-         WARN_TYPE_MISMATCH;
-         return bwb_zline( l );
-      }
-   }
-
-
-   Loop = TRUE;
-   LastPosition = l->position;
-   while (Loop == TRUE)
-   {
-      /* read a line into the input buffer */
-      int Result;
-      
-      bwx_input(pstring, tbuf);
-      bwb_stripcr(tbuf);
-
-      /* reset print column to account for LF at end of fgets() */
-      ResetConsoleColumn();
-
-      l->position = LastPosition;
-      
-      Result = inp_str( /* l, */ tbuf, l->buffer, &(l->position), TRUE); /* bwb_INPUT */
-      if( Result > 0 ) /* bwb_INPUT */
-      {
-         /* successful input, FAKE run  */
-         l->position = LastPosition;
-         Result = inp_str( /* l, */ tbuf, l->buffer, &(l->position), FALSE); /* bwb_INPUT */
-         if( Result > 0 ) 
-         {
-            /* successful input, REAL run  */
-            Loop = FALSE;
-         }
-      }
-      else
-      if( Result < 0 )
-      {
-         /* syntax error, FAKE run  */
-         Loop = FALSE;
+        if (fwrite (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
       }
       else
       {
-         fputs( "*** Retry INPUT ***\n", My->SYSOUT->cfp );
+        if (fread (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
       }
-   }        /* while( Loop == TRUE ) */
-   return bwb_zline(l);;
+      Variant->Number = Value;
+    }
+    break;
+  case IntegerTypeCode:
+    {
+      IntegerType Value;
+      Value = (IntegerType) Variant->Number;
+      if (IsPUT)
+      {
+        if (fwrite (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      else
+      {
+        if (fread (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      Variant->Number = Value;
+    }
+    break;
+  case LongTypeCode:
+    {
+      LongType Value;
+      Value = (LongType) Variant->Number;
+      if (IsPUT)
+      {
+        if (fwrite (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      else
+      {
+        if (fread (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      Variant->Number = Value;
+    }
+    break;
+  case CurrencyTypeCode:
+    {
+      CurrencyType Value;
+      Value = (CurrencyType) Variant->Number;
+      if (IsPUT)
+      {
+        if (fwrite (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      else
+      {
+        if (fread (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      Variant->Number = Value;
+    }
+    break;
+  case SingleTypeCode:
+    {
+      SingleType Value;
+      Value = (SingleType) Variant->Number;
+      if (IsPUT)
+      {
+        if (fwrite (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      else
+      {
+        if (fread (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      Variant->Number = Value;
+    }
+    break;
+  case DoubleTypeCode:
+    {
+      DoubleType Value;
+      Value = (DoubleType) Variant->Number;
+      if (IsPUT)
+      {
+        if (fwrite (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      else
+      {
+        if (fread (&(Value), sizeof (Value), 1, My->CurrentFile->cfp) != 1)
+        {
+          WARN_DISK_IO_ERROR;
+          return FALSE;
+        }
+      }
+      Variant->Number = Value;
+    }
+    break;
+  case StringTypeCode:
+    if (IsPUT)
+    {
+#if FALSE /* keep this ... */
+      if (fwrite
+          (&(Variant->Length), sizeof (Variant->Length), 1,
+           My->CurrentFile->cfp) != 1)
+      {
+        WARN_DISK_IO_ERROR;
+        return FALSE;
+      }
+#endif
+      if (fwrite (Variant->Buffer, Variant->Length, 1, My->CurrentFile->cfp)
+          != 1)
+      {
+        WARN_DISK_IO_ERROR;
+        return FALSE;
+      }
+    }
+    else
+    {
+#if FALSE /* keep this ... */
+      if (fread
+          (&(Variant->Length), sizeof (Variant->Length), 1,
+           My->CurrentFile->cfp) != 1)
+      {
+        WARN_DISK_IO_ERROR;
+        return FALSE;
+      }
+#endif
+      if (fread (Variant->Buffer, Variant->Length, 1, My->CurrentFile->cfp) !=
+          1)
+      {
+        WARN_DISK_IO_ERROR;
+        return FALSE;
+      }
+      Variant->Buffer[Variant->Length] = NulChar;
+    }
+    break;
+  default:
+    {
+      WARN_INTERNAL_ERROR;
+      return FALSE;
+    }
+  }
+  if (IsPUT)
+  {
+    /* not needed */
+  }
+  else
+  {
+    if (var_set (Variable, Variant) == FALSE)
+    {
+      WARN_VARIABLE_NOT_DECLARED;
+      return FALSE;
+    }
+  }
+  RELEASE_VARIANT (Variant);
+  /* OK */
+  return TRUE;
+}
+
+static LineType *
+H14_GET (LineType * Line)
+{
+  /* GET # FileNumber [ , RecordNumber ]                   ' RANDOM */
+  /* GET # FileNumber   , [ BytePosition ] , scalar [,...] ' BINARY */
+  int FileNumber;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+
+  FileNumber = 0;
+  if (line_skip_FilenumChar (Line))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (FileNumber < 1)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  My->CurrentFile = find_file_by_number (FileNumber);
+  if (My->CurrentFile == NULL)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (My->CurrentFile->DevMode == DEVMODE_RANDOM)
+  {
+    /* GET # FileNumber [ , RecordNumber ]                   ' RANDOM */
+    if (My->CurrentFile->width <= 0)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (line_is_eol (Line))
+    {
+      /* GET # FileNumber */
+    }
+    else
+    {
+      /* GET # FileNumber , RecordNumber */
+      int RecordNumber;
+      long offset;
+
+      RecordNumber = 0;
+      offset = 0;
+      if (line_skip_seperator (Line) == FALSE)
+      {
+        WARN_SYNTAX_ERROR;
+        return (Line);
+      }
+      if (line_read_integer_expression (Line, &RecordNumber) == FALSE)
+      {
+        WARN_BAD_RECORD_NUMBER;
+        return (Line);
+      }
+      if (RecordNumber <= 0)
+      {
+        WARN_BAD_RECORD_NUMBER;
+        return (Line);
+      }
+      RecordNumber--;                /* BASIC to C */
+      offset = RecordNumber;
+      offset *= My->CurrentFile->width;
+      if (fseek (My->CurrentFile->cfp, offset, SEEK_SET) != 0)
+      {
+        WARN_BAD_RECORD_NUMBER;
+        return (Line);
+      }
+    }
+    /* if( TRUE ) */
+    {
+      int i;
+      for (i = 0; i < My->CurrentFile->width; i++)
+      {
+        int c;
+        c = fgetc (My->CurrentFile->cfp);
+        if ( /* EOF */ c < 0)
+        {
+          c = NulChar;
+        }
+        My->CurrentFile->buffer[i] = c;
+      }
+    }
+    field_get (My->CurrentFile);
+    /* OK */
+    return (Line);
+  }
+  else if (My->CurrentFile->DevMode == DEVMODE_BINARY)
+  {
+    /* GET # FileNumber   , [ BytePosition ] , scalar [,...] ' BINARY */
+    if (line_skip_seperator (Line) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (line_skip_seperator (Line))
+    {
+      /* BytePosition not provided */
+    }
+    else
+    {
+      int RecordNumber;
+      long offset;
+
+      RecordNumber = 0;
+      offset = 0;
+      if (line_read_integer_expression (Line, &RecordNumber) == FALSE)
+      {
+        WARN_BAD_RECORD_NUMBER;
+        return (Line);
+      }
+      if (RecordNumber <= 0)
+      {
+        WARN_BAD_RECORD_NUMBER;
+        return (Line);
+      }
+      RecordNumber--;                /* BASIC to C */
+      offset = RecordNumber;
+      if (fseek (My->CurrentFile->cfp, offset, SEEK_SET) != 0)
+      {
+        WARN_BAD_RECORD_NUMBER;
+        return (Line);
+      }
+      if (line_skip_seperator (Line) == FALSE)
+      {
+        WARN_SYNTAX_ERROR;
+        return (Line);
+      }
+    }
+    do
+    {
+      VariableType *v;
+
+      if ((v = line_read_scalar (Line)) == NULL)
+      {
+        WARN_SYNTAX_ERROR;
+        return (Line);
+      }
+      if (binary_get_put (v, FALSE) == FALSE)
+      {
+        WARN_SYNTAX_ERROR;
+        return (Line);
+      }
+    }
+    while (line_skip_seperator (Line));
+    /* OK */
+    return (Line);
+  }
+  WARN_BAD_FILE_MODE;
+  return (Line);
+}
+
+extern LineType *
+bwb_GET (LineType * Line)
+{
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+
+  if (My->CurrentVersion->OptionVersionValue & (S70 | I70 | I73))
+  {
+    return S70_GET (Line);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (D71 | T79 | R86))
+  {
+    return D71_GET (Line);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (H14))
+  {
+    return H14_GET (Line);
+  }
+  WARN_INTERNAL_ERROR;
+  return (Line);
+}
+
+static ResultType
+file_data (VariableType * Variable, char *tbuf, int tlen)
+{
+  ResultType Result;
+  VariantType Variant;
+  VariantType *X;
+  int p;
+   
+  assert (Variable != NULL);
+  assert (tbuf != NULL);
+  assert (tlen > 0);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
 
 
+  Result = RESULT_UNPARSED;
+  X = &Variant;
+  p = 0;
+  CLEAR_VARIANT (X);
+  if (tbuf[0] == NulChar)
+  {
+    /* Get more data */
+    if (fgets (tbuf, tlen, My->CurrentFile->cfp))        /* file_data */
+    {
+      tbuf[tlen] = NulChar;
+      CleanTextInput (tbuf);
+    }
+    else
+    {
+      return RESULT_UNPARSED;        /* causes file_if_end() */
+    }
+  }
+  if (VAR_IS_STRING (Variable))
+  {
+    Result = parse_string (tbuf, &p, X);
+  }
+  else
+  {
+    Result = parse_number (tbuf, &p, X, FALSE);
+  }
+  if (Result == RESULT_UNPARSED)
+  {
+    WARN_BAD_DATA;
+  }
+  if (Result != RESULT_SUCCESS)
+  {
+    return Result;
+  }
+  /*
+   **
+   ** OK
+   **
+   */
+  if (X->VariantTypeCode == StringTypeCode
+      && My->CurrentVersion->
+      OptionFlags & OPTION_BUGS_ON /* DATA allows embedded quote pairs */ )
+  {
+    int i;
+    int n;
+    n = X->Length;
+    for (i = 0; i < n; i++)
+    {
+      if (X->Buffer[i + 0] == My->CurrentVersion->OptionQuoteChar
+          && X->Buffer[i + 1] == My->CurrentVersion->OptionQuoteChar)
+      {
+        bwb_strncpy (&X->Buffer[i + 0], &X->Buffer[i + 1], n - i);
+        n--;
+      }
+    }
+    X->Length = n;
+  }
+  if (var_set (Variable, X) == FALSE)
+  {
+    WARN_VARIABLE_NOT_DECLARED;
+    return RESULT_UNPARSED;
+  }
+  /*
+   **
+   ** Note: do NOT free() or RELEASE_VARIANT because 'X->Buffer' points into 'buffer'
+   **
+   */
+  if (buff_is_eol (tbuf, &p))
+  {
+    tbuf[0] = NulChar;
+    return RESULT_SUCCESS;
+  }
+  if (buff_skip_char (tbuf, &p, My->CurrentFile->delimit))        /* buff_skip_comma */
+  {
+    /* shift left past comma */
+    bwb_strcpy (tbuf, &tbuf[p]);
+    return RESULT_SUCCESS;
+  }
+  /* garbage after the value we just READ */
+  WARN_BAD_DATA;
+  return RESULT_UNPARSED;
+}
+
+static LineType *
+C77_file_input_line (LineType * Line)
+{
+  /* 
+     CBASIC-II: READ # filenumber [, recnum ] ; LINE variable$
+   */
+  /* a flavor of LINE INPUT */
+  VariableType *v;
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
+
+  if ((v = line_read_scalar (Line)) == NULL)
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (VAR_IS_STRING (v))
+  {
+
+    char *tbuf;
+    int tlen;
+
+    assert (My->ConsoleInput != NULL); 
+    tbuf = My->ConsoleInput;
+    tlen = MAX_LINE_LENGTH;
+    /* CBASIC-II: RANDOM files are padded on the right with spaces with a '\n' in the last position */
+    if (My->CurrentFile->width > MAX_LINE_LENGTH)
+    {
+      if (My->CurrentFile->buffer != NULL)
+      {
+        /* use the bigger buffer */
+        tbuf = My->CurrentFile->buffer;
+        tlen = My->CurrentFile->width;
+      }
+    }
+    if (fgets (tbuf, tlen, My->CurrentFile->cfp))        /* C77_file_input_line */
+    {
+      tbuf[tlen] = NulChar;
+      CleanTextInput (tbuf);
+    }
+    else
+    {
+      return file_if_end (Line);
+    }
+    /* if( TRUE ) */
+    {
+      VariantType variant;
+
+      variant.VariantTypeCode = StringTypeCode;
+      variant.Buffer = tbuf;
+      variant.Length = bwb_strlen (variant.Buffer);
+      if (var_set (v, &variant) == FALSE)
+      {
+        WARN_VARIABLE_NOT_DECLARED;
+        return (Line);
+      }
+    }
+    return (Line);
+  }
+  WARN_TYPE_MISMATCH;
+  return (Line);
+}
+
+static LineType *
+C77_file_input_finish (LineType * Line)
+{
+  /* 
+     CBASIC-II: RANDOM file reads always acccess a complete record
+   */
+  long ByteOffset;
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
+
+  /* advance to the end-of-record */
+  if (My->CurrentFile->width <= 0)
+  {
+    WARN_FIELD_OVERFLOW;
+    return (Line);
+  }
+  ByteOffset = ftell (My->CurrentFile->cfp);
+  ByteOffset %= My->CurrentFile->width;
+  if (ByteOffset != 0)
+  {
+    long RecordNumber;
+    RecordNumber = ftell (My->CurrentFile->cfp);
+    RecordNumber /= My->CurrentFile->width;
+    RecordNumber++;
+    RecordNumber *= My->CurrentFile->width;
+    fseek (My->CurrentFile->cfp, RecordNumber, SEEK_SET);
+  }
+  return (Line);
 }
 
 
-static int file_read_value( FILE * f, char delimit, VariableType *v )
+static LineType *
+file_if_end (LineType * Line)
 {
-   char            tbuf[BasicStringLengthMax + 1];
-   int             c;   /* character */
+  /* IF END # FileNumber THEN LineNumber */
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
 
+  if (My->CurrentFile->EOF_LineNumber > 0)
+  {
+    LineType *x;
 
-         /* advance beyond whitespace or comma in data buffer */
-         /* Advance to next line if end of buffer */
-         /* advance beyond whitespace in data buffer */
-         /* leading whitespace is NOT part of the DATA item */
-         do
-         {
-            c = fgetc(f);
-            if (c < 0)
-            {
-               /* EOF */
-               return FALSE;
-            }
-            if( c == delimit )
-            {
-               break;
-            }
-         }
-         while ( ! bwb_isgraph(c) );
-
-         /* now at last we have a variable in v that needs to
-          * be assigned data from the data_buffer at position
-          * My->data_pos.  What remains to be done is to
-          * get one single bit of data, a string constant or
-          * numerical constant, into the small buffer */
-
-         {
-
-            int             string; /* a quoted string */
-            int             s_pos;
-            int             loop;
-
-
-            string = FALSE;
-            s_pos = 0;
-            loop = TRUE;
-
-            /* build the constant string */
-            while (loop == TRUE)
-            {
-
-               if (c == delimit)
-               {
-                  if (string == FALSE)
-                  {
-                     /* end of argument */
-                     loop = FALSE;
-                  }
-                  else
-                  {
-                     /* internal comma is
-                      * part of the DATA
-                      * item */
-                     tbuf[s_pos] = c;
-                     ++s_pos;
-                  }
-               }
-               else
-               if ( ! bwb_isprint(c) )
-               {
-                  /* END-OF-LINE */
-                  loop = FALSE;
-               }
-               else
-               if (c == BasicQuoteChar)
-               {
-                  /* Once we finish reading a
-                   * quoted string,  we want
-                   * to continue reading spaces 
-                   * until EOL or comma */
-                  if (string == TRUE)
-                  {
-                     string = FALSE;
-                  }
-                  else
-                  {
-                     string = TRUE;
-                  }
-                  tbuf[s_pos] = c;
-                  ++s_pos;
-               }
-               else
-               {
-                  tbuf[s_pos] = c;
-                  ++s_pos;
-               }
-               if (loop == TRUE)
-               {
-                  /* read another character */
-                  c = fgetc(f);
-                  if (c < 0)
-                  {
-                     /* EOF */
-                     return FALSE;
-                  }
-               }
-            }
-
-            if (string == FALSE)
-            {
-               /* trailing whitespace is NOT part of
-                * the DATA item */
-               while (s_pos > 0 && tbuf[s_pos - 1] == ' ')
-               {
-                  s_pos--;
-               }
-            }
-            tbuf[s_pos] = BasicNulChar;
-            /* clean-up quoted string */
-            if (s_pos > 0 && tbuf[0] == BasicQuoteChar)
-            {
-               /* not an empty string */
-               char           *Q;
-
-               Q = bwb_strrchr(&tbuf[1], BasicQuoteChar);
-               if (Q != NULL)
-               {
-                  *Q = BasicNulChar;
-               }
-               bwb_strcpy(tbuf, &(tbuf[1]) );
-            }
-         }
-         /* if( TRUE ) */
-         {
-            VariantType variant;
-
-            variant.TypeChar = v->VariableTypeChar;
-
-            if ( VAR_IS_STRING( v ) )
-            {
-               variant.Buffer = tbuf;
-               variant.Length = bwb_strlen( variant.Buffer );
-            }
-            else
-            {
-               /* N = VAL( A$ ) */
-               BasicNumberType Value = 0;
-               if (tbuf[0] != BasicNulChar)
-               {
-                  int             ScanResult;
-                  ScanResult = sscanf(tbuf, BasicNumberScanFormat, &Value);
-                  if (ScanResult != 1)
-                  {
-                     /* not a number */
-                     Value = 0;
-                  }
-                  else
-                  {
-                     /* OK */
-                  }
-               }
-               variant.Number = Value;
-            }
-            if( var_set( v, &variant ) == FALSE )
-            {
-               WARN_VARIABLE_NOT_DECLARED;
-               return FALSE;
-            }
-            
-         }
-         /* OK */
-         return TRUE;
+    x = find_line_number (My->CurrentFile->EOF_LineNumber);        /* not found in the cache */
+    if (x != NULL)
+    {
+      /* FOUND */
+      line_skip_eol (Line);
+      x->position = 0;
+      return x;
+    }
+    /* NOT FOUND */
+    WARN_UNDEFINED_LINE;
+    return (Line);
+  }
+  WARN_INPUT_PAST_END;
+  return (Line);
 }
 
-static LineType * bwb_xinp(LineType * l, FILE * f, char delimit)
+static LineType *
+file_input (LineType * Line)
 {
-   /* INPUT # is similar to READ, where each file line is a DATA line */
+  /* INPUT # is similar to READ, where each file line is a DATA line */
+  char *tbuf;
+  int tlen;
 
-   int             main_loop;
-   VariableType *v;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
 
+  tbuf = My->ConsoleInput;
+  tlen = MAX_LINE_LENGTH;
+  if (My->CurrentVersion->OptionVersionValue & (C77))
+  {
+    if (line_skip_word (Line, "LINE"))
+    {
+      return C77_file_input_line (Line);
+    }
+  }
 
-   bwx_DEBUG(__FUNCTION__);
+  if (My->CurrentFile->width > 0 && My->CurrentFile->buffer != NULL)
+  {
+    tlen = My->CurrentFile->width;
+    tbuf = My->CurrentFile->buffer;
+  }
+  tbuf[0] = NulChar;
 
-   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
-   {
-      /* 
-      CBASIC-II: READ # filenumber [, recnum ] ; LINE variable$
-      */
-      if( line_skip_word( l, "LINE" ) )
-      {
-         /* INPUT "prompt" ; LINE variable$ */
-         VariableType * v;
-         
-         if( (v = line_read_scalar( l )) == NULL )
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline( l );
-         }
-         if ( VAR_IS_STRING( v ) )
-         {
-            char tbuf[ BasicStringLengthMax + 1 ];
-            
-            if( fgets( tbuf, BasicStringLengthMax, f ) == NULL || feof( f ) )
-            {
-               /* IF END # file_number THEN line_number */
-               if( My->CurrentFile->EOF_LineNumber > 0 )
-               {
-                  LineType *x;
-                  
-                  x = find_line_number( My->CurrentFile->EOF_LineNumber, TRUE ); /* not found in the cache */
-                  if (x != NULL)
-                  {
-                     /* FOUND */
-                     line_skip_eol(l);
-                     x->position = 0;
-                     return x;
-                  }
-                  /* NOT FOUND */
-                  WARN_UNDEFINED_LINE;
-                  return bwb_zline(l);            
-               }
-            }
-            bwb_stripcr(tbuf);
-            /* if( TRUE ) */
-            {
-               VariantType variant;
-               
-               variant.TypeChar = '$';
-               variant.Buffer = tbuf;
-               variant.Length = bwb_strlen( variant.Buffer );
-               if( var_set( v, &variant ) == FALSE )
-               {
-                  WARN_VARIABLE_NOT_DECLARED;
-                  return bwb_zline( l );
-               }
-            }
-            return bwb_zline( l );
-         }
-         WARN_TYPE_MISMATCH;
-         return bwb_zline( l );
-      }
-   }
+  /* Process each variable read from the INPUT # statement */
+  do
+  {
+    VariableType *v;
 
+    /* Read a variable name */
+    if ((v = line_read_scalar (Line)) == NULL)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
 
-   /* Process each variable read from the READ statement */
+    /* Read a file value */
+    if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
+    {
+      return file_if_end (Line);
+    }
+    /* OK */
+  }
+  while (line_skip_seperator (Line));
 
-   main_loop = TRUE;
-   while (main_loop == TRUE)
-   {
-      int             adv_loop;
-
-      /* first check position in l->buffer and advance beyond
-       * whitespace */
-
-      adv_loop = TRUE;
-      while (adv_loop == TRUE)
-      {
-         switch (l->buffer[l->position])
-         {
-         case ',':   /* variable seperator */
-         case ' ':   /* whitespace */
-            ++l->position;
-            break;
-         case BasicNulChar:
-            adv_loop = FALSE; /* break out of advance
-                      * loop */
-            main_loop = FALSE;   /* break out of main
-                      * loop */
-            break;
-         default: /* anything else */
-            adv_loop = FALSE; /* break out of advance
-                      * loop */
-            break;
-         }
-      }
-
-
-      /* be sure main_loop id still valid after checking the line */
-
-      if (main_loop == TRUE)
-      {
-         /* Read a variable name */
-         if( (v = line_read_scalar( l )) == NULL )
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline(l);
-         }
-         /* Read a file value */
-
-         if( file_read_value( f, delimit, v ) == FALSE )
-         {
-            if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) ) 
-            {
-               /* IF END # file_number THEN line_number */
-               if( My->CurrentFile->EOF_LineNumber > 0 )
-               {
-                  LineType *x;
-                  
-                  x = find_line_number( My->CurrentFile->EOF_LineNumber, TRUE ); /* not found in the cache */
-                  if (x != NULL)
-                  {
-                     /* FOUND */
-                     line_skip_eol(l);
-                     x->position = 0;
-                     return x;
-                  }
-                  /* NOT FOUND */
-                  WARN_UNDEFINED_LINE;
-                  return bwb_zline(l);            
-               }
-            }
-            WARN_INPUT_PAST_END;
-            return bwb_zline(l);
-         }
-         /* OK */
-
-      }     /* end of remainder of main loop */
-   }        /* end of main_loop */
-
-   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) && My->CurrentFile->mode & DEVMODE_RANDOM )
-   {
-      /* 
-      CBASIC-II: RANDOM file reads always acccess a complete record
-      */
-      long ByteOffset;
-      
-      /* advance to the end-of-record */
-      if( My->CurrentFile->width <= 0 )
-      {
-         WARN_FIELD_OVERFLOW;
-         return bwb_zline(l);
-      }
-      ByteOffset =  ftell( My->CurrentFile->cfp );
-      ByteOffset %= My->CurrentFile->width;
-      if( ByteOffset != 0 )
-      {
-         long RecordNumber;
-         RecordNumber =  ftell( My->CurrentFile->cfp );
-         RecordNumber /= My->CurrentFile->width;
-         RecordNumber ++;
-         RecordNumber *= My->CurrentFile->width;
-         fseek( My->CurrentFile->cfp, RecordNumber, SEEK_SET );
-      }
-   }
-
-   return bwb_zline(l);
-
+  if (My->CurrentVersion->OptionVersionValue & (C77)
+      && My->CurrentFile->DevMode & DEVMODE_RANDOM)
+  {
+    return C77_file_input_finish (Line);
+  }
+  return (Line);
 }
 
 
 /***************************************************************
   
-        FUNCTION:       inp_str()
+        FUNCTION:       user_input_*()
   
         DESCRIPTION:    This function does INPUT processing
                         from a determined string of input
@@ -1520,498 +1994,634 @@ static LineType * bwb_xinp(LineType * l, FILE * f, char delimit)
          not from a disk file or device.
   
 ***************************************************************/
-
-static int inp_str( /* LineType * l, */ char *input_buffer, char *var_list, int *vl_position, int IsFake)
+static ResultType
+parse_string_isquoted (char *buffer, int *position, VariantType * X)
 {
-   int             i;
-   int             loop;
-   char            ttbuf[BasicStringLengthMax + 1];   /* build element */
-   int             ReadAllVars;
-   int             ReadAllData;
+  /*
+   **
+   ** QUOTED STRING 
+   **
+   ** Note: do NOT free() or RELEASE_VARIANT because 'X->Buffer' points into 'buffer'
+   **
+   */
+  int p;
+  assert (buffer != NULL);
+  assert (position != NULL);
+  assert (X != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
 
-   bwx_DEBUG(__FUNCTION__);
+  p = *position;
 
-   ReadAllVars = FALSE;
-   ReadAllData = FALSE;
+  buff_skip_spaces (buffer, &p);        /* keep this */
+  if (buffer[p] == My->CurrentVersion->OptionQuoteChar)
+  {
+    int Length;
+    int Start;
+    int QuoteCount;
 
+    Length = 0;
+    QuoteCount = 0;
 
-
-
-   /* Read elements in input_buffer and assign them to variables in var_list */
-
-   i = 0;
-   loop = TRUE;
-   while (loop == TRUE)
-   {
-      VariableType *v;
-      register int    n;
-
-      n = 0;
-      ttbuf[0] = BasicNulChar;
-
-      buff_skip_spaces( input_buffer, &i );
-      buff_skip_spaces( var_list, vl_position );
-
-      /* get a variable name from the list */
-      if( (v = buff_read_scalar( var_list, vl_position )) == NULL )
+    QuoteCount++;
+    p++;
+    Start = p;
+    while (buffer[p])
+    {
+      if (buffer[p] == My->CurrentVersion->OptionQuoteChar
+          && buffer[p + 1] == My->CurrentVersion->OptionQuoteChar
+          && My->CurrentVersion->
+          OptionFlags & OPTION_BUGS_ON /* INPUT allows embedded quote pairs */
+          )
       {
-         WARN_SYNTAX_ERROR;
-         return -1;   /* FATAL */
+        /* embedded quote pair "...""..." */
+        QuoteCount++;
+        QuoteCount++;
+        p++;
+        p++;
+        Length++;
+        Length++;
       }
-      /* build string from input buffer in ttbuf */
-      if( VAR_IS_STRING( v ) )
+      else if (buffer[p] == My->CurrentVersion->OptionQuoteChar)
       {
-         /* STRING */
-         if( input_buffer[ i ] == BasicQuoteChar )
-         {
-            /* QUOTED STRING */
-            int q = 0; /* number of quotes */
-            i++;
-            q++;
-            while( input_buffer[ i ] )
-            {
-               if( input_buffer[ i ] == BasicQuoteChar )
-               {
-                  i++; /* quote */
-                  q++;
-                  if( input_buffer[ i ] == BasicQuoteChar )
-                  {
-                     /* embedded string "...""..." */
-                     q++;
-                  }
-                  else
-                  {
-                     /* properly terminated string "...xx..." */
-                     break;
-                  }
-               }
-               ttbuf[ n ] = input_buffer[ i ];
-               n++;
-               i++;
-            }
-            ttbuf[ n ] = BasicNulChar;
-            /* process QUOTED response */
-            if (My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* INPUT allows empty string */ )
-            {
-               /* silently ignore */
-            }
-            else
-            {
-               /* an ODD number of quotes is an ERROR */
-               if( q & 1 )
-               {
-                  fputs( "*** Type Mismatch ***\n", My->SYSOUT->cfp) ;
-                  return FALSE;  /* RETRY */
-               }
-            }
-         }
-         else
-         {
-            /* UNQUOTED STRING */
-            while( input_buffer[ i ] )
-            {
-               if( input_buffer[ i ] == ',' )
-               {
-                  break;
-               }
-               ttbuf[ n ] = input_buffer[ i ];
-               n++;
-               i++;
-            }
-            ttbuf[ n ] = BasicNulChar;
-            /* RTRIM */
-            while( n > 0 && ttbuf[ n - 1 ] == ' ' )
-            {
-               ttbuf[ n - 1 ] = BasicNulChar;
-               n--;
-            }
-            /* process EMPTY response */
-            if (My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* INPUT allows empty string */ )
-            {
-               /* silently ignore */
-            }
-            else
-            {
-               /* an EMPTY response is an ERROR */
-               if (ttbuf[0] == BasicNulChar)
-               {
-                  fputs( "*** Type Mismatch ***\n", My->SYSOUT->cfp );
-                  return FALSE;  /* RETRY */
-               }
-            }
-            /* process UNQUOTED response */
-            if (My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* INPUT allows unquoted strings */ )
-            {
-               /* silently ignore */
-            }
-            else
-            {
-               /* if was NOT quoted, then the only valid chars are ' ', '+', '-', '.', digit, letter */
-               char           *P;
-               P = ttbuf;
-               while (*P != BasicNulChar)
-               {
-                  char            C;
-      
-                  C = *P;
-                  P++;
-                  /* switch */
-                  if (C == ' ' || C == '+' || C == '-' || C == '.' || bwb_isdigit(C) || bwb_isalpha(C))
-                  {
-                     /* OK */
-                  }
-                  else
-                  {
-                     /* ERROR */
-                     fputs( "*** Type Mismatch ***\n", My->SYSOUT->cfp );
-                     return FALSE;  /* RETRY */
-                  }
-               }
-            }
-         }
+        /* properly terminated string "...xx..." */
+        QuoteCount++;
+        p++;
+        break;
       }
       else
       {
-         /* NUMBER */
-         while( input_buffer[ i ] )
-         {
-            if( input_buffer[ i ] == ',' )
-            {
-               break;
-            }
-            ttbuf[ n ] = input_buffer[ i ];
-            n++;
-            i++;
-         }
-         ttbuf[ n ] = BasicNulChar;
-         /* RTRIM */
-         while( n > 0 && ttbuf[ n - 1 ] == ' ' )
-         {
-            ttbuf[ n - 1 ] = BasicNulChar;
+        /* normal character */
+        p++;
+        Length++;
+      }
+    }
+    if (My->CurrentVersion->
+        OptionFlags & OPTION_BUGS_ON /* INPUT allows unmatched quotes pairs */
+        )
+    {
+      /* silently ignore */
+    }
+    else if (QuoteCount & 1)
+    {
+      /* an ODD number of quotes (including embedded quotes) is an ERROR */
+      return RESULT_UNPARSED;
+    }
+    /*
+     **
+     ** OK
+     **
+     */
+    X->VariantTypeCode = StringTypeCode;
+    X->Buffer = &buffer[Start];
+    X->Length = Length;
+    *position = p;
+    return RESULT_SUCCESS;
+  }
+  return RESULT_UNPARSED;
+}
+static ResultType
+parse_string_unquoted (char *buffer, int *position, VariantType * X)
+{
+  /*
+   **
+   ** UNQUOTED STRING 
+   **
+   ** Note: do NOT free() or RELEASE_VARIANT because 'X->Buffer' points into 'buffer'
+   **
+   */
+  int p;
+  int Length;
+  int Start;
+  assert (buffer != NULL);
+  assert (position != NULL);
+  assert (X != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
+
+  Length = 0;
+  p = *position;
+  buff_skip_spaces (buffer, &p);        /* keep this */
+  Start = p;
+  while (buffer[p] != NulChar && buffer[p] != My->CurrentFile->delimit)
+  {
+    char C;
+    C = buffer[p];
+
+    if (My->CurrentVersion->
+        OptionFlags & OPTION_BUGS_ON /* INPUT allows unquoted strings */ )
+    {
+      /* silently ignore */
+    }
+    else if (C == ' ' || C == '+' || C == '-' || C == '.' || bwb_isalnum (C))
+    {
+      /* if was NOT quoted, then the only valid chars are ' ', '+', '-', '.', digit, letter */
+    }
+    else
+    {
+      /* ERROR */
+      return RESULT_UNPARSED;
+    }
+    Length++;
+    p++;
+  }
+  /* RTRIM */
+  while (Length > 0 && buffer[Start + Length - 1] == ' ')
+  {
+    Length--;
+  }
+  /*
+   **
+   ** OK
+   **
+   */
+  X->VariantTypeCode = StringTypeCode;
+  X->Buffer = &buffer[Start];
+  X->Length = Length;
+  *position = p;
+  return RESULT_SUCCESS;
+}
+
+static ResultType
+parse_string (char *buffer, int *position, VariantType * X)
+{
+  /*
+   **
+   ** STRING 
+   **
+   ** Note: do NOT free() or RELEASE_VARIANT because 'X->Buffer' points into 'buffer'
+   **
+   */
+  ResultType Result;
+  int p;
+  assert (buffer != NULL);
+  assert (position != NULL);
+  assert (X != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
+
+  p = *position;
+  buff_skip_spaces (buffer, &p);        /* keep this */
+  if (buff_is_eol (buffer, &p)
+      || buff_peek_char (buffer, &p, My->CurrentFile->delimit))
+  {
+    /* process EMPTY response */
+    if (My->CurrentVersion->
+        OptionFlags & OPTION_BUGS_ON /* INPUT allows empty values */ )
+    {
+      /* silently ignore, value is "" */
+      X->VariantTypeCode = StringTypeCode;
+      X->Buffer = &buffer[p];
+      X->Length = 0;
+      Result = RESULT_SUCCESS;
+    }
+    else
+    {
+      return RESULT_UNPARSED;
+    }
+  }
+  Result = parse_string_isquoted (buffer, &p, X);
+  if (Result == RESULT_UNPARSED)
+  {
+    Result = parse_string_unquoted (buffer, &p, X);
+  }
+  if (Result == RESULT_SUCCESS)
+  {
+    *position = p;
+  }
+  return Result;
+}
+
+static ResultType
+parse_number (char *buffer, int *position, VariantType * X,
+              int IsConsoleInput)
+{
+  ResultType Result = RESULT_UNPARSED;
+  int p;
+  assert (buffer != NULL);
+  assert (position != NULL);
+  assert (X != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
+
+  p = *position;
+  buff_skip_spaces (buffer, &p);        /* keep this */
+  if (buff_is_eol (buffer, &p)
+      || buff_peek_char (buffer, &p, My->CurrentFile->delimit))
+  {
+    /* process EMPTY response */
+    if (My->CurrentVersion->
+        OptionFlags & OPTION_BUGS_ON /* INPUT allows empty values */ )
+    {
+      /* silently ignore, value is 0 */
+      X->VariantTypeCode = DoubleTypeCode;
+      X->Number = 0;
+      return RESULT_SUCCESS;
+    }
+    else
+    {
+      return RESULT_UNPARSED;
+    }
+  }
+  Result = buff_read_hexadecimal_constant (buffer, &p, X, IsConsoleInput);
+  if (Result == RESULT_UNPARSED)
+  {
+    Result = buff_read_octal_constant (buffer, &p, X, IsConsoleInput);
+  }
+  if (Result == RESULT_UNPARSED)
+  {
+    int IsNegative;
+
+    IsNegative = FALSE;
+    if (buff_skip_PlusChar (buffer, &p))
+    {
+      /* ignore */
+    }
+    else if (buff_skip_MinusChar (buffer, &p))
+    {
+      IsNegative = TRUE;
+    }
+    Result = buff_read_decimal_constant (buffer, &p, X, IsConsoleInput);
+    if (Result == RESULT_SUCCESS)
+    {
+      if (IsNegative)
+      {
+        X->Number = -X->Number;
+      }
+    }
+  }
+  if (Result == RESULT_SUCCESS)
+  {
+    *position = p;
+  }
+  return Result;
+}
+
+static ResultType
+user_input_values (LineType * Line, char *buffer, int IsReal)
+{
+  /*
+   **
+   ** given a response, match with the list of variables
+   **
+   */
+  int p;
+   
+  assert (Line != NULL);
+  assert (buffer != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert (My->CurrentFile == My->SYSIN);
+
+  p = 0;
+  /* Read elements in buffer and assign them to variables in Line */
+  do
+  {
+    ResultType Result;
+    VariableType *Variable;
+    VariantType Variant;
+    VariantType *X;
+
+    X = &Variant;
+    CLEAR_VARIANT (X);
+
+    /* get a variable name from the list */
+    if ((Variable = line_read_scalar (Line)) == NULL)
+    {
+      WARN_SYNTAX_ERROR;
+      return RESULT_UNPARSED;
+    }
+
+    /* get a value from the console response */
+    Result = RESULT_UNPARSED;
+    if (VAR_IS_STRING (Variable))
+    {
+      Result = parse_string (buffer, &p, X);
+    }
+    else
+    {
+      Result = parse_number (buffer, &p, X, TRUE);
+    }
+    if (Result != RESULT_SUCCESS)
+    {
+      return Result;
+    }
+    /*
+     **
+     ** OK
+     **
+     */
+    if (IsReal)
+    {
+      /*
+       **
+       ** actually assign the value
+       **
+       */
+      if (X->VariantTypeCode == StringTypeCode
+          && My->CurrentVersion->
+          OptionFlags & OPTION_BUGS_ON /* INPUT allows embedded quote pairs */
+          )
+      {
+        int i;
+        int n;
+        n = X->Length;
+        for (i = 0; i < n; i++)
+        {
+          if (X->Buffer[i + 0] == My->CurrentVersion->OptionQuoteChar
+              && X->Buffer[i + 1] == My->CurrentVersion->OptionQuoteChar)
+          {
+            bwb_strncpy (&X->Buffer[i + 0], &X->Buffer[i + 1], n - i);
             n--;
-         }
-         /* process EMPTY response */
-         if (My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* INPUT allows empty string */ )
-         {
-            /* silently ignore */
-         }
-         else
-         {
-            /* an EMPTY response is an ERROR */
-            if (ttbuf[0] == BasicNulChar)
-            {
-               fputs( "*** Type Mismatch ***\n", My->SYSOUT->cfp );
-               return FALSE;  /* RETRY */
-            }
-         }
+          }
+        }
+        X->Length = n;
       }
-
-
-      /* perform type-specific assignment */
+      if (var_set (Variable, X) == FALSE)
       {
-         int ResultCode;
-         
-         ResultCode = inp_assign(ttbuf, v, IsFake, TRUE); /* inp_str, bwb_INPUT */
-         switch (ResultCode)
-         {
-         case RESULT_OK:
-            break;
-         case RESULT_UNKNOWN:
-            WARN_INTERNAL_ERROR;
-            return -1;  /* FATAL */
-            /* break; */
-         case RESULT_TYPE_MMISMATCH:
-            fputs("*** Type Mismatch ***\n", My->SYSOUT->cfp );
-            return FALSE;  /* RETRY */
-            /* break; */
-         case RESULT_ARITHMETIC_OVERFLOW:
-            fputs("*** Overflow ***\n", My->SYSOUT->cfp );
-            return FALSE;  /* RETRY */
-            /* break; */
-         }
+        WARN_VARIABLE_NOT_DECLARED;
+        return RESULT_UNPARSED;
       }
-      /* OK */
+    }
+    /*
+     **
+     ** STRING 
+     **
+     ** Note: do NOT free() or RELEASE_VARIANT because 'X->Buffer' points into 'buffer'
+     **
+     */
+  }
+  while (line_skip_seperator (Line)
+         && buff_skip_char (buffer, &p, My->CurrentFile->delimit));
 
-
-      /* check for commas in variable list and advance */
-      buff_skip_spaces(var_list, vl_position);
-      switch (var_list[*vl_position])
-      {
-      case BasicNulChar:
-         loop = FALSE;
-         ReadAllVars = TRUE;
-         break;
-      case ',':
-         ++(*vl_position);
-         break;
-      }
-      buff_skip_spaces(var_list, vl_position);
-
-      /* check for commas in input list and advance */
-      buff_skip_spaces(input_buffer, &i);
-      switch (input_buffer[i])
-      {
-      case BasicNulChar:
-         loop = FALSE;
-         ReadAllData = TRUE;
-         break;
-      case ',':
-         ++i;
-         break;
-      }
-      buff_skip_spaces(input_buffer, &i);
-
-   }
-
-   /* return */
-   if (ReadAllVars == TRUE && ReadAllData == TRUE)
-   {
-      return 1; /* SUCCESS */
-   }
-
-   /* READ/DATA mismatch */
-   fputs("*** Count Mismatch ***\n", My->SYSOUT->cfp );
-   return FALSE;  /* RETRY */
+  /* verify all variables and values consumed */
+  if (line_is_eol (Line) && buff_is_eol (buffer, &p))
+  {
+    /*
+     **
+     ** OK
+     **
+     */
+    return RESULT_SUCCESS;
+  }
+  /* Count mismatch */
+  return RESULT_UNPARSED;
 }
 
-/***************************************************************
-  
-        FUNCTION:       inp_assign()
-  
-        DESCRIPTION:    This function assigns the value of a
-                        numerical or string constant to a
-                        variable.
-  
-  
-***************************************************************/
-
-static int inp_assign(char *b, VariableType * v, int IsFake, int IsInput)
+static LineType *
+C77_user_input_line (LineType * Line, char *Prompt, int IsDisplayQuestionMark)
 {
-   VariantType variant;
+  /* 
+   **
+   ** CBASIC-II: INPUT "prompt" ; LINE variable$
+   **
+   */
+  VariableType *v;
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert (My->CurrentFile != NULL);
+  assert ((My->CurrentFile->DevMode & DEVMODE_READ) != 0);
 
-   bwx_DEBUG(__FUNCTION__);
+  if ((v = line_read_scalar (Line)) == NULL)
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (v->VariableFlags & (VARIABLE_CONSTANT))
+  {
+    WARN_VARIABLE_NOT_DECLARED;
+    return (Line);
+  }
+  if (VAR_IS_STRING (v))
+  {
+    VariantType variant;
+    char *tbuf;
+    int tlen;
 
-   variant.TypeChar = v->VariableTypeChar;
-
-   if( VAR_IS_STRING( v ) )
-   {
-      /* STRING */
-      if (IsFake == TRUE)
-      {
-      }
-      else
-      {
-         variant.Buffer = b;
-         variant.Length = bwb_strlen( variant.Buffer );
-         if( var_set( v, &variant ) == FALSE )
-         {
-            WARN_VARIABLE_NOT_DECLARED;
-            return RESULT_UNKNOWN;
-         }
-      }
-      
-      if( My->CurrentVersion->OptionVersionBitmask & ( E78 ) && IsInput == TRUE )
-      {
-         if (bwb_strchr(b, BasicQuoteChar) != NULL)
-         {
-            /* ECMA-55 forbids embedded quotes on INPUT */
-            return RESULT_TYPE_MMISMATCH;
-         }
-      }
-      return RESULT_OK;
-   }
-   /* NUMBER */
-   if (b[0] == BasicNulChar)
-   {
-      /* empty input value */
-      if (IsFake == TRUE)
-      {
-      }
-      else
-      {
-         variant.Number = 0.0;
-         if( var_set( v, &variant ) == FALSE )
-         {
-            WARN_VARIABLE_NOT_DECLARED;
-            return RESULT_UNKNOWN;
-         }
-      }
-      if (My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* INPUT empty numeric is zero */ )
-      {
-         return RESULT_OK;
-      }
-      return RESULT_TYPE_MMISMATCH;
-   }
-   else
-   {
-      int ResultCode;
-      if (IsFake == TRUE)
-      {
-         inp_numconst(b, &ResultCode);
-      }
-      else
-      {
-         variant.Number = inp_numconst(b, &ResultCode);
-         if( var_set( v, &variant ) == FALSE )
-         {
-            WARN_VARIABLE_NOT_DECLARED;
-            return RESULT_UNKNOWN;
-         }
-      }
-      return ResultCode;
-   }
-
-   return RESULT_UNKNOWN;
-
+    tbuf = My->ConsoleInput;
+    tlen = MAX_LINE_LENGTH;
+    bwx_input (Prompt, IsDisplayQuestionMark, tbuf, tlen);
+    variant.VariantTypeCode = StringTypeCode;
+    variant.Buffer = tbuf;
+    variant.Length = bwb_strlen (variant.Buffer);
+    if (var_set (v, &variant) == FALSE)
+    {
+      WARN_VARIABLE_NOT_DECLARED;
+      return (Line);
+    }
+    /* OK */
+    if (Prompt != NULL)
+    {
+      free (Prompt);
+      /* Prompt = NULL; */
+    }
+    return (Line);
+  }
+  WARN_TYPE_MISMATCH;
+  return (Line);
 }
 
-/***************************************************************
-  
-        FUNCTION:       inp_adv()
-  
-        DESCRIPTION:    This function advances the string pointer
-                        past whitespace and the item delimiter
-                        (comma).
-  
-***************************************************************/
-
-int
-inp_adv(char *b, int *c)
+static LineType *
+user_input_loop (LineType * Line)
 {
-   int             rval;
+  char *Prompt;
+  int IsDisplayQuestionMark;
+  int SavePosition;
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
+  Prompt = NULL;
+  IsDisplayQuestionMark = TRUE;
+  My->CurrentFile = My->SYSIN;
+  /*
+   **
+   ** Step 1. Determine the prompt
+   ** Step 2. Verify all variables exist and are not CONST
+   ** Step 3. Display prompt and get user response
+   ** Step 4. Assign user response to variables
+   **
+   */
 
-   rval = FALSE;
+  /* 
+   **
+   ** Step 1. Determine the prompt
+   ** 
+   */
+  /* INPUT , "prompt" A, B, C */
+  /* INPUT ; "prompt" A, B ,C */
+  /* INPUT : "prompt" A, B, C */
+  if (line_skip_seperator (Line))
+  {
+    /* optional */
+    IsDisplayQuestionMark = FALSE;
+  }
 
-   while (TRUE)
-   {
-      switch (b[*c])
+  if (line_peek_QuoteChar (Line))
+  {
+    /* get prompt string */
+    if (line_read_string_expression (Line, &Prompt) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (line_skip_seperator (Line) == ',' /* comma-specific */ )
+    {
+      /* optional */
+      IsDisplayQuestionMark = FALSE;
+    }
+  }
+
+  if (My->CurrentVersion->OptionVersionValue & (C77)
+      && line_skip_word (Line, "LINE"))
+  {
+    /* INPUT "prompt" ; LINE variable$ */
+    return C77_user_input_line (Line, Prompt, IsDisplayQuestionMark);
+  }
+  /* 
+   **
+   ** Step 2. Verify all variables exist and are not CONST
+   ** 
+   */
+  SavePosition = Line->position;
+  do
+  {
+    VariableType *v;
+
+    if ((v = line_read_scalar (Line)) == NULL)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (v->VariableFlags & (VARIABLE_CONSTANT))
+    {
+      WARN_VARIABLE_NOT_DECLARED;
+      return (Line);
+    }
+  }
+  while (line_skip_seperator (Line));
+  if (line_is_eol (Line))
+  {
+    /* OK */
+  }
+  else
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  while (TRUE)
+  {
+    char *tbuf;
+    int tlen;
+    ResultType Result;
+
+    tbuf = My->ConsoleInput;
+    tlen = MAX_LINE_LENGTH;
+    /* 
+     **
+     ** Step 3. Display prompt and get user response
+     ** 
+     */
+    bwx_input (Prompt, IsDisplayQuestionMark, tbuf, tlen);
+    /* 
+     **
+     ** Step 4. Assign user response to variables
+     ** 
+     */
+    Line->position = SavePosition;
+    Result = user_input_values (Line, tbuf, FALSE /* FAKE run */ );        /* bwb_INPUT, user_input_loop */
+    if (Result == RESULT_SUCCESS)        /* bwb_INPUT */
+    {
+      /* successful input, FAKE run  */
+      Line->position = SavePosition;
+      Result = user_input_values (Line, tbuf, TRUE /* REAL run */ );        /* bwb_INPUT, user_input_loop */
+      if (Result == RESULT_SUCCESS)
       {
-      case ' ':   /* whitespace */
-      case ';':   /* semicolon, end of prompt string */
-         ++*c;
-         break;
-      case ',':   /* comma, variable delimiter */
-         rval = TRUE;
-         ++*c;
-         break;
-      case BasicNulChar:  /* end of line */
-         rval = TRUE;
-         My->last_inp_adv_rval = rval;  /* JBV */
-         return rval;
-      default:
-         My->last_inp_adv_rval = rval;  /* JBV */
-         return rval;
+        /* successful input, REAL run  */
+        if (Prompt != NULL)
+        {
+          free (Prompt);
+          Prompt = NULL;
+        }
+        return (Line);
       }
-   }
-   /* return 0; */ /* never reached */
+    }
+    /* Result == RESULT_UNPARSED, RETRY */
+    fputs ("?Redo from start\n", My->SYSOUT->cfp);        /* "*** Retry INPUT ***\n" */
+    ResetConsoleColumn ();
+  }
+  /* never reached */
+  return (Line);
 }
 
-/***************************************************************
-  
-        FUNCTION:       inp_const()
-  
-        DESCRIPTION:    This function reads a numerical or string
-                        constant from <m_buffer> into <s_buffer>,
-                        incrementing <position> appropriately.
-  
-***************************************************************/
-
-static int inp_const(char *m_buffer, char *s_buffer, int *position)
+extern LineType *
+bwb_INPUT (LineType * Line)
 {
-   int             string;
-   int             s_pos;
-   int             loop;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
+  My->CurrentFile = My->SYSIN;
+  if (line_skip_FilenumChar (Line))
+  {
+    /* INPUT # X */
+    int FileNumber;
 
-   /* leading whitespace is NOT part of the DATA item */
-   buff_skip_spaces(m_buffer,position);
-
-
-   /* first detect string constant */
-   string = FALSE;
-   if ( buff_skip_char( m_buffer,position, BasicQuoteChar) )
-   {
-      string = TRUE;
-   }
-
-   /* build the constant string */
-
-   s_pos = 0;
-   s_buffer[s_pos] = BasicNulChar;
-
-
-   loop = TRUE;
-
-   while (loop == TRUE)
-   {
-      switch (m_buffer[*position])
+    if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    if (line_skip_seperator (Line))
+    {
+      /* required */
+    }
+    else
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    /* INPUT # X , */
+    if (FileNumber < 0)
+    {
+      /* "INPUT # -1" is an error */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (FileNumber > 0)
+    {
+      /* normal file */
+      My->CurrentFile = find_file_by_number (FileNumber);
+      if (My->CurrentFile == NULL)
       {
-      case BasicNulChar:  /* end of string */
-         return TRUE;
-         /* internal whitespace is part of the DATA item */
-      case ',':   /* or end of argument */
-         if (string == FALSE)
-         {
-            /* trailing whitespace is NOT part of the DATA item */
-            while (s_pos > 0 && s_buffer[s_pos - 1] == ' ')
-            {
-               s_pos--;
-               s_buffer[s_pos] = BasicNulChar;
-            }
-            return TRUE;
-         }
-         else
-         {
-            s_buffer[s_pos] = m_buffer[*position];
-            ++(*position);
-            ++s_pos;
-            s_buffer[s_pos] = BasicNulChar;
-         }
-         break;
-      case BasicQuoteChar:
-         /* quote character */
-         if (string == TRUE)
-         {
-            /* same as the starting quote character; examples are "..." and '...' */
-            ++(*position); /* advance beyond quotation mark */
-            if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* INPUT quotes */ )
-            {
-               if( m_buffer[*position] == BasicQuoteChar )
-               {
-                  /* embedded string "...""..." */
-                  s_buffer[s_pos] = m_buffer[*position];
-                  ++(*position);
-                  ++s_pos;
-                  s_buffer[s_pos] = BasicNulChar;
-                  break;
-               }
-            }
-            /* properly terminated "...xx..." */
-            inp_adv(m_buffer, position);
-            return TRUE;
-            
-         }
-         else
-         {
-            WARN_TYPE_MISMATCH;
-            return FALSE;
-         }
-      default:
-         s_buffer[s_pos] = m_buffer[*position];
-         ++(*position);
-         ++s_pos;
-         s_buffer[s_pos] = BasicNulChar;
-         break;
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
       }
-
-   }
-
-   return FALSE;
-
+      if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+      {
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
+      }
+      return file_input (Line);
+    }
+    /* "INPUT #0, varlist" is the same as "INPUT varlist"  */
+  }
+  /* input is from My->SYSIN */
+  return user_input_loop (Line);
 }
+
 
 
 /***************************************************************
@@ -2024,1375 +2634,892 @@ static int inp_const(char *m_buffer, char *s_buffer, int *position)
    SYNTAX:         LINE INPUT [[#] device-number,]["prompt string";] string-variable$
   
 ***************************************************************/
-
-LineType *
-bwb_LINE(LineType * l)
+extern LineType *
+bwb_LINE (LineType * Line)
 {
-   int             FileNumber;
-   VariableType *v;
-   FILE           *inp_device;
-   char            tbuf[BasicStringLengthMax + 1];
-   char            pstring[BasicStringLengthMax + 1];
-
-   bwx_DEBUG(__FUNCTION__);
-
-   /* assign default values */
-
-   My->CurrentFile = My->SYSIN;
-
-   inp_device = My->SYSIN->cfp;
-
-   pstring[0] = BasicNulChar;
-
-   /* advance to first element (INPUT statement) */
-   if( line_skip_word(l, "INPUT") == FALSE )
-   {
-      WARN_SYNTAX_ERROR;
-      return bwb_zline(l);
-   }
-   line_skip_spaces(l);
-
-   /* check for semicolon in first position */
-
-   if (line_skip_comma(l))
-   {
-      line_skip_spaces(l);
-   }
-   else
-   if ( line_skip_char(l, BasicFileNumberPrefix) )
-   {
-
-      if( line_read_integer_expression(l, &FileNumber) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( FileNumber < 0 )
-      {
-         /* "LINE INPUT # -1" is an error */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if( FileNumber > 0 )
-      {
-         /* normal file */
-         My->CurrentFile = find_file_by_number( FileNumber );
-         if( My->CurrentFile == NULL )
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if ((My->CurrentFile->mode & DEVMODE_READ) == 0)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if (My->CurrentFile->cfp == NULL)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         inp_device = My->CurrentFile->cfp;
-      }
-   }
-   /* check for comma */
-
-   if ( line_skip_comma(l) )
-   {
-      line_skip_spaces(l);
-   }
-   /* check for quotation mark indicating prompt */
-
-   if ( line_peek_char(l,BasicQuoteChar))
-   {
-      inp_const(l->buffer, pstring, &(l->position)); /* bwb_LINE prompt */
-   }
-
-   /* read the variable for assignment */
-   if( (v = line_read_scalar( l )) == NULL )
-   {
-      WARN_SYNTAX_ERROR;
-      return bwb_zline(l);
-   }
-   if ( VAR_IS_STRING( v ) )
-   {
-      /* OK */
-   }
-   else
-   {
-      /* ERROR */
-      WARN_TYPE_MISMATCH;
-      return bwb_zline(l);
-   }
-   /* read a line of text into the bufffer */
-
-   if (inp_device == My->SYSIN->cfp)
-   {
-      bwx_input(pstring, tbuf);
-   }
-   else
-   {
-      fgets(tbuf, BasicStringLengthMax, inp_device);
-   }
-   bwb_stripcr(tbuf);
-   /* if( TRUE ) */
-   {
-      VariantType variant;
-      
-      variant.TypeChar = '$';
-      variant.Buffer = tbuf;
-      variant.Length = bwb_strlen( variant.Buffer );
-      if( var_set( v, &variant ) == FALSE )
-      {
-         WARN_VARIABLE_NOT_DECLARED;
-         return bwb_zline( l );
-      }
-   }
-   return bwb_zline(l);
-}
-
-
-/***************************************************************
-  
-        FUNCTION: inp_numconst()
-  
-        DESCRIPTION: This function interprets a numerical
-         constant.  Added by JBV 10/95
-  
-***************************************************************/
-
-BasicNumberType
-inp_numconst(char *expression, int *ResultCode)
-{
-   int             base;   /* numerical base for the constant */
-   BasicNumberType mantissa;   
-   int             exponent;  /* exponent for floating point number */
-   int             man_start; /* starting point of mantissa */
-   int             s_pos;  /* position in build string */
-   int             build_loop;
-   int             need_pm;
-   unsigned int    u;
-   int             IsRounded = FALSE;
-
-   /* Expression stack stuff */
-   /* char type; */
-   BasicNumberType nval;
-   char            string[BasicStringLengthMax + 1];
-   int             pos_adv;
-
-   /* initialize the variable if necessary */
-
-   bwx_DEBUG(__FUNCTION__);
-
-   mantissa = 0;
-
-
-   need_pm = FALSE;
-   nval = 0;
-
-   /* check the first character(s) to determine numerical base and
-    * starting point of the mantissa */
-
-   switch (expression[0])
-   {
-   case '-':
-   case '+':
-   case '0':
-   case '1':
-   case '2':
-   case '3':
-   case '4':
-   case '5':
-   case '6':
-   case '7':
-   case '8':
-   case '9':
-   case '.':
-      base = 10;  /* decimal constant */
-      man_start = 0; /* starts at position 0 */
-      need_pm = FALSE;
-      break;
-   case '&':      /* hex or octal constant */
-      if (bwb_toupper(expression[1] == 'H') )
-      {
-         base = 16;  /* hexadecimal constant */
-         man_start = 2; /* starts at position 2 */
-      }
-      else
-      {
-         base = 8;   /* octal constant */
-         if (bwb_toupper(expression[1] == 'O') )
-         {
-            man_start = 2; /* starts at position 2 */
-         }
-         else
-         {
-            man_start = 1; /* starts at position 1 */
-         }
-      }
-      break;
-   default:
-      *ResultCode = RESULT_TYPE_MMISMATCH;
-      return 0;
-   }
-
-   /* now build the mantissa according to the numerical base */
-
-   switch (base)
-   {
-
-   case 10:    /* decimal constant */
-
-      /* initialize counters */
-
-      pos_adv = man_start;
-      /* type = NUMBER; */
-      string[0] = BasicNulChar;
-      s_pos = 0;
-      exponent = 0;
-      build_loop = TRUE;
-
-      /* loop to build the string */
-
-      while (build_loop == TRUE)
-      {
-         switch (expression[pos_adv])
-         {
-         case '-':   /* prefixed plus or minus */
-         case '+':
-
-            /* in the first position, a plus or minus
-             * sign can be added to the beginning of the
-             * string to be scanned */
-
-            if (pos_adv == man_start)
-            {
-               string[s_pos] = expression[pos_adv];
-               ++pos_adv;  /* advance to next
-                      * character */
-               ++s_pos;
-               string[s_pos] = BasicNulChar;
-            }
-            /* but in any other position, the plus or
-             * minus sign must be taken as an operator
-             * and thus as terminating the string to be
-             * scanned */
-
-            else
-            {
-               build_loop = FALSE;
-            }
-            break;
-         case '.':   /* note at least single precision */
-         case '0':   /* or ordinary digit */
-         case '1':
-         case '2':
-         case '3':
-         case '4':
-         case '5':
-         case '6':
-         case '7':
-         case '8':
-         case '9':
-            string[s_pos] = expression[pos_adv];
-            ++pos_adv;  /* advance to next character */
-            ++s_pos;
-            string[s_pos] = BasicNulChar;
-            break;
-
-         case BasicCurrencySuffix:
-         case BasicLongSuffix:   
-         case BasicIntegerSuffix:
-         case BasicByteSuffix:
-            IsRounded = TRUE;
-            /* fall thru */
-         case BasicDoubleSuffix:
-         case BasicSingleSuffix:
-            if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* TypeChars in constants */ )
-            {
-               ++pos_adv;  /* advance to next character */
-               /* type = NUMBER; */
-               exponent = FALSE;
-               build_loop = FALSE;
-            }
-            else
-            {
-               *ResultCode = RESULT_TYPE_MMISMATCH;
-               return 0;
-            }
-            break;
-
-         case 'D':   /* exponential, double precision */
-         case 'd':
-            if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* 'D' is exponential */ )
-            {
-               ++pos_adv;  /* advance to next character */
-               /* type = NUMBER; */
-               exponent = TRUE;
-               build_loop = FALSE;
-            }
-            else
-            {
-               *ResultCode = RESULT_TYPE_MMISMATCH;
-               return 0;
-            }
-            break;
-
-         case 'E':   /* exponential, single precision */
-         case 'e':
-            ++pos_adv;  /* advance to next character */
-            /* type = NUMBER; */
-            exponent = TRUE;
-            build_loop = FALSE;
-            break;
-
-         case BasicNulChar:
-            build_loop = FALSE;
-            break;
-
-         default:
-            /* not numeric */
-            /* ERROR messages are displayed by the
-             * calling routine */
-            *ResultCode = RESULT_TYPE_MMISMATCH;
-            return 0;
-            /* break; */
-         }
-
-      }
-
-      /* assign the value to the mantissa variable */
-      sscanf(string, BasicNumberScanFormat, &mantissa);
-
-
-      /* test if integer bounds have been exceeded */
-
-      /* read the exponent if there is one */
-
-      if (exponent == TRUE)
-      {
-
-         /* allow a plus or minus once at the beginning */
-
-         need_pm = TRUE;
-
-         /* initialize counters */
-
-         string[0] = BasicNulChar;
-         s_pos = 0;
-         build_loop = TRUE;
-
-         /* loop to build the string */
-
-         while (build_loop == TRUE)
-         {
-            switch (expression[pos_adv])
-            {
-            case '-':   /* prefixed plus or minus */
-            case '+':
-
-               if (need_pm == TRUE) /* only allow once */
-               {
-                  string[s_pos] = expression[pos_adv];
-                  ++pos_adv;  /* advance to next
-                         * character */
-                  ++s_pos;
-                  string[s_pos] = BasicNulChar;
-               }
-               else
-               {
-                  build_loop = FALSE;
-               }
-               break;
-
-            case '0':   /* or ordinary digit */
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-
-               string[s_pos] = expression[pos_adv];
-               ++pos_adv;  /* advance to next
-                      * character */
-               ++s_pos;
-               string[s_pos] = BasicNulChar;
-               need_pm = FALSE;
-               break;
-
-            case BasicCurrencySuffix:
-            case BasicLongSuffix:   
-            case BasicIntegerSuffix:
-            case BasicByteSuffix:
-               IsRounded = TRUE;
-               /* fall-thru */
-            case BasicDoubleSuffix:
-            case BasicSingleSuffix:
-               if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* TypeChars in constants */ )
-               {
-                  ++pos_adv;  /* advance to next character */
-               }
-               build_loop = FALSE;
-               break;
-
-            default: /* anything else, terminate */
-               build_loop = FALSE;
-               break;
-            }
-
-         }  /* end of build loop for exponent */
-
-         /* assign the value to the user variable */
-
-         sscanf(string, BasicNumberScanFormat, &nval);
-
-
-      }     /* end of exponent search */
-      if (nval == 0)
-      {
-         nval = mantissa;
-      }
-      else
-      {
-         nval = mantissa * pow(10.0, nval);
-      }
-      if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* TypeChars in constants */ )
-      {
-         /* 1.2% == 1 */
-         if( IsRounded )
-         {
-            nval = bwb_rint( nval );  
-         }
-      }
-      break;
-
-   case 8:     /* octal constant */
-
-      /* initialize counters */
-
-      pos_adv = man_start;
-      /* type = NUMBER; */
-      string[0] = BasicNulChar;
-      s_pos = 0;
-      exponent = 0;
-      build_loop = TRUE;
-
-      /* loop to build the string */
-
-      while (build_loop == TRUE)
-      {
-         switch (expression[pos_adv])
-         {
-         case '0':   /* or ordinary digit */
-         case '1':
-         case '2':
-         case '3':
-         case '4':
-         case '5':
-         case '6':
-         case '7':
-            string[s_pos] = expression[pos_adv];
-            ++pos_adv;  /* advance to next character */
-            ++s_pos;
-            string[s_pos] = BasicNulChar;
-            break;
-
-         case BasicDoubleSuffix:
-         case BasicSingleSuffix:
-         case BasicCurrencySuffix:
-         case BasicLongSuffix:   
-         case BasicIntegerSuffix:
-         case BasicByteSuffix:
-            if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* TypeChars in constants */ )
-            {
-               ++pos_adv;  /* advance to next character */
-            }
-            build_loop = FALSE;
-            break;
-
-         default: /* anything else, terminate */
-            build_loop = FALSE;
-            break;
-         }
-
-      }
-
-      /* now scan the string to determine the number */
-
-      sscanf(string, "%o", &u);
-      nval = u;
-
-      break;
-
-   case 16:    /* hexadecimal constant */
-
-      /* initialize counters */
-
-      pos_adv = man_start;
-      /* type = NUMBER; */
-      string[0] = BasicNulChar;
-      s_pos = 0;
-      exponent = 0;
-      build_loop = TRUE;
-
-      /* loop to build the string */
-
-      while (build_loop == TRUE)
-      {
-         switch (expression[pos_adv])
-         {
-         case '0':   /* or ordinary digit */
-         case '1':
-         case '2':
-         case '3':
-         case '4':
-         case '5':
-         case '6':
-         case '7':
-         case '8':
-         case '9':
-         case 'A':
-         case 'a':
-         case 'B':
-         case 'b':
-         case 'C':
-         case 'c':
-         case 'D':
-         case 'd':
-         case 'E':
-         case 'e':
-         case 'F':   /* Don't forget these! (JBV) */
-         case 'f':
-            string[s_pos] = expression[pos_adv];
-            ++pos_adv;  /* advance to next character */
-            ++s_pos;
-            string[s_pos] = BasicNulChar;
-            break;
-
-         case BasicDoubleSuffix:
-         case BasicSingleSuffix:
-         case BasicCurrencySuffix:
-         case BasicLongSuffix:   
-         case BasicIntegerSuffix:
-         case BasicByteSuffix:
-            if( My->CurrentVersion->OptionFlags & OPTION_BUGS_ON /* TypeChars in constants */ )
-            {
-               ++pos_adv;  /* advance to next character */
-            }
-            build_loop = FALSE;
-            break;
-
-         default: /* anything else, terminate */
-            build_loop = FALSE;
-            break;
-         }
-
-      }
-
-      /* now scan the string to determine the number */
-
-      sscanf(string, "%x", &u);
-      nval = u;
-      break;
-   }
-
-   /* check Value */
-   if (isnan(nval))
-   {
-      nval = 0;
-      /* ERROR messages are displayed by the calling routine */
-      *ResultCode = RESULT_TYPE_MMISMATCH;
-   }
-   else
-   if (isinf(nval))
-   {
-      if (nval < 0)
-      {
-         nval = -(DBL_MAX);   /* FLT_MAX */
-      }
-      else
-      {
-         nval = (DBL_MAX); /* FLT_MAX */
-      }
-      /* ERROR messages are displayed by the calling routine */
-      *ResultCode = RESULT_ARITHMETIC_OVERFLOW;
-   }
-   else
-   {
-      *ResultCode = RESULT_OK;
-   }
-
-   return nval;
-
-}
-
-static int read_data(VariableType *v)
-{
-   int             ResultCode;
-   char            tbuf[BasicStringLengthMax + 1];
-
-     /* advance beyond whitespace or comma in data buffer */
-     inp_adv( My->data_line->buffer, &My->data_pos );
-
-     /* Advance to next line if end of buffer */
-     if ( buff_is_eol( My->data_line->buffer, &My->data_pos ) )
-     {
-        /* end of buffer */
-        My->data_line =  My->data_line->next;
-        My->data_pos =  My->data_line->Startpos;
-     }
-     while ( My->data_line->cmdnum != C_DATA)
-     {
-        if ( My->data_line == &My->bwb_end )
-        {
-           /* halt */
-           WARN_OUT_OF_DATA;
-           return FALSE;
-        }
-        My->data_line =  My->data_line->next;
-        My->data_pos =  My->data_line->Startpos;
-     }
-
-     /* leading whitespace is NOT part of the DATA item */
-     buff_skip_spaces(  My->data_line->buffer, &My->data_pos );
-
-     if ( buff_is_eol( My->data_line->buffer, &My->data_pos ) )
-     {
-        /* end of buffer */
-        WARN_OUT_OF_DATA;
-        return FALSE;
-     }
-
-
-     /* now at last we have a variable in v that needs to
-      * be assigned data from the data_buffer at position
-      * My->data_pos. What remains to be done is to
-      * get one single bit of data, a string constant or
-      * numerical constant, into the small buffer */
-
-     if( buff_peek_char(  My->data_line->buffer, &My->data_pos, BasicQuoteChar) )
-     {
-        if ( VAR_IS_STRING( v ) )
-        {
-           /* OK */
-        }
-        else
-        {
-           /* ERROR */
-           WARN_TYPE_MISMATCH;
-           return FALSE;
-        }
-     }
-     inp_const(My->data_line->buffer, tbuf, &My->data_pos); /* read_data , bwb_READ , bwb_MAT_READ */
-     if (My->CurrentVersion->OptionFlags & OPTION_COVERAGE_ON)
-     {
-        /* this line has been READ */
-        My->data_line->LineFlags |= LINE_EXECUTED;
-     }
-
-     /* finally assign the data to the variable */
-     ResultCode = inp_assign(tbuf, v, FALSE, FALSE);  /* read_data , bwb_READ , bwb_MAT_READ */
-     switch (ResultCode)
-     {
-     case RESULT_OK:
-        break;
-     case RESULT_UNKNOWN:
-        WARN_INTERNAL_ERROR;
-        return FALSE;
-        /* break; */
-     case RESULT_TYPE_MMISMATCH:
-        WARN_TYPE_MISMATCH;
-        return FALSE;
-        /* break; */
-     case RESULT_ARITHMETIC_OVERFLOW:
-        bwb_Warning_Overflow("*** Arithmetic Overflow ***");
-        break;
-     }
-     /* OK */
-     return TRUE;
-}
-
-static LineType * file_read_matrix( LineType * l )
-{
-   /* MAT READ arrayname [;|,] */
-   /* Array must be 1, 2 or 3 dimensions */
-   /* Array may be either NUMBER or STRING */
-
-   VariableType *v;
-
-   bwx_DEBUG(__FUNCTION__);
-
-   My->LastInputCount = 0;   
-
-   line_skip_spaces( l );
    
-   while( bwb_isalpha( l->buffer[l->position] ) )
-   {
-       My->LastInputCount = 0;   
-       if( (v = line_read_matrix( l )) == NULL)
-       {
-          WARN_SUBSCRIPT_OUT_OF_RANGE;
-          return bwb_zline(l);
-       }
-       /* variable MUST be an array of 1, 2 or 3 dimensions */
-       if (v->dimensions < 1)
-       {
-          WARN_SUBSCRIPT_OUT_OF_RANGE;
-          return bwb_zline(l);
-       }
-       if(v->dimensions > 3)
-       {
-          WARN_SUBSCRIPT_OUT_OF_RANGE;
-          return bwb_zline(l);
-       }
+  assert (Line != NULL);
 
-       /* both arrays are of the same size */
-       /* allow user to use either item seperator */
-       if( line_skip_comma(l) )
-       {
-           /* force printing col-by-col */
-       }
-       else
-       {
-           /* force concatenating the columns */
-       }
-
-       /* READ array */
-       switch( v->dimensions )
-       {
-       case 1:
-           {
-               /*
-               OPTION BASE 0
-               DIM A(5)
-               ...
-               MAT READ A 
-               ...
-               FOR I = 0 TO 5
-                 READ A(I)
-               NEXT I
-               ...
-               */
-               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
-               {
-                  if ( My->CurrentFile == My->SYSIN)
-                  {
-                      if( read_data(v) == FALSE )
-                      {
-                         WARN_SUBSCRIPT_OUT_OF_RANGE;
-                         return bwb_zline(l);
-                      }
-                  }
-                  else
-                  {
-                     if( file_read_value( My->CurrentFile->cfp, My->CurrentFile->delimit, v  ) == FALSE )
-                     {
-                        WARN_INPUT_PAST_END;
-                        return bwb_zline(l);
-                     }
-                  }
-                  /* OK */
-                  My->LastInputCount++;   
-               }
-           }
-           break;
-       case 2:
-           {
-               /*
-               OPTION BASE 0
-               DIM B(2,3)
-               ...
-               MAT READ B 
-               ...
-               FOR I = 0 TO 2
-                   FOR J = 0 TO 3
-                       READ B(I,J)
-                   NEXT J
-                   PRINT
-               NEXT I
-               ...
-               */
-               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
-               {
-               for( v->array_pos[1] = v->LBOUND[1]; v->array_pos[1] <= v->UBOUND[1]; v->array_pos[1]++ )
-               {
-                  if ( My->CurrentFile == My->SYSIN)
-                  {
-                      if( read_data(v) == FALSE )
-                      {
-                         WARN_SUBSCRIPT_OUT_OF_RANGE;
-                         return bwb_zline(l);
-                      }
-                  }
-                  else
-                  {
-                     if( file_read_value( My->CurrentFile->cfp, My->CurrentFile->delimit, v  ) == FALSE )
-                     {
-                        WARN_INPUT_PAST_END;
-                        return bwb_zline(l);
-                     }
-                  }
-                  /* OK */
-                  My->LastInputCount++;   
-               }
-               }
-           }
-           break;
-       case 3:
-           {
-               /*
-               OPTION BASE 0
-               DIM C(2,3,4)
-               ...
-               MAT READ C 
-               ...
-               FOR I = 0 TO 2
-                   FOR J = 0 TO 3
-                       FOR K = 0 TO 4
-                           READ C(I,J,K)
-                       NEXT K
-                       PRINT
-                   NEXT J
-                   PRINT
-               NEXT I
-               ...
-               */
-               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
-               {
-               for( v->array_pos[1] = v->LBOUND[1]; v->array_pos[1] <= v->UBOUND[1]; v->array_pos[1]++ )
-               {
-               for( v->array_pos[2] = v->LBOUND[2]; v->array_pos[2] <= v->UBOUND[2]; v->array_pos[2]++ )
-               {
-                  if ( My->CurrentFile == My->SYSIN)
-                  {
-                      if( read_data(v) == FALSE )
-                      {
-                         WARN_SUBSCRIPT_OUT_OF_RANGE;
-                         return bwb_zline(l);
-                      }
-                  }
-                  else
-                  {
-                     if( file_read_value( My->CurrentFile->cfp, My->CurrentFile->delimit, v  ) == FALSE )
-                     {
-                        WARN_INPUT_PAST_END;
-                        return bwb_zline(l);
-                     }
-                  }
-                  /* OK */
-                  My->LastInputCount++;   
-               }
-               }
-               }
-           }
-           break;
-       }
-       /* skip spaces */
-       line_skip_spaces(l);
-       /* process the next variable, if any  */
-   }
-   return bwb_zline(l);
+  WARN_SYNTAX_ERROR;
+  return (Line);
 }
 
-LineType *
-bwb_MAT_GET(LineType * l)
+extern LineType *
+bwb_INPUT_LINE (LineType * Line)
 {
-   /* MAT GET filename$ , matrix [, ...] */
-   VariantType E;
-   VariantType *e = &E;  
+   
+  assert (Line != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
+  return bwb_LINE_INPUT (Line);
+}
 
-   My->CurrentFile = My->SYSIN;
+extern LineType *
+bwb_LINE_INPUT (LineType * Line)
+{
+  int FileNumber;
+  VariableType *v;
+  char *tbuf;
+  int tlen;
+  char *Prompt;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert(My->ConsoleInput != NULL);
+  assert(MAX_LINE_LENGTH > 1);
 
-   line_skip_spaces(l);
-   if( line_read_expression( l, e ) == FALSE )
-   {
+  /* assign default values */
+
+  tbuf = My->ConsoleInput;
+  tlen = MAX_LINE_LENGTH;
+  Prompt = NULL;
+  My->CurrentFile = My->SYSIN;
+
+  /* check for leading semicolon */
+  if (line_skip_seperator (Line))
+  {
+    /* optional */
+  }
+  if (line_skip_FilenumChar (Line))
+  {
+    if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+    {
       WARN_SYNTAX_ERROR;
-      return bwb_zline(l);
-   }
-   if( e->TypeChar == BasicStringSuffix )
-   {
-      /* STRING */
-      /* MAT GET filename$ ... */
-      if( is_empty_filename( e->Buffer ) )
-      {
-         /* "MAT GET # 0" is an error */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      My->CurrentFile = find_file_by_name( e->Buffer );
-      if( My->CurrentFile == NULL )
-      {
-         /* implicitly OPEN for reading */
-         My->CurrentFile = file_new();
-         My->CurrentFile->cfp = fopen(e->Buffer, "r");
-         if( My->CurrentFile->cfp == NULL )
-         {
-            /* bad file name */
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         My->CurrentFile->FileNumber = file_next_number();
-         My->CurrentFile->mode = DEVMODE_INPUT;
-         My->CurrentFile->width = 0;
-         /* WIDTH == RECLEN */
-         My->CurrentFile->col = 1;
-         My->CurrentFile->row = 1;
-         My->CurrentFile->delimit = ',';
-         My->CurrentFile->buffer = NULL;
-         bwb_strcpy(My->CurrentFile->filename, e->Buffer);
-      }
-   }
-   else
-   {
-      /* NUMBER -- file must already be OPEN */
-      /* GET filenumber ... */
-      if( e->Number < 0 )
-      {
-         /* "MAT GET # -1" is an error */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if( e->Number == 0 )
-      {
-         /* "MAT GET # 0" is an error */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
+      return (Line);
+    }
+    if (FileNumber < 0)
+    {
+      /* "LINE INPUT # -1" is an error */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (FileNumber > 0)
+    {
       /* normal file */
-      My->CurrentFile = find_file_by_number( (int) bwb_rint( e->Number ) );
-      if( My->CurrentFile == NULL )
+      My->CurrentFile = find_file_by_number (FileNumber);
+      if (My->CurrentFile == NULL)
       {
-         /* file not OPEN */
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
       }
-   }  
-   RELEASE( e );  
-   if( My->CurrentFile == NULL )
-   {
-      WARN_BAD_FILE_NUMBER;
-      return bwb_zline(l);
-   }
-   if (( My->CurrentFile->mode & DEVMODE_READ) == 0)
-   {
-      WARN_BAD_FILE_NUMBER;
-      return bwb_zline(l);
-   }
-   if ( line_skip_comma(l) )
-   {
-      /* OK */
-   }
-   else
-   {
-      WARN_SYNTAX_ERROR;
-      return bwb_zline(l);
-   }
-   return file_read_matrix( l );
-}
-
-
-LineType *
-bwb_MAT_READ(LineType * l)
-{
-   /* MAT READ arrayname [;|,] */
-   /* Array must be 1, 2 or 3 dimensions */
-   /* Array may be either NUMBER or STRING */
-
-
-   bwx_DEBUG(__FUNCTION__);
-
-   My->CurrentFile = My->SYSIN;
-
-   My->LastInputCount = 0;   
-
-   if ( line_skip_char(l,BasicFileNumberPrefix) )
-   {
-      /* MAT READ # filenum, varlist */
-      int FileNumber;
-
-      if( line_read_integer_expression(l, &FileNumber) == FALSE )
+      if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
       }
-      
-      if ( line_skip_comma(l) )
+      if (My->CurrentFile->cfp == NULL)
       {
-         /* OK */
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
       }
-      else
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      My->CurrentFile = find_file_by_number( FileNumber );
-      if( My->CurrentFile == NULL )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
-      }
-      if ( My->CurrentFile != My->SYSIN)
-      {
-         if ((My->CurrentFile->mode & DEVMODE_READ) == 0)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if (My->CurrentFile->cfp == NULL)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-      }
-      /* "MAT READ # 0, varlist" is the same as "MAT READ varlist" */
-      line_skip_spaces(l);
-   }
-   return file_read_matrix( l );
-}
-
-
-static int input_data(VariableType *v, char *Buffer)
-{
-    char *C;
-    char c;
-    int ResultCode;
-    
-    if( Buffer[0] == BasicNulChar )
-    {
-        /* Get more data */
-        bwx_input("?", Buffer );
-        if( Buffer[0] == BasicNulChar )
-        {
-            return FALSE;
-        }
     }
-    /* process data */
-
-    /* data seperator is an unquoted comma (,) */
-
-    C = Buffer;
-    while( *C != BasicNulChar && *C != ',' )
+    /* check for comma */
+    if (line_skip_seperator (Line))
     {
-        if( *C == BasicQuoteChar )
+      /* optional */
+    }
+  }
+
+  /* check for quotation mark indicating prompt */
+  if (line_peek_QuoteChar (Line))
+  {
+    /* get prompt string */
+    if (line_read_string_expression (Line, &Prompt) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    /* check for comma */
+    if (line_skip_seperator (Line))
+    {
+      /* optional */
+    }
+  }
+
+  /* read the variable for assignment */
+  if ((v = line_read_scalar (Line)) == NULL)
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (VAR_IS_STRING (v))
+  {
+    /* OK */
+  }
+  else
+  {
+    /* ERROR */
+    WARN_TYPE_MISMATCH;
+    return (Line);
+  }
+
+  /* read a line of text into the bufffer */
+  if (My->CurrentFile == My->SYSIN)
+  {
+    /* LINE INPUT never displays a '?' regardless of the ',' or ';' */
+    bwx_input (Prompt, FALSE, tbuf, tlen);
+  }
+  else
+  {
+    if (fgets (tbuf, tlen, My->CurrentFile->cfp))        /* bwb_LINE_INPUT */
+    {
+      tbuf[tlen] = NulChar;
+      CleanTextInput (tbuf);
+    }
+    else
+    {
+      return file_if_end (Line);
+    }
+  }
+  /* if( TRUE ) */
+  {
+    VariantType variant;
+
+    variant.VariantTypeCode = StringTypeCode;
+    variant.Buffer = tbuf;
+    variant.Length = bwb_strlen (variant.Buffer);
+    if (var_set (v, &variant) == FALSE)
+    {
+      WARN_VARIABLE_NOT_DECLARED;
+      return (Line);
+    }
+  }
+  if (Prompt != NULL)
+  {
+    free (Prompt);
+    Prompt = NULL;
+  }
+  return (Line);
+}
+
+static LineType *
+file_read_matrix (LineType * Line)
+{
+  /* MAT GET filename$ , matrix [, ...] */
+  /* MAT READ arrayname [;|,] */
+  /* Array must be 1, 2 or 3 dimensions */
+  /* Array may be either NUMBER or STRING */
+  VariableType *v;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert(My->ConsoleInput != NULL);
+  assert(MAX_LINE_LENGTH > 1);
+  assert(My->CurrentFile != NULL);
+
+  My->LastInputCount = 0;
+  do
+  {
+    char *tbuf;
+    int tlen;
+
+    tbuf = My->ConsoleInput;
+    tlen = MAX_LINE_LENGTH;
+    if (My->CurrentFile->width > 0 && My->CurrentFile->buffer != NULL)
+    {
+      tlen = My->CurrentFile->width;
+      tbuf = My->CurrentFile->buffer;
+    }
+    tbuf[0] = NulChar;
+
+    My->LastInputCount = 0;
+    if ((v = line_read_matrix (Line)) == NULL)
+    {
+      WARN_SUBSCRIPT_OUT_OF_RANGE;
+      return (Line);
+    }
+    /* variable MUST be an array of 1, 2 or 3 dimensions */
+    if (v->dimensions < 1)
+    {
+      WARN_SUBSCRIPT_OUT_OF_RANGE;
+      return (Line);
+    }
+    if (v->dimensions > 3)
+    {
+      WARN_SUBSCRIPT_OUT_OF_RANGE;
+      return (Line);
+    }
+
+    /* READ array */
+    switch (v->dimensions)
+    {
+    case 1:
+      {
+        /*
+           OPTION BASE 0
+           DIM A(5)
+           ...
+           MAT READ A 
+           ...
+           FOR I = 0 TO 5
+           READ A(I)
+           NEXT I
+           ...
+         */
+        for (v->VINDEX[0] = v->LBOUND[0]; v->VINDEX[0] <= v->UBOUND[0];
+             v->VINDEX[0]++)
         {
-            /* skip leading quote */
-            C++;
-            while( *C != BasicNulChar && *C != BasicQuoteChar )
+          if (My->CurrentFile == My->SYSIN)
+          {
+            if (read_data (v) != RESULT_SUCCESS)
             {
-                /* skip string constant */
-                C++;
+              return data_if_end (Line);
             }
-            if( *C == BasicQuoteChar )
+          }
+          else
+          {
+            if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
             {
-                /* skip trailing quote */
-                C++;
+              return file_if_end (Line);
             }
+          }
+          /* OK */
+          My->LastInputCount++;
+        }
+      }
+      break;
+    case 2:
+      {
+        /*
+           OPTION BASE 0
+           DIM B(2,3)
+           ...
+           MAT READ B 
+           ...
+           FOR I = 0 TO 2
+           FOR J = 0 TO 3
+           READ B(I,J)
+           NEXT J
+           PRINT
+           NEXT I
+           ...
+         */
+        for (v->VINDEX[0] = v->LBOUND[0]; v->VINDEX[0] <= v->UBOUND[0];
+             v->VINDEX[0]++)
+        {
+          for (v->VINDEX[1] = v->LBOUND[1]; v->VINDEX[1] <= v->UBOUND[1];
+               v->VINDEX[1]++)
+          {
+            if (My->CurrentFile == My->SYSIN)
+            {
+              if (read_data (v) != RESULT_SUCCESS)
+              {
+                return data_if_end (Line);
+              }
+            }
+            else
+            {
+              if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
+              {
+                return file_if_end (Line);
+              }
+            }
+            /* OK */
+            My->LastInputCount++;
+          }
+        }
+      }
+      break;
+    case 3:
+      {
+        /*
+           OPTION BASE 0
+           DIM C(2,3,4)
+           ...
+           MAT READ C 
+           ...
+           FOR I = 0 TO 2
+           FOR J = 0 TO 3
+           FOR K = 0 TO 4
+           READ C(I,J,K)
+           NEXT K
+           PRINT
+           NEXT J
+           PRINT
+           NEXT I
+           ...
+         */
+        for (v->VINDEX[0] = v->LBOUND[0]; v->VINDEX[0] <= v->UBOUND[0];
+             v->VINDEX[0]++)
+        {
+          for (v->VINDEX[1] = v->LBOUND[1]; v->VINDEX[1] <= v->UBOUND[1];
+               v->VINDEX[1]++)
+          {
+            for (v->VINDEX[2] = v->LBOUND[2]; v->VINDEX[2] <= v->UBOUND[2];
+                 v->VINDEX[2]++)
+            {
+              if (My->CurrentFile == My->SYSIN)
+              {
+                if (read_data (v) != RESULT_SUCCESS)
+                {
+                  return data_if_end (Line);
+                }
+              }
+              else
+              {
+                if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
+                {
+                  return file_if_end (Line);
+                }
+              }
+              /* OK */
+              My->LastInputCount++;
+            }
+          }
+        }
+      }
+      break;
+    }
+    /* process the next variable, if any  */
+  }
+  while (line_skip_seperator (Line));
+  return (Line);
+}
+
+extern LineType *
+bwb_MAT_GET (LineType * Line)
+{
+  /* MAT GET filename$ , matrix [, ...] */
+  VariantType E;
+  VariantType *e;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+
+  e = &E;
+  My->CurrentFile = My->SYSIN;
+  if (line_read_expression (Line, e) == FALSE)        /* bwb_MAT_GET */
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  if (e->VariantTypeCode == StringTypeCode)
+  {
+    /* STRING */
+    /* MAT GET filename$ ... */
+    if (is_empty_string (e->Buffer))
+    {
+      /* MAT GET "" ... is an error */
+      WARN_BAD_FILE_NAME;
+      return (Line);
+    }
+    My->CurrentFile = find_file_by_name (e->Buffer);
+    if (My->CurrentFile == NULL)
+    {
+      /* implicitly OPEN for reading */
+      My->CurrentFile = file_new ();
+      My->CurrentFile->cfp = fopen (e->Buffer, "r");
+      if (My->CurrentFile->cfp == NULL)
+      {
+        WARN_BAD_FILE_NAME;
+        return (Line);
+      }
+      My->CurrentFile->FileNumber = file_next_number ();
+      My->CurrentFile->DevMode = DEVMODE_INPUT;
+      My->CurrentFile->width = 0;
+      /* WIDTH == RECLEN */
+      My->CurrentFile->col = 1;
+      My->CurrentFile->row = 1;
+      My->CurrentFile->delimit = ',';
+      My->CurrentFile->buffer = NULL;
+      if (My->CurrentFile->FileName != NULL)
+      {
+        free (My->CurrentFile->FileName);
+        My->CurrentFile->FileName = NULL;
+      }
+      My->CurrentFile->FileName = e->Buffer;
+      e->Buffer = NULL;
+    }
+  }
+  else
+  {
+    /* NUMBER -- file must already be OPEN */
+    /* GET filenumber ... */
+    if (e->Number < 0)
+    {
+      /* "MAT GET # -1" is an error */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (e->Number == 0)
+    {
+      /* "MAT GET # 0" is an error */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    /* normal file */
+    My->CurrentFile = find_file_by_number ((int) bwb_rint (e->Number));
+    if (My->CurrentFile == NULL)
+    {
+      /* file not OPEN */
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+  }
+  if (My->CurrentFile == NULL)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (Line);
+  }
+  if (line_skip_seperator (Line))
+  {
+    /* OK */
+  }
+  else
+  {
+    WARN_SYNTAX_ERROR;
+    return (Line);
+  }
+  return file_read_matrix (Line);
+}
+
+
+extern LineType *
+bwb_MAT_READ (LineType * Line)
+{
+  /* MAT READ arrayname [;|,] */
+  /* Array must be 1, 2 or 3 dimensions */
+  /* Array may be either NUMBER or STRING */
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+
+  My->CurrentFile = My->SYSIN;
+  My->LastInputCount = 0;
+  if (line_skip_FilenumChar (Line))
+  {
+    /* MAT READ # filenum, varlist */
+    int FileNumber;
+
+    if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+
+    if (line_skip_seperator (Line))
+    {
+      /* OK */
+    }
+    else
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    My->CurrentFile = find_file_by_number (FileNumber);
+    if (My->CurrentFile == NULL)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (My->CurrentFile != My->SYSIN)
+    {
+      if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+      {
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
+      }
+      if (My->CurrentFile->cfp == NULL)
+      {
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
+      }
+    }
+    /* "MAT READ # 0, varlist" is the same as "MAT READ varlist" */
+  }
+  return file_read_matrix (Line);
+}
+
+static ResultType
+input_data (VariableType * Variable, char *tbuf, int tlen)
+{
+  /*
+   **
+   ** read one INPUT item
+   **
+   */
+  int p;
+  ResultType Result;
+  VariantType Variant;
+  VariantType *X;
+   
+  assert (Variable != NULL);
+  assert (tbuf != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert(My->CurrentFile != NULL);
+  assert (My->CurrentFile == My->SYSIN);
+
+  Result = RESULT_UNPARSED;
+  X = &Variant;
+  CLEAR_VARIANT (X);
+  if (tbuf[0] == NulChar)
+  {
+    /* Get more data */
+    bwx_input ("?", FALSE, tbuf, tlen);
+    if (tbuf[0] == NulChar)
+    {
+      return RESULT_UNPARSED;
+    }
+    /*
+     **
+     ** make sure we can parse everything in tbuf
+     **
+     */
+    p = 0;
+    do
+    {
+      do
+      {
+        if (VAR_IS_STRING (Variable))
+        {
+          Result = parse_string (tbuf, &p, X);
         }
         else
         {
-            C++;
+          Result = parse_number (tbuf, &p, X, FALSE);
         }
-    }
-    c = *C; /* either a comma (,) or a NUL (0) */
-    *C = BasicNulChar;
-    CleanLine( Buffer );
-    if( Buffer[0] == BasicQuoteChar )
-    {
-        /* remove quotes */
-        char *E;
-        
-        E = Buffer;
-        E++;
-        E = bwb_strchr(E, BasicQuoteChar);
-        if( E != NULL )
-        {
-            *E = BasicNulChar;
-        }
-        E = Buffer;
-        E++;
-        bwb_strcpy(Buffer,E);
-    }
-   ResultCode = inp_assign(Buffer, v, FALSE, FALSE);  /* input_data , bwb_MAT_INPUT */
-   switch (ResultCode)
-   {
-   case RESULT_OK:
-      break;
-   case RESULT_UNKNOWN:
-      WARN_INTERNAL_ERROR;
-      return FALSE;
-      /* break; */
-   case RESULT_TYPE_MMISMATCH:
-      fputs("*** Type Mismatch ***\n", My->SYSOUT->cfp );
-      return FALSE;
-      /* break; */
-   case RESULT_ARITHMETIC_OVERFLOW:
-      fputs("*** Overflow ***\n", My->SYSOUT->cfp );
-      return FALSE;
-      /* break; */
-   }
-   /* OK */
-   if( c == BasicNulChar )
-   {
-       /* we have consumed the entire buffer */
-       Buffer[0] = BasicNulChar;
-   }
-   else
-   if( c == ',' )
-   {
-       /* shift the buffer left, just past the comma (,) */
-       C++;
-       bwb_strcpy(Buffer,C);
-   }
-   else
-   {
-      WARN_INTERNAL_ERROR;
-      return FALSE;
-   }
-   
-   return TRUE;
-}
-
-LineType *
-bwb_MAT_INPUT(LineType * l)
-{
-   /* MAT INPUT arrayname [;|,] */
-   /* Array must be 1, 2 or 3 dimensions */
-   /* Array may be either NUMBER or STRING */
-   
-   VariableType *v;
-   char            tbuf[BasicStringLengthMax + 1];
-
-   bwx_DEBUG(__FUNCTION__);
-   
-   My->CurrentFile = My->SYSIN;
-
-   My->LastInputCount = 0;   
-
-   if ( line_skip_char(l,BasicFileNumberPrefix) )
-   {
-      /* MAT INPUT # filenum, varlist */
-      int FileNumber;
-
-      if( line_read_integer_expression(l, &FileNumber) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
       }
-      
-      if ( line_skip_comma(l) )
+      while (buff_skip_seperator (tbuf, &p) && Result == RESULT_SUCCESS);
+      /* verify we consumed all user values */
+      if (buff_is_eol (tbuf, &p))
       {
-         /* OK */
+        /* we reached the end of the user's input */
       }
       else
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
+        /* garbage in user's input */
+        Result = RESULT_UNPARSED;
       }
-      My->CurrentFile = find_file_by_number( FileNumber );
-      if( My->CurrentFile == NULL )
+      if (Result != RESULT_SUCCESS)
       {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline(l);
+        tbuf[0] = NulChar;
+        bwx_input ("?Redo", FALSE, tbuf, tlen);
+        if (tbuf[0] == NulChar)
+        {
+          return RESULT_UNPARSED;
+        }
+        p = 0;
       }
-      if ( My->CurrentFile != My->SYSIN)
+    }
+    while (Result != RESULT_SUCCESS);
+    /*
+     **
+     ** so, we can parse all of the user's input (everything in tbuf)
+     **
+     */
+  }
+  /* process one value */
+  p = 0;
+  if (VAR_IS_STRING (Variable))
+  {
+    Result = parse_string (tbuf, &p, X);
+  }
+  else
+  {
+    Result = parse_number (tbuf, &p, X, FALSE);
+  }
+  if (Result != RESULT_SUCCESS)
+  {
+    WARN_INTERNAL_ERROR;
+    return RESULT_UNPARSED;
+  }
+  if (X->VariantTypeCode == StringTypeCode
+      && My->CurrentVersion->
+      OptionFlags & OPTION_BUGS_ON /* DATA allows embedded quote pairs */ )
+  {
+    int i;
+    int n;
+    n = X->Length;
+    for (i = 0; i < n; i++)
+    {
+      if (X->Buffer[i + 0] == My->CurrentVersion->OptionQuoteChar
+          && X->Buffer[i + 1] == My->CurrentVersion->OptionQuoteChar)
       {
-         if ((My->CurrentFile->mode & DEVMODE_READ) == 0)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
-         if (My->CurrentFile->cfp == NULL)
-         {
-            WARN_BAD_FILE_NUMBER;
-            return bwb_zline(l);
-         }
+        bwb_strncpy (&X->Buffer[i + 0], &X->Buffer[i + 1], n - i);
+        n--;
       }
-      /* "MAT INPUT # 0, varlist" is the same as "MAT INPUT varlist" */
-      line_skip_spaces(l);
-   }
+    }
+    X->Length = n;
+  }
+  if (var_set (Variable, X) == FALSE)
+  {
+    WARN_VARIABLE_NOT_DECLARED;
+    return RESULT_UNPARSED;
+  }
+  /* determine whether all user input was consumed */
+  if (buff_is_eol (tbuf, &p))
+  {
+    /* we have consumed the entire buffer */
+    tbuf[0] = NulChar;
+    return RESULT_SUCCESS;
+  }
+  if (buff_skip_char (tbuf, &p, My->CurrentFile->delimit))        /* buff_skip_comma */
+  {
+    /* shift the buffer left, just past the comma (,) */
+    bwb_strcpy (tbuf, &tbuf[p]);
+    return RESULT_SUCCESS;
+  }
+  /* garbage after the value we just READ */
+  WARN_BAD_DATA;
+  return RESULT_UNPARSED;
+}
+
+extern LineType *
+bwb_MAT_INPUT (LineType * Line)
+{
+  /* MAT INPUT arrayname [;|,] */
+  /* Array must be 1, 2 or 3 dimensions */
+  /* Array may be either NUMBER or STRING */
+  VariableType *v;
+   
+  assert (Line != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSIN->cfp != NULL);
+  assert(My->ConsoleInput != NULL);
+  assert(MAX_LINE_LENGTH > 1);
+
+  My->CurrentFile = My->SYSIN;
+  My->LastInputCount = 0;
+  if (line_skip_FilenumChar (Line))
+  {
+    /* MAT INPUT # filenum, varlist */
+    int FileNumber;
+
+    if (line_read_integer_expression (Line, &FileNumber) == FALSE)
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+
+    if (line_skip_seperator (Line))
+    {
+      /* OK */
+    }
+    else
+    {
+      WARN_SYNTAX_ERROR;
+      return (Line);
+    }
+    My->CurrentFile = find_file_by_number (FileNumber);
+    if (My->CurrentFile == NULL)
+    {
+      WARN_BAD_FILE_NUMBER;
+      return (Line);
+    }
+    if (My->CurrentFile != My->SYSIN)
+    {
+      if ((My->CurrentFile->DevMode & DEVMODE_READ) == 0)
+      {
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
+      }
+      if (My->CurrentFile->cfp == NULL)
+      {
+        WARN_BAD_FILE_NUMBER;
+        return (Line);
+      }
+    }
+    /* "MAT INPUT # 0, varlist" is the same as "MAT INPUT varlist" */
+  }
+
+  do
+  {
+    char *tbuf;
+    int tlen;
+
+    tbuf = My->ConsoleInput;
+    tlen = MAX_LINE_LENGTH;
+    if (My->CurrentFile->width > 0 && My->CurrentFile->buffer != NULL)
+    {
+      tlen = My->CurrentFile->width;
+      tbuf = My->CurrentFile->buffer;
+    }
+    tbuf[0] = NulChar;
 
 
-   while( bwb_isalpha( l->buffer[l->position] ) )
-   {
-       My->LastInputCount = 0;   
-       if( (v = line_read_matrix( l )) == NULL)
-       {
-          WARN_SUBSCRIPT_OUT_OF_RANGE;
-          return bwb_zline(l);
-       }
-       /* variable MUST be an array of 1, 2 or 3 dimensions */
-       if (v->dimensions < 1)
-       {
-          WARN_SUBSCRIPT_OUT_OF_RANGE;
-          return bwb_zline(l);
-       }
-       if(v->dimensions > 3)
-       {
-          WARN_SUBSCRIPT_OUT_OF_RANGE;
-          return bwb_zline(l);
-       }
+    My->LastInputCount = 0;
+    if ((v = line_read_matrix (Line)) == NULL)
+    {
+      WARN_SUBSCRIPT_OUT_OF_RANGE;
+      return (Line);
+    }
+    /* variable MUST be an array of 1, 2 or 3 dimensions */
+    if (v->dimensions < 1)
+    {
+      WARN_SUBSCRIPT_OUT_OF_RANGE;
+      return (Line);
+    }
+    if (v->dimensions > 3)
+    {
+      WARN_SUBSCRIPT_OUT_OF_RANGE;
+      return (Line);
+    }
 
-       /* allow user to use either item seperator */
-       if( line_skip_comma(l) )
-       {
-           /* force printing col-by-col */
-       }
-       else
-       {
-           /* force concatenating the columns */
-       }
-
-       /* INPUT array */
-       tbuf[0] = BasicNulChar;
-       switch( v->dimensions )
-       {
-       case 1:
-           {
-               /*
-               OPTION BASE 0
-               DIM A(5)
-               ...
-               MAT INPUT A 
-               ...
-               FOR I = 0 TO 5
-                 INPUT A(I)
-               NEXT I
-               ...
+    /* INPUT array */
+    switch (v->dimensions)
+    {
+    case 1:
+      {
+        /*
+           OPTION BASE 0
+           DIM A(5)
+           ...
+           MAT INPUT A 
+           ...
+           FOR I = 0 TO 5
+           INPUT A(I)
+           NEXT I
+           ...
+         */
+        My->LastInputCount = 0;
+        for (v->VINDEX[0] = v->LBOUND[0]; v->VINDEX[0] <= v->UBOUND[0];
+             v->VINDEX[0]++)
+        {
+          if (My->CurrentFile == My->SYSIN)
+          {
+            if (input_data (v, tbuf, tlen) != RESULT_SUCCESS)
+            {
+              /*
+                 WARN_INPUT_PAST_END;
                */
-               My->LastInputCount = 0;   
-               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
-               {
-                  if ( My->CurrentFile == My->SYSIN)
-                  {
-                      if( input_data(v,tbuf) == FALSE )
-                      {
-                         /*
-                         WARN_INPUT_PAST_END;
-                         */
-                         return bwb_zline(l);
-                      }
-                  }
-                  else
-                  {
-                     if( file_read_value( My->CurrentFile->cfp, ',', v  ) == FALSE )
-                     {
-                        WARN_INPUT_PAST_END;
-                        return bwb_zline(l);
-                     }
-                  }
-                  /* OK */
-                  My->LastInputCount++;   
-               }
-           }
-           break;
-       case 2:
-           {
-               /*
-               OPTION BASE 0
-               DIM B(2,3)
-               ...
-               MAT INPUT B 
-               ...
-               FOR I = 0 TO 2
-                   FOR J = 0 TO 3
-                       INPUT B(I,J)
-                   NEXT J
-                   PRINT
-               NEXT I
-               ...
-               */
-               My->LastInputCount = 0;   
-               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
-               {
-               for( v->array_pos[1] = v->LBOUND[1]; v->array_pos[1] <= v->UBOUND[1]; v->array_pos[1]++ )
-               {
-                  if ( My->CurrentFile == My->SYSIN)
-                  {
-                      if( input_data(v,tbuf) == FALSE )
-                      {
-                         /*
-                         WARN_INPUT_PAST_END;
-                         */
-                         return bwb_zline(l);
-                      }
-                  }
-                  else
-                  {
-                     if( file_read_value( My->CurrentFile->cfp, ',', v  ) == FALSE )
-                     {
-                        WARN_INPUT_PAST_END;
-                        return bwb_zline(l);
-                     }
-                  }
-                  /* OK */
-                  My->LastInputCount++;   
-               }
-               }
-           }
-           break;
-       case 3:
-           {
-               /*
-               OPTION BASE 0
-               DIM C(2,3,4)
-               ...
-               MAT INPUT C 
-               ...
-               FOR I = 0 TO 2
-                   FOR J = 0 TO 3
-                       FOR K = 0 TO 4
-                           INPUT C(I,J,K)
-                       NEXT K
-                       PRINT
-                   NEXT J
-                   PRINT
-               NEXT I
-               ...
-               */
-               My->LastInputCount = 0;   
-               for( v->array_pos[0] = v->LBOUND[0]; v->array_pos[0] <= v->UBOUND[0]; v->array_pos[0]++ )
-               {
-               for( v->array_pos[1] = v->LBOUND[1]; v->array_pos[1] <= v->UBOUND[1]; v->array_pos[1]++ )
-               {
-               for( v->array_pos[2] = v->LBOUND[2]; v->array_pos[2] <= v->UBOUND[2]; v->array_pos[2]++ )
-               {
-                  if ( My->CurrentFile == My->SYSIN)
-                  {
-                      if( input_data(v,tbuf) == FALSE )
-                      {
-                         /*
-                         WARN_INPUT_PAST_END;
-                         */
-                         return bwb_zline(l);
-                      }
-                  }
-                  else
-                  {
-                     if( file_read_value( My->CurrentFile->cfp, ',', v  ) == FALSE )
-                     {
-                        WARN_INPUT_PAST_END;
-                        return bwb_zline(l);
-                     }
-                  }
-                  /* OK */
-                  My->LastInputCount++;   
-               }
-               }
-               }
-           }
-           break;
-       }
-       /* skip spaces */
-       line_skip_spaces(l);
-       /* process the next variable, if any  */
-   }
-   return bwb_zline(l);
+              return (Line);
+            }
+          }
+          else
+          {
+            if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
+            {
+              return file_if_end (Line);
+            }
+          }
+          /* OK */
+          My->LastInputCount++;
+        }
+      }
+      break;
+    case 2:
+      {
+        /*
+           OPTION BASE 0
+           DIM B(2,3)
+           ...
+           MAT INPUT B 
+           ...
+           FOR I = 0 TO 2
+           FOR J = 0 TO 3
+           INPUT B(I,J)
+           NEXT J
+           PRINT
+           NEXT I
+           ...
+         */
+        My->LastInputCount = 0;
+        for (v->VINDEX[0] = v->LBOUND[0]; v->VINDEX[0] <= v->UBOUND[0];
+             v->VINDEX[0]++)
+        {
+          for (v->VINDEX[1] = v->LBOUND[1]; v->VINDEX[1] <= v->UBOUND[1];
+               v->VINDEX[1]++)
+          {
+            if (My->CurrentFile == My->SYSIN)
+            {
+              if (input_data (v, tbuf, tlen) != RESULT_SUCCESS)
+              {
+                /*
+                   WARN_INPUT_PAST_END;
+                 */
+                return (Line);
+              }
+            }
+            else
+            {
+              if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
+              {
+                return file_if_end (Line);
+              }
+            }
+            /* OK */
+            My->LastInputCount++;
+          }
+        }
+      }
+      break;
+    case 3:
+      {
+        /*
+           OPTION BASE 0
+           DIM C(2,3,4)
+           ...
+           MAT INPUT C 
+           ...
+           FOR I = 0 TO 2
+           FOR J = 0 TO 3
+           FOR K = 0 TO 4
+           INPUT C(I,J,K)
+           NEXT K
+           PRINT
+           NEXT J
+           PRINT
+           NEXT I
+           ...
+         */
+        My->LastInputCount = 0;
+        for (v->VINDEX[0] = v->LBOUND[0]; v->VINDEX[0] <= v->UBOUND[0];
+             v->VINDEX[0]++)
+        {
+          for (v->VINDEX[1] = v->LBOUND[1]; v->VINDEX[1] <= v->UBOUND[1];
+               v->VINDEX[1]++)
+          {
+            for (v->VINDEX[2] = v->LBOUND[2]; v->VINDEX[2] <= v->UBOUND[2];
+                 v->VINDEX[2]++)
+            {
+              if (My->CurrentFile == My->SYSIN)
+              {
+                if (input_data (v, tbuf, tlen) != RESULT_SUCCESS)
+                {
+                  /*
+                     WARN_INPUT_PAST_END;
+                   */
+                  return (Line);
+                }
+              }
+              else
+              {
+                if (file_data (v, tbuf, tlen) != RESULT_SUCCESS)
+                {
+                  return file_if_end (Line);
+                }
+              }
+              /* OK */
+              My->LastInputCount++;
+            }
+          }
+        }
+      }
+      break;
+    }
+    /* process the next variable, if any  */
+  }
+  while (line_skip_seperator (Line));
+  return (Line);
 }
 
 /* EOF */

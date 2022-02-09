@@ -1,0 +1,21 @@
+THE FIRST END STATEMENT FOLLOWS                                                 
+bwBASIC: CONT                                                                   
+THE SECOND END STATEMENT FOLLOWS                                                
+bwBASIC: LIST                                                                   
+   10 REM 'END' TEST PROGRAM                                                    
+   20 PRINT "THE FIRST END STATEMENT FOLLOWS"                                   
+   30 END                                                                       
+   40 PRINT "THE SECOND END STATEMENT FOLLOWS"                                  
+   99 END                                                                       
+                                                                                
+bwBASIC: DELETE 99                                                              
+bwBASIC: LIST                                                                   
+   10 REM 'END' TEST PROGRAM                                                    
+   20 PRINT "THE FIRST END STATEMENT FOLLOWS"                                   
+   30 END                                                                       
+   40 PRINT "THE SECOND END STATEMENT FOLLOWS"                                  
+                                                                                
+bwBASIC: RUN                                                                    
+THE FIRST END STATEMENT FOLLOWS                                                 
+bwBASIC: CONT                                                                   
+THE SECOND END STATEMENT FOLLOWS                                                

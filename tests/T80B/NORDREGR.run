@@ -1,0 +1,24 @@
+NTH-ORDER REGRESSION                                                            
+                                                                                
+DEGREE OF EQUATION? 1                                                           
+NUMBER OF KNOWN POINTS? 3                                                       
+X,Y OF POINT 1 ? 11,22                                                          
+X,Y OF POINT 2 ? 33,44                                                          
+X,Y OF POINT 3 ? 55,66                                                          
+                                                                                
+              CONSTANT = 11                                                     
+ 1 DEGREE COEFFICIENT = 1                                                       
+                                                                                
+                                                                                
+COEFFICIENT OF DETERMINATION (R[2) = 1                                          
+COEFFICIENT OF CORRELATION = 1                                                  
+STANDARD ERROR OF ESTIMATE = 0                                                  
+                                                                                
+INTERPOLATION:(ENTER 0 TO END PROGRAM)                                          
+X =? 22                                                                         
+y = 33                                                                          
+                                                                                
+X =? 44                                                                         
+y = 55                                                                          
+                                                                                
+X =? 0                                                                          

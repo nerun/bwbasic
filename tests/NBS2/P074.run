@@ -1,0 +1,57 @@
+PROGRAM FILE 74: ERROR - DIM SETS ARRAY TO ONE DIMENSION                        
+        AND REFERENCE IS MADE TO TWO-DIMENSIONAL                                
+        VARIABLE OF SAME NAME.                                                  
+    ANSI STANDARD 15.4, 6.4                                                     
+                                                                                
+SECTION 74.1: ERROR - DIM SETS ARRAY TO ONE DIMENSION                           
+        AND REFERENCE IS MADE TO TWO-DIMENSIONAL                                
+        VARIABLE OF SAME NAME.                                                  
+                                                                                
+                                                                                
+THIS IS A TEST FOR A NON-STANDARD FEATURE OF MINIMAL BASIC.                     
+TO PASS THIS TEST, THE PROCESSOR MUST EITHER:                                   
+                                                                                
+   1) ACCEPT THE PROGRAM AND BE ACCOMPANIED BY DOCUMENTATION                    
+      ACCURATELY DESCRIBING THE FEATURE'S INTERPRETATION                        
+      BY THE PROCESSOR, OR                                                      
+                                                                                
+   2) REJECT THE PROGRAM WITH AN APPROPRIATE ERROR MESSAGE                      
+                                                                                
+SEE THE NBS MINIMAL BASIC TEST PROGRAMS USER'S MANUAL                           
+FOR DETAILED CRITERIA.                                                          
+                                                                                
+               BEGIN TEST                                                       
+                                                                                
+VARIABLE A(I,j) WAS ASSIGNED 10000+(100*I)+J.                                   
+RESULTS BELOW:                                                                  
+                                                                                
+ARRAY VALUES FOR A(I,J):                                                        
+EACH LINE HAS ALL THE ELEMENTS FOR A GIVEN VALUE OF I,                          
+WITH J GOING FROM 0 TO 10.                                                      
+                                                                                
+I= 0 : 10000  10001  10002  10003  10004  10005  10006  10007  10008  10009     
+ 10010                                                                          
+I= 1 : 10100  10101  10102  10103  10104  10105  10106  10107  10108  10109     
+ 10110                                                                          
+I= 2 : 10200  10201  10202  10203  10204  10205  10206  10207  10208  10209     
+ 10210                                                                          
+I= 3 : 10300  10301  10302  10303  10304  10305  10306  10307  10308  10309     
+ 10310                                                                          
+I= 4 : 10400  10401  10402  10403  10404  10405  10406  10407  10408  10409     
+ 10410                                                                          
+I= 5 : 10500  10501  10502  10503  10504  10505  10506  10507  10508  10509     
+ 10510                                                                          
+I= 6 : 10600  10601  10602  10603  10604  10605  10606  10607  10608  10609     
+ 10610                                                                          
+I= 7 : 10700  10701  10702  10703  10704  10705  10706  10707  10708  10709     
+ 10710                                                                          
+I= 8 : 10800  10801  10802  10803  10804  10805  10806  10807  10808  10809     
+ 10810                                                                          
+I= 9 : 10900  10901  10902  10903  10904  10905  10906  10907  10908  10909     
+ 10910                                                                          
+I= 10 : 11000  11001  11002  11003  11004  11005  11006  11007  11008  11009    
+ 11010                                                                          
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 74                                                                  

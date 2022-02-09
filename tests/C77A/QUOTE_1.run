@@ -1,0 +1,48 @@
+TESTCASE # 1                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 0             []                                                               
+                                                                                
+TESTCASE # 2                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 1             ["]                                                              
+                                                                                
+TESTCASE # 3                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 26            [THIS HAS "EMBEDDED" STRING]                                     
+                                                                                
+TESTCASE # 4                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 23            ["THIS HAS LEADING QUOTE]                                        
+                                                                                
+TESTCASE # 5                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 24            [THIS HAS TRAILING QUOTE"]                                       
+                                                                                
+TESTCASE # 6                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 29            ["THIS" "HAS" "MANY" "STRINGS"]                                  
+                                                                                
+TESTCASE # 7                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 0             []                                                               
+                                                                                
+TESTCASE # 8                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 1             ["]                                                              
+                                                                                
+TESTCASE # 9                                                                    
+LENGTH         [123456789012345678901234567890]                                 
+ 26            [THIS HAS "EMBEDDED" STRING]                                     
+                                                                                
+TESTCASE # 10                                                                   
+LENGTH         [123456789012345678901234567890]                                 
+ 23            ["THIS HAS LEADING QUOTE]                                        
+                                                                                
+TESTCASE # 11                                                                   
+LENGTH         [123456789012345678901234567890]                                 
+ 24            [THIS HAS TRAILING QUOTE"]                                       
+                                                                                
+TESTCASE # 12                                                                   
+LENGTH         [123456789012345678901234567890]                                 
+ 29            ["THIS" "HAS" "MANY" "STRINGS"]                                  
+                                                                                

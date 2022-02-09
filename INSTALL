@@ -12,17 +12,21 @@ Some Notes on Installation of the Bywater BASIC Interpreter:
        gcc -o bwbasic -lm -ansi -pedantic -Wall -Werror bw*.c
       
    On MSDOS using Borland C++ 3.1:
-      bcc.exe -mh -eBWBASIC -D_DOS bw*.c
+      bcc.exe -mh -eBWBASIC.EXE -D_DOS=1 -Y bw*.c
    
-   On MSBOS using Open Watcom 1.9:
+   On MSDOS using Digital Mars Compiler Version 8.42n:
+      dmc.exe -mx -A89 -oBWBASIC.EXE -DHAVE_DOS=1 bwbasic.c bwb_cmd.c bwb_cnd.c 
+      bwb_dio.c bwb_exp.c bwb_fnc.c bwb_inp.c bwb_int.c bwb_prn.c bwb_stc.c 
+      bwb_str.c bwb_tbl.c bwb_var.c bwd_cmd.c bwd_fun.c bwx_tty.c X32.LIB
+
+   On MSDOS using Open Watcom 1.9:
       wcl386 -bc -c -ox -q -wx -za -D_DOS -D__WATCOM__ bw*.c
       wlink option quiet file bw*.obj name bwbasic.exe
-      
-   On MSDOS using Hi-Tech Pacific C 7.51:
-      This compiler is unable to compile Bywaater BASIC
 
-   On MSDOS using Borland Turbo C 2.01:
-      This compiler is unable to compile Bywaater BASIC
+   The following MSDOS compilers are unable to compile Bywater BASIC:
+      Borland Turbo C 2.01
+      Hi-Tech Pacific C 7.51
+      Mix Power C 2.2.0
 
    You can skip the rest of this file unless you want to customize the
    BASIC dialect that is supported, or something goes wrong in the
@@ -43,7 +47,7 @@ Some Notes on Installation of the Bywater BASIC Interpreter:
 3. Makefiles
 
    Several compiler-specific makefiles are provided AS-IS,
-   and have not been tested with version 3.XX.
+   and have not been tested with Bywater BASIC version 3.XX.
    
    "makefile" should compile the program on Unix-based computers. 
       
@@ -59,7 +63,7 @@ Some Notes on Installation of the Bywater BASIC Interpreter:
    implementation, even when they do nothing.  For example, 
    CLS, COLOR and LOCATE do nothing when OPTION TERMINAL NONE 
    is specified.  This allows exising classic BASIC applications 
-   to execute.
+   to execute, even though the display will not be accurate.
    
    
 5. Adding Commands and Functions
@@ -72,12 +76,12 @@ Some Notes on Installation of the Bywater BASIC Interpreter:
 
       Search for C_WRITE and bwb_WRITE,
       and add your command's eqivalent information in the same places.
-      The last command's unique number should equal NUM_COMMANDS.
+      Each command (#define C_...) shoud have a unique number.
 
    Adding a new function is easier:
    
       Search for F_ABS_X_N, 
       and add your function's equivalent information in the same places.
-      The last function's unique number should equal NUM_FUNCTIONS.
+      Each function (#define F_...) shoud have a unique number.
       
 

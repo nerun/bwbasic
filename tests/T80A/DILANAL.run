@@ -1,0 +1,43 @@
+                   DILUTION ANALYSIS                                            
+WHEN TWO PUBLICLY TRADED COMPANIES DECIDE TO MERGE VIA USE OF                   
+AN EXCHANGE OF STOCK, THE ANALYSIS IS DOMINATED BY THE EXCHANGE                 
+RATIO(I.E. # OF SHARES THE SURVIVING COMPANY OFFERS FOR EACH                    
+SHARE OF THE ACQUIRED COMPANY), THE PRICE-EARNINGS RATIOS OF                    
+THE SURVIVING FIRM, AND GENERAL CONDITIONS IN THE STOCK MARKET.                 
+IN GENERAL WE DO NOT WANT EARNINGS PER SHARE FOR THE ACQUIRING                  
+TO DECREASE. IF A DECREASE OCCURS THEN DILUTION OCCURS.                         
+IF THE P-E RATIO FOR THE ACQUIRING FIRM REMAINS AS BEFORE THE                   
+MERGER THEN DILUTION MEANS A LOWER PER SHARE STOCK PRICE.                       
+IN THIS PROGRAM WE INPUT FOR EACH OF THE TWO COMPANIES THE                      
+FOLLOWING: EARNINGS AFTER TAXES, SHARES OUTSTANDING,ERS, SHARE                  
+PRICE AT TIME OF EXCHANGE. WE ALSO INPUT THE EXCHANGE RATIO.                    
+OUTPUT CONSISTS OF THE NUMBER OF NEW SHARES ISSUED, EARNINGS                    
+AFTER TAXES AND EARNINGS PER SHARE FOR THE SURVIVING FIRM.                      
+PRESS ENTER TO BEGIN?                                                           
+ANSWER THE FOLLOWING FOR THE ACQUIRING FIRM                                     
+                                                                                
+EARNINGS AFTER TAXES     ? 123456789                                            
+SHARES OUTSTANDING       ? 987654                                               
+PRICE AT TIME OF EXCHANGE ? 345                                                 
+                                                                                
+ANSWER THE FOLLOWING FOR THE ACQUIRED FIRM                                      
+                                                                                
+EARNINGS AFTER TAXES     ? 678234                                               
+SHARES OUTSTANDING       ? 842741                                               
+PRICE AT TIME OF EXCHANGE ? 65                                                  
+                                                                                
+INPUT EXCHANGE RATIO ? 7.75                                                     
+           ACQUIRING(BEFORE)  ACQUIRED       ACQUIRING(AFTER)                   
+                                                                                
+EAT            123456789.00      678234.00     124135023.00                     
+SH. OUTST.      987654.00      842741.00     7518896.75                         
+ERS                125.00           0.80          16.51                         
+P-E RATIO            2.76          80.77                                        
+                                                                                
+EXCHANGE RATIO IS  7.75  ACQUIRING FOR EACH 1 ACQUIRED.                         
+                                                                                
+ASSUMING NEW P-E RATIO WILL BE BETWEEN  2.76 AND 80.7659                        
+NEW PER SHARE PRICE WILL BE BETWEEN  45.5669  AND                               
+ 1333.42                                                                        
+                                                                                
+PRESS ENTER FOR MORE COMPUTATIONS? -1                                           

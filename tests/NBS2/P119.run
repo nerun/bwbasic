@@ -1,0 +1,107 @@
+PROGRAM FILE 119: ACCURACY OF ATN FUNCTION.                                     
+    ANSI STANDARD 7.6, 8.4                                                      
+                                                                                
+SECTION 119.1: ACCURACY OF ATN FUNCTION.                                        
+                                                                                
+THIS PROGRAM TESTS VALUES RETURNED BY INVOCATIONS OF THE                        
+ATN FUNCTION FOR ACCURACY. THE INVOCATION MUST RETURN,                          
+ACCURATE TO SIX DIGITS, SOME VALUE ACTUALLY TAKEN ON BY                         
+THE FUNCTION WITHIN A DOMAIN BOUNDED BY THE ACTUAL ARGUMENT                     
+PLUS OR MINUS ONE IN THE SIXTH DIGIT. ALSO, AN                                  
+'ERROR MEASURE' IS COMPUTED AND REPORTED. THIS MEASURE                          
+IS JUST 2 * THE ABSOLUTE ERROR OVER THE SIZE OF THE RANGE;                      
+THUS, A VALUE JUST BARELY PASSING OR FAILING WILL USUALLY                       
+HAVE A MEASURE OF ABOUT  1. A VALUE 3 TIMES                                     
+AS INACCURATE AS EXPECTED WILL HAVE A MEASURE OF 3-                             
+                                                                                
+THIS TEST IS INFORMATIVE ONLY, SINCE THE ANSI STANDARD                          
+DOES NOT MANDATE ANY ACCURACY FOR SUPPLIED-FUNCTIONS.                           
+                                                                                
+              BEGIN TEST                                                        
+                                                                                
+ARGUMENT       TRUE           COMPUTED       ERROR          OUTCOME             
+               VALUE          VALUE          MEASURE                            
+                                                                                
+-1.E+38        -1.5708        -1.5708         6.4038E-4      OK                 
+-9.99999E+37   -1.5708        -1.5708         6.4038E-4      OK                 
+-3.E+30        -1.5708        -1.5708         6.4038E-4      OK                 
+-2.E+20        -1.5708        -1.5708         6.4038E-4      OK                 
+-9.E+10        -1.5708        -1.5708         6.426E-4       OK                 
+-900000        -1.5708        -1.5708         8.62381E-4     OK                 
+-300000        -1.57079       -1.57079        6.91621E-4     OK                 
+-200000        -1.57079       -1.57079        6.4038E-4      OK                 
+-100000        -1.57079       -1.57079        6.4038E-4      OK                 
+-98765.4       -1.57079       -1.57079        3.57963E-4     OK                 
+-9876.54       -1.5707        -1.5707         6.46886E-4     OK                 
+-987.6         -1.56978       -1.56978        2.89786E-4     OK                 
+-98.7          -1.56066       -1.56066        2.37882E-4     OK                 
+-9.8           -1.46911       -1.46911        9.73199E-4     OK                 
+-8.8           -1.45765       -1.45765        9.33902E-4     OK                 
+-7.7           -1.44165       -1.44165        6.44705E-4     OK                 
+-6.6           -1.42042       -1.42042        2.31785E-4     OK                 
+-5.5           -1.39094       -1.39094        5.62926E-4     OK                 
+-4.4           -1.34732       -1.34732        7.90853E-4     OK                 
+-3.3           -1.27656       -1.27656        2.8806E-4      OK                 
+-2.2           -1.14417       -1.14417        5.46243E-4     OK                 
+-1.1           -.832981       -.832981        6.47833E-5     OK                 
+-.9            -.732815       -.732815        2.02748E-4     OK                 
+-.6            -.54042        -.54042         2.18919E-4     OK                 
+-.1            -9.96687E-2    -9.96687E-2     8.49681E-6     OK                 
+-.09           -8.97582E-2    -8.97582E-2     6.73332E-5     OK                 
+-.009          -8.99976E-3    -8.99976E-3     1.20568E-4     OK                 
+-.006          -5.99993E-3    -5.99993E-3     1.03643E-4     OK                 
+-.003          -2.99999E-3    -2.99999E-3     3.23997E-6     OK                 
+-.002          -.002          -.002           2.22575E-4     OK                 
+-.001          -.001          -.001           2.6124E-5      OK                 
+-.0009         -.0009         -.0009          7.87131E-8     OK                 
+-.0004         -.0004         -.0004          2.22147E-4     OK                 
+-.00009        -.00009        -.00009         2.86571E-4     OK                 
+-9.E-10        -9.E-10        -9.E-10         0              OK  - EXACT        
+-9.E-20        -9.E-20        -9.E-20         0              OK  - EXACT        
+-9.E-30        -9.E-30        -9.E-30         0              OK  - EXACT        
+-9.E-38        -9.E-38        -9.E-38         0              OK  - EXACT        
+ 0              0              0             RANGE ZERO      OK  - EXACT        
+ 9.E-38         9.E-38         9.E-38         0              OK  - EXACT        
+ 9.E-30         9.E-30         9.E-30         0              OK  - EXACT        
+ 9.E-20         9.E-20         9.E-20         0              OK  - EXACT        
+ 9.E-10         9.E-10         9.E-10         0              OK  - EXACT        
+ .00009         .00009         .00009         2.86571E-4     OK                 
+ .0004          .0004          .0004          2.22147E-4     OK                 
+ .0009          .0009          .0009          7.87131E-8     OK                 
+ .001           .001           .001           2.6124E-5      OK                 
+ .002           .002           .002           2.22575E-4     OK                 
+ .003           2.99999E-3     2.99999E-3     3.23997E-6     OK                 
+ .006           5.99993E-3     5.99993E-3     1.03643E-4     OK                 
+ .009           8.99976E-3     8.99976E-3     1.20568E-4     OK                 
+ .09            8.97582E-2     8.97582E-2     6.73332E-5     OK                 
+ .1             9.96687E-2     9.96687E-2     8.49681E-6     OK                 
+ .6             .54042         .54042         2.18919E-4     OK                 
+ .9             .732815        .732815        2.02748E-4     OK                 
+ 1.1            .832981        .832981        6.47833E-5     OK                 
+ 2.2            1.14417        1.14417        5.46243E-4     OK                 
+ 3.3            1.27656        1.27656        2.8806E-4      OK                 
+ 4.4            1.34732        1.34732        7.90853E-4     OK                 
+ 5.5            1.39094        1.39094        5.62926E-4     OK                 
+ 6.6            1.42042        1.42042        2.31785E-4     OK                 
+ 7.7            1.44165        1.44165        6.44705E-4     OK                 
+ 8.8            1.45765        1.45765        9.33902E-4     OK                 
+ 9.9            1.47013        1.47013        9.08338E-4     OK                 
+ 98.7           1.56066        1.56066        2.37882E-4     OK                 
+ 987.6          1.56978        1.56978        2.89786E-4     OK                 
+ 9876.54        1.5707         1.5707         6.46886E-4     OK                 
+ 98765.4        1.57079        1.57079        3.57963E-4     OK                 
+ 100000         1.57079        1.57079        6.4038E-4      OK                 
+ 200000         1.57079        1.57079        6.4038E-4      OK                 
+ 300000         1.57079        1.57079        6.91621E-4     OK                 
+ 900000         1.5708         1.5708         8.62381E-4     OK                 
+ 9.E+10         1.5708         1.5708         6.426E-4       OK                 
+ 2.E+20         1.5708         1.5708         6.4038E-4      OK                 
+ 3.E+30         1.5708         1.5708         6.4038E-4      OK                 
+ 9.99999E+37    1.5708         1.5708         6.4038E-4      OK                 
+ 1.E+38         1.5708         1.5708         6.4038E-4      OK                 
+                                                                                
+*** INFORMATIVE TEST PASSED ***                                                 
+                                                                                
+               END TEST                                                         
+                                                                                
+END PROGRAM 119                                                                 

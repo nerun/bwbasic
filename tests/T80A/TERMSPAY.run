@@ -1,0 +1,29 @@
+    COMPARISON OF METHODS FOR PAYING FOR PURCHASES                              
+WHEN AN ITEM IS PURCHASED SOMETIMES THE USER HAS SEVERAL                        
+CHOICES AS TO HOW PAYMENT SHOULD BE MADE. FIRST OF ALL THERE                    
+MAY BE A PREPAYMENT. SUCH PREPAYMENT IS GENERALLY ACCOMPANIED                   
+BY  A DISCOUNT. THERE ITEM MAY ALSO COME COD AND THERE MAY BE                   
+A DISCOUNT FOR PAYING ON DELIVERY. LASTLY THE ITEM MAY COME                     
+WITH TERMS. GENERALLY THIS MEANS THAT THERE IS A DEADLINE                       
+SUCH THAT IF PAYMENT IS MADE BEFORE THAT TIME THERE IS NO                       
+PENALTY.                                                                        
+                                                                                
+THE USER CAN COMPARE THE 3 METHODS OF PAYMENT VIA A PRESENT                     
+VALUE ANALYSIS  IF HE CAN ESTIMATE HIS INTEREST RATE FOR                        
+MONEY.                                                                          
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+ENTER YOUR INTEREST RATE(%)? 3.25                                               
+ENTER LIST PRICE OF PURCHASE ? 100000                                           
+ENTER NUMBER OF MONTHS IN ADVANCE FOR EARLY PAYMENT? 15                         
+ENTER DISCOUNT AMOUNT FOR MAKING EARLY PAYMENT? 7                               
+ENTER DISCOUNT AMOUNT FOR COD                ? 15                               
+ENTER # OF MONTHS(OR PART) AFTER DELIVERY FOR NET PAYMENT? 1                    
+                                                                                
+PRESENT VALUES ARE COMPUTED WITH RESPECT TO DAY OF DELIVERY                     
+                                                                                
+PRESENT VALUE OF EARLY PAYMENT = 99993                                          
+PRESENT VALUE OF PAYING COD    = 99985                                          
+PRESENT VALUE OF NET TERMS     = 99729.9                                        
+                                                                                
+PRESS ENTER FOR MORE COMPUTATION? -1                                            

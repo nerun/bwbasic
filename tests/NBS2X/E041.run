@@ -1,0 +1,31 @@
+Guess a Number 1-100                                                            
+ 40                                                                             
+Trial  1                                                                        
+? 30                                                                            
+Wrong                                                                           
+TRY Bigger                                                                      
+Trial  2                                                                        
+? 50                                                                            
+Wrong                                                                           
+Try Smaller                                                                     
+Trial  3                                                                        
+? 40                                                                            
+Correct                                                                         
+You Won!                                                                        
+Do you want to play again? y                                                    
+Guess a Number 1-100                                                            
+ 40                                                                             
+Trial  1                                                                        
+? 30                                                                            
+Wrong                                                                           
+TRY Bigger                                                                      
+Trial  2                                                                        
+? 50                                                                            
+Wrong                                                                           
+Try Smaller                                                                     
+Trial  3                                                                        
+? 40                                                                            
+Correct                                                                         
+You Won!                                                                        
+Do you want to play again? n                                                    
+*** ALL TESTS PASSED ***                                                        

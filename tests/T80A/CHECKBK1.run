@@ -1,0 +1,229 @@
+   CHECKBOOK MAINTENANCE PROGRAM                                                
+          BY DR. PETER SHENKIN                                                  
+******************************************************                          
+ THIS SELF-DOCUMENTING PROGRAM WILL KEEP TRACK OF ALL                           
+ CHECKBOOK ITEMS. dEPOSITS AND EXPENSES MAY BE                                  
+ CATEGORIZED. UP TO 100 CATEGORIES ARE ALLOWED.                                 
+ CATEGORIES ENTERED FROM PROG. LINES 3020-3089                                  
+ CHECKBOOK ITEMS MAY BE STORED ON CASSETTE OR DISKETTE                          
+ AND READ IN FROM CASSETTE OR DISKETTE.                                         
+ AT PRESENT DIMENSIONING IS SET UP FOR A MAXIMUM OF                             
+ 120 ITEMS IN YOUR CHECKBOOK AT ANY ONE TIME. THIS MAY BE                       
+ CHANGED BY CHANGING DIMENSION VARIABLE V IN LINE 101                           
+ TO RUN PROGRAM DELETE REM STATEMENTS FOR MEMORY SPACE.                         
+ PRESS ENTER TO BEGIN.THERE SHOULD BE NO PROBLEM?                               
+ARE DISK DRIVE(S) IN USE(Y/N)? Y                                                
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 1                                                                    
+INITIAL BALANCE? 100.00                                                         
+INITIAL CHECK NUMBER? 5000                                                      
+INPUT INITIAL DATE IN FORM MM/DD/YY? 01/01/01                                   
+INPUT DATE ? 01/02/01                                                           
+INPUT C FOR CHECK,D FOR DEP.,CM FOR MISC. CHARGE? D                             
+WHAT WAS DEPOSITED ? PAY                                                        
+DEPOSIT CATEGORY TYPE(0 TO SEE CATEGORIES)? 0                                   
+CATEGORY   DESCRIPTION                                                          
+    1.      LOAN PAYMENT                                                        
+    2.      BANK CARD PAYMENT                                                   
+    3.      MEDICAL EXPENSE                                                     
+    4.      HOUSEKEEPING MONEY                                                  
+    5.      MORTGAGE                                                            
+    6.      HOME EXPENSE,UTILITIES,ETC.                                         
+    7.      STORE CHARGE CARD PAYMENT                                           
+    8.      INSURANCE                                                           
+   50.      PAYCHECK DEPOSIT                                                    
+   51.      CONSULTING FEE                                                      
+   52.      MEDICAL REIMBURSEMENT                                               
+   53.      OTHER BUSINESS INCOME                                               
+   54.      MISC. DEPOSITS                                                      
+                                                                                
+9.   BUSINESS EXPENSE 10.  OTHER EXPENSE                                        
+PRESS ENTER TO RETURN ?                                                         
+DEPOSIT CATEGORY TYPE(0 TO SEE CATEGORIES)? 50                                  
+AMOUNT OF DEPOSIT ? 3456.78                                                     
+CHK NO.   DATE     CHK ISSUED TO      TYPE    AMOUNT      BAL.                  
+       01/01/01                                         $100.00                 
+  -1   01/02/01   PAY                 50    $3456.78   $3556.78                 
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+IF ERROR INPUT E.OTHERWISE ENTER?                                               
+ANY MORE ENTRIES (Y/N)? Y                                                       
+INPUT DATE ? 01/03/01                                                           
+INPUT C FOR CHECK,D FOR DEP.,CM FOR MISC. CHARGE? C                             
+CHECK ISSUED TO? MORTGAGE LLC                                                   
+CHECK CATEGORY TYPE(0 TO SEE CATEGORIES)? 0                                     
+CATEGORY   DESCRIPTION                                                          
+    1.      LOAN PAYMENT                                                        
+    2.      BANK CARD PAYMENT                                                   
+    3.      MEDICAL EXPENSE                                                     
+    4.      HOUSEKEEPING MONEY                                                  
+    5.      MORTGAGE                                                            
+    6.      HOME EXPENSE,UTILITIES,ETC.                                         
+    7.      STORE CHARGE CARD PAYMENT                                           
+    8.      INSURANCE                                                           
+   50.      PAYCHECK DEPOSIT                                                    
+   51.      CONSULTING FEE                                                      
+   52.      MEDICAL REIMBURSEMENT                                               
+   53.      OTHER BUSINESS INCOME                                               
+   54.      MISC. DEPOSITS                                                      
+                                                                                
+9.   BUSINESS EXPENSE 10.  OTHER EXPENSE                                        
+PRESS ENTER TO RETURN ?                                                         
+CHECK CATEGORY TYPE(0 TO SEE CATEGORIES)? 5                                     
+CHECK AMOUNT? 2987.65                                                           
+CHK NO.   DATE     CHK ISSUED TO      TYPE    AMOUNT      BAL.                  
+       01/02/01                                        $3556.78                 
+5000   01/03/01   MORTGAGE LLC         5    $2987.65    $569.13                 
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+IF ERROR INPUT E.OTHERWISE ENTER?                                               
+ANY MORE ENTRIES (Y/N)? N                                                       
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 9                                                                    
+ IS THE PRESENT FILE.                                                           
+ENTER THE DISK FILE NAME FOR OUTPUT ? CHECKBK1.DAT                              
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 8                                                                    
+WHAT IS THE NAME OF THE DISK CHECK FILE? CHECKBK1.DAT                           
+PRESS ENTER WHEN DISKETTE WITH CHECKBK1.DAT IS READY?                           
+I= 1                                                                            
+I= 2                                                                            
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 6                                                                    
+IS OUTPUT ON LINE PRINTER DESIRED(Y/N)? Y                                       
+CHK NO.   DATE     CHK ISSUED TO      TYPE    AMOUNT      BAL.                  
+       01/01/01                                         $100.00                 
+  -1   01/02/01   PAY                 50    $3456.78   $3556.78                 
+5000   01/03/01   MORTGAGE LLC         5    $2987.65    $569.13                 
+                                                                                
+THE END. PRESS ENTER TO RETURN TO MENU.?                                        
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 7                                                                    
+IS LINE PRINTER OUTPUT DESIRED(Y/N)? Y                                          
+INPUT CATEGORY NUMBER OF INTEREST? 50                                           
+CHK NO.   DATE     CHK ISSUED TO      TYPE    AMOUNT      BAL.                  
+  -1   01/02/01   PAY                 50    $3456.78   $3556.78                 
+                                                                                
+TOTAL FOR THIS ITEM =$ 3456.78                                                  
+PRESS ENTER TO RETURN TO MENU?                                                  
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 7                                                                    
+IS LINE PRINTER OUTPUT DESIRED(Y/N)? Y                                          
+INPUT CATEGORY NUMBER OF INTEREST? 5                                            
+CHK NO.   DATE     CHK ISSUED TO      TYPE    AMOUNT      BAL.                  
+5000   01/03/01   MORTGAGE LLC         5    $2987.65    $569.13                 
+                                                                                
+TOTAL FOR THIS ITEM =$ 2987.65                                                  
+PRESS ENTER TO RETURN TO MENU?                                                  
+       CHECKBOOK MAINTENANCE PROGRAM                                            
+                                                                                
+CHOOSE NUMBER OF DESIRED OPTION                                                 
+                                                                                
+1.SET UP NEW CHECKBOOK                                                          
+2.INPUT OLD CHECKBOOK FROM TAPE                                                 
+3.ADD TO OLD CHECKBOOK                                                          
+4.OUTPUT CHECKBOOK TO CASSETTE                                                  
+5.REVIEW OF CHECK EXPENSE CATEGORIES                                            
+6.PRINT CHECKBOOK 10 ENTRIES AT A TIME OR LINEPRINT.                            
+7.LIST BY CATEGORY                                                              
+8.LOAD OLD CHECKBOOK FROM DISKETTE                                              
+9.OUTPUT CHECKBOOK TO DISKETTE                                                  
+10.EDIT CHECKBOOK ITEM                                                          
+11.END THIS PROGRAM                                                             
+                                                                                
+OPTION # ? 11                                                                   
+ARE YOU SURE YOU WANT TO END(Y/N)? Y                                            

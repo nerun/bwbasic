@@ -34,6 +34,8 @@
 /*                                                               */
 /* Version 3.10 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.20 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
 
 
@@ -41,6 +43,12 @@
 #include "bwbasic.h"
 
 
+static LineType *C77_OPEN (LineType * l);
+static LineType *D71_OPEN (LineType * l);
+static LineType *H80_OPEN (LineType * l);
+static LineType *M80_OPEN (LineType * l);
+static LineType *S70_OPEN (LineType * l);
+static LineType *T79_OPEN (LineType * l);
 
 
 /***************************************************************
@@ -55,836 +63,1159 @@
   
 ***************************************************************/
 
-extern char bwb_file_open( char A, int x, char * B, int y )
+extern void
+bwb_file_open (char A, int x, char *B, int y)
 {
-   /* OPEN "I"|"O"|"R"|"A", [#]n, filename [,rlen] */
-   /* P1STR|P2NUM|P3STR|P4NUM */
-   /* P1BYT|P2DEV|P3BYT|P4INT */
-
-   int             mode;
-   FileType * F;
-   char IsError = BasicNulChar;
+  /* OPEN "I"|"O"|"R"|"A", [#] filenum, filename [,reclen] */
+  /* P1STR|P2NUM|P3STR|P4NUM */
+  /* P1BYT|P2DEV|P3BYT|P4INT */
+  int mode;
+  FileType *F;
+  FILE *fp;
+  char *buffer;
    
-   mode = bwb_toupper( A );
-   switch (mode)
-   {
-   case 'I':
-   case 'O':
-   case 'A':
-   case 'B':
-   case 'R':
-      break;
-   default:
-      mode = DEVMODE_CLOSED;
-      break;
-   }
-   F = find_file_by_number( x );
-   if( F == NULL )
-   {
-      F = file_new();
-   }
-   /**/
-   if( F == NULL )
-   {
-      IsError = 'M';
-   }
-   else
-   if (mode == DEVMODE_CLOSED)
-   {
-      IsError = 'A';
-   }
-   else
-   if( F == My->SYSIN )
-   {
-      IsError = 'X';
-   }
-   else
-   if( F == My->SYSOUT )
-   {
-      IsError = 'X';
-   }
-   else
-   if( F == My->SYSPRN )
-   {
-      IsError = 'X';
-   }
-   else
-   if ( F->mode != DEVMODE_CLOSED)
-   {
-      IsError = 'X';
-   }
-   else
-   if (y < 0)
-   {
-      IsError = 'Y';
-   }
-   else
-   if (y == 0 && mode == 'R')
-   {
-      IsError = 'Y';
-   }
-   else
-   {
-      FILE           *fp = NULL;
-      char           *buffer = NULL;
-      switch (mode)
+  assert (B != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+  assert(My->SYSIN != NULL);
+  assert(My->SYSOUT != NULL);
+  assert(My->SYSPRN != NULL);
+
+  mode = 0;
+  F = NULL;
+  fp = NULL;
+  buffer = NULL;
+  if (y < 0)
+  {
+    WARN_FIELD_OVERFLOW;
+    return;
+  }
+
+  mode = bwb_toupper (A);
+  switch (mode)
+  {
+  case 'I':
+  case 'O':
+  case 'A':
+  case 'B':
+  case 'V':
+  case 'R':
+    /* valid mode */
+    break;
+  default:
+    WARN_BAD_FILE_MODE;
+    return;
+  }
+  /* valid mode */
+  F = find_file_by_number (x);
+  if (F == NULL)
+  {
+    F = file_new ();
+    if (F == NULL)
+    {
+      WARN_OUT_OF_MEMORY;
+      return;
+    }
+  }
+  if (F == My->SYSIN)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return;
+  }
+  if (F == My->SYSOUT)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return;
+  }
+  if (F == My->SYSPRN)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return;
+  }
+  if (F->DevMode != DEVMODE_CLOSED)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return;
+  }
+  /* valid filenumber */
+  switch (mode)
+  {
+  case 'I':
+    mode = DEVMODE_INPUT;
+    fp = fopen (B, "r");
+    if (fp == NULL)
+    {
+      WARN_BAD_FILE_NAME;
+      return;
+    }
+    if (y > 0)
+    {
+      /* RECLEN == INPUT BUFFER SIZE */
+      if ((buffer =
+           (char *) calloc (y + 1 /* NulChar */ , sizeof (char))) == NULL)
       {
-      case 'I':
-         mode = DEVMODE_INPUT;
-         fp = fopen(B, "r");
-         y = 0;
-         break;
-      case 'O':
-         mode = DEVMODE_OUTPUT;
-         fp = fopen(B, "w");
-         y = 0;
-         break;
-      case 'A':
-         mode = DEVMODE_APPEND;
-         fp = fopen(B, "a");
-         y = 0;
-         break;
-      case 'B':
-         mode = DEVMODE_BINARY;
-         fp = fopen(B, "r+");
-         if (fp == NULL)
-         {
-            fp = fopen(B, "w");
-            if( fp != NULL )
-            {
-               fclose(fp); /* fp != NULL */
-               fp = fopen(B, "r+");
-            }
-         }
-         y = 0;
-         break;
-      case 'R':
-         mode = DEVMODE_RANDOM;
-         fp = fopen(B, "r+");
-         if (fp == NULL)
-         {
-            fp = fopen(B, "w");
-            if( fp != NULL )
-            {
-               fclose(fp); /* fp != NULL */
-               fp = fopen(B, "r+");
-            }
-         }
-         if (fp != NULL)
-         {
-            buffer = CALLOC(y, 1, "F_OPEN_A_X_B_Y_N");
-         }
-         break;
+        WARN_OUT_OF_MEMORY;
+        return;
       }
-      if (fp == NULL)
+      bwb_memset (buffer, ' ', y);        /* flush */
+      buffer[y] = NulChar;
+    }
+    break;
+  case 'O':
+    mode = DEVMODE_OUTPUT;
+    fp = fopen (B, "w");
+    if (fp == NULL)
+    {
+      WARN_BAD_FILE_NAME;
+      return;
+    }
+    if (y > 0)
+    {
+      /* RECLEN == OUTPUT WRAP WIDTH */
+    }
+    break;
+  case 'A':
+    mode = DEVMODE_APPEND;
+    fp = fopen (B, "a");
+    if (fp == NULL)
+    {
+      WARN_BAD_FILE_NAME;
+      return;
+    }
+    fseek (fp, 0, SEEK_END);
+    if (y > 0)
+    {
+      /* RECLEN == OUTPUT WRAP WIDTH */
+    }
+    break;
+  case 'B':
+    mode = DEVMODE_BINARY;
+    fp = fopen (B, "r+");
+    if (fp == NULL)
+    {
+      fp = fopen (B, "w");
+      if (fp != NULL)
       {
-         /* bad file name */
-         IsError = 'B';
+        bwb_fclose (fp);
+        fp = fopen (B, "r+");
       }
-      else
-      if (mode == DEVMODE_RANDOM && buffer == NULL)
+    }
+    if (fp == NULL)
+    {
+      WARN_BAD_FILE_NAME;
+      return;
+    }
+    if (y > 0)
+    {
+      /* RECLEN == SILENTLY IGNORED */
+    }
+    break;
+  case 'V':
+    mode = DEVMODE_VIRTUAL;
+    fp = fopen (B, "r+");
+    if (fp == NULL)
+    {
+      fp = fopen (B, "w");
+      if (fp != NULL)
       {
-         /* bad length */
-         IsError = 'Y';
+        bwb_fclose (fp);
+        fp = fopen (B, "r+");
       }
-      else
+    }
+    if (fp == NULL)
+    {
+      WARN_BAD_FILE_NAME;
+      return;
+    }
+    if (y > 0)
+    {
+      /* RECLEN == SILENTLY IGNORED */
+    }
+    break;
+  case 'R':
+    if (y == 0)
+    {
+      /* dialect-specific default record length */
+      y = My->CurrentVersion->OptionReclenInteger;
+      if (y == 0)
       {
-         F->FileNumber = x;
-         F->mode = mode;
-         F->cfp = fp;
-         F->width = y;
-         /* WIDTH == RDCLEN */ 
-         F->col = 1;
-         F->row = 1;
-         F->delimit = ',';
-         F->buffer = buffer;
-         bwb_strcpy(F->filename, B);
-         if (mode == DEVMODE_APPEND)
-         {
-            fseek(fp, 0, SEEK_END);
-         }
-         else
-         if (mode == DEVMODE_RANDOM)
-         {
-            bwb_memset(buffer, ' ', y); /* flush */
-         }
+        /* there is no default record length */
+        WARN_FIELD_OVERFLOW;
+        return;
       }
-   }
-   /* OK */
-   return IsError;
+    }
+    mode = DEVMODE_RANDOM;
+    fp = fopen (B, "r+");
+    if (fp == NULL)
+    {
+      fp = fopen (B, "w");
+      if (fp != NULL)
+      {
+        bwb_fclose (fp);
+        fp = fopen (B, "r+");
+      }
+    }
+    if (fp == NULL)
+    {
+      WARN_BAD_FILE_NAME;
+      return;
+    }
+    if (y > 0)
+    {
+      /* RECLEN == RANDOM BUFFER SIZE */
+      if ((buffer = (char *) calloc (y, sizeof (char))) == NULL)
+      {
+        WARN_OUT_OF_MEMORY;
+        return;
+      }
+      bwb_memset (buffer, ' ', y);        /* flush */
+    }
+    break;
+  default:
+    /* should not happen */
+    WARN_BAD_FILE_MODE;
+    return;
+  }
+  /* OK */
+  F->FileNumber = x;
+  F->DevMode = mode;
+  F->cfp = fp;
+  F->width = y;                        /* WIDTH == RECLEN */
+  F->col = 1;
+  F->row = 1;
+  F->delimit = ',';
+  if (F->buffer != NULL)
+  {
+    free (F->buffer);
+    F->buffer = NULL;
+  }
+  F->buffer = buffer;
+  if (F->FileName != NULL)
+  {
+    free (F->FileName);
+    F->FileName = NULL;
+  }
+  F->FileName = bwb_strdup (B);        /* 'B' is free'd by caller */
+  return;
 }
 
 
-LineType *
-bwb_OPEN(LineType * l)
+
+static LineType *
+C77_OPEN (LineType * l)
 {
-   int FileNumber = 0;
-   char FileMode = 'R';
-   int RecordLength = 0;
-   VariantType t;
-   VariantType *T = &t;
-   char IsError;
-
-   CLEAR_VARIANT( T );
+  int FileNumber;
+  int RecordLength;
+  char *FileName;
    
-   bwx_DEBUG(__FUNCTION__);
+  assert (l != NULL);
+  assert(My != NULL);
 
-   if( My->CurrentVersion->OptionVersionBitmask & ( C77 ) )
-   {
-      /* 
-      SYNTAX: OPEN filename$ [ RECL reclen ] AS filenumber [ BUFF ignored ] [ RECS ignored ] 
-      */
-      /* 
-      --------------------------------------------- 
-      FILE NAME
-      --------------------------------------------- 
-      */
-      if( line_read_expression( l, T ) == FALSE )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      if( T->TypeChar != BasicStringSuffix )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      if( T->Length == 0 )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      /* 
-      --------------------------------------------- 
-      RECORD LENGTH
-      --------------------------------------------- 
-      */
-      if( line_skip_word( l, "RECL" ) )
-      {
-         if( line_read_integer_expression( l , &RecordLength ) == FALSE )
-         {
-            WARN_FIELD_OVERFLOW;
-            return bwb_zline( l );
-         }
-         if( RecordLength <= 0 )
-         {
-            WARN_FIELD_OVERFLOW;
-            return bwb_zline( l );
-         }
-      }
-      /* 
-      --------------------------------------------- 
-      FILE NUMBER
-      --------------------------------------------- 
-      */
-      if( line_skip_word( l, "AS"   ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline( l );
-      }
-      if( line_skip_char( l, BasicFileNumberPrefix ) == FALSE )
-      {
-         /* OPTIONAL */
-      }
-      if( line_read_integer_expression( l , &FileNumber ) == FALSE )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( FileNumber <= 0 )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      /* 
-      --------------------------------------------- 
-      IGNORED
-      --------------------------------------------- 
-      */
-      /* if( TRUE ) */
-      {
-         int Ignored = 0;
-         /*
-         these are all parsed but ignored
-         */
+  FileNumber = 0;
+  RecordLength = 0;
+  FileName = NULL;
+  /* 
+     SYNTAX: OPEN filename$ [ RECL reclen ] AS filenumber [ BUFF ignored ] [ RECS ignored ] 
+   */
 
-         if( line_skip_word( l, "BUFF" ) )
-         {
-            if( line_read_integer_expression( l, &Ignored ) == FALSE )
-            {
-               WARN_ILLEGAL_FUNCTION_CALL;
-               return bwb_zline(l);
-            }
-            if( Ignored <= 0 )
-            {
-               WARN_ILLEGAL_FUNCTION_CALL;
-               return bwb_zline(l);
-            }
-         }
-         if( line_skip_word( l, "RECS" ) )
-         {
-            if( line_read_integer_expression( l, &Ignored ) == FALSE )
-            {
-               WARN_ILLEGAL_FUNCTION_CALL;
-               return bwb_zline(l);
-            }
-            if( Ignored <= 0 )
-            {
-               WARN_ILLEGAL_FUNCTION_CALL;
-               return bwb_zline(l);
-            }
-         }
+  /* 
+     --------------------------------------------- 
+     FILE NAME
+     --------------------------------------------- 
+   */
+  if (line_read_string_expression (l, &FileName) == FALSE)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (FileName == NULL)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (is_empty_string (FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     RECORD LENGTH
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "RECL"))
+  {
+    if (line_read_integer_expression (l, &RecordLength) == FALSE)
+    {
+      WARN_FIELD_OVERFLOW;
+      return (l);
+    }
+    if (RecordLength <= 0)
+    {
+      WARN_FIELD_OVERFLOW;
+      return (l);
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NUMBER
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "AS") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_FilenumChar (l))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (l, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     IGNORED
+     --------------------------------------------- 
+   */
+  /* if( TRUE ) */
+  {
+    int Ignored;
+
+    Ignored = 0;
+    /*
+       these are all parsed but ignored
+     */
+
+    if (line_skip_word (l, "BUFF"))
+    {
+      if (line_read_integer_expression (l, &Ignored) == FALSE)
+      {
+        WARN_ILLEGAL_FUNCTION_CALL;
+        return (l);
       }
-      /* 
-      --------------------------------------------- 
-      FILE MODE 
-      --------------------------------------------- 
-      */
+      if (Ignored <= 0)
+      {
+        WARN_ILLEGAL_FUNCTION_CALL;
+        return (l);
+      }
+    }
+    if (line_skip_word (l, "RECS"))
+    {
+      if (line_read_integer_expression (l, &Ignored) == FALSE)
+      {
+        WARN_ILLEGAL_FUNCTION_CALL;
+        return (l);
+      }
+      if (Ignored <= 0)
+      {
+        WARN_ILLEGAL_FUNCTION_CALL;
+        return (l);
+      }
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     FILE MODE 
+     --------------------------------------------- 
+   */
+  /* 
+     --------------------------------------------- 
+     DO IT
+     --------------------------------------------- 
+   */
+  My->CurrentFile = find_file_by_number (FileNumber);
+  if (My->CurrentFile == NULL)
+  {
+    My->CurrentFile = file_new ();
+    My->CurrentFile->FileNumber = FileNumber;
+  }
+  if (My->CurrentFile->FileName != NULL)
+  {
+    free (My->CurrentFile->FileName);
+    My->CurrentFile->FileName = NULL;
+  }
+  My->CurrentFile->FileName = FileName;
+  FileName = NULL;
+  if (My->CurrentFile->DevMode != DEVMODE_CLOSED)
+  {
+    My->CurrentFile->DevMode = DEVMODE_CLOSED;
+  }
+  if (My->CurrentFile->cfp != NULL)
+  {
+    bwb_fclose (My->CurrentFile->cfp);
+    My->CurrentFile->cfp = NULL;
+  }
+  if (My->CurrentFile->buffer != NULL)
+  {
+    free (My->CurrentFile->buffer);
+    My->CurrentFile->buffer = NULL;
+  }
+  My->CurrentFile->width = 0;
+  My->CurrentFile->col = 1;
+  My->CurrentFile->row = 1;
+  My->CurrentFile->delimit = ',';
+  /* open EXISTING text file for update (reading and writing) */
+  if (is_empty_string (My->CurrentFile->FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if ((My->CurrentFile->cfp =
+       fopen (My->CurrentFile->FileName, "r+")) == NULL)
+  {
+    /* IF END # file_number THEN line_number */
+    if (My->CurrentFile->EOF_LineNumber > 0)
+    {
+      LineType *x;
+
+      x = find_line_number (My->CurrentFile->EOF_LineNumber);        /* not found in the cache */
+      if (x != NULL)
+      {
+        /* FOUND */
+        line_skip_eol (l);
+        x->position = 0;
+        free (FileName);
+        FileName = NULL;
+        return x;
+      }
+      /* NOT FOUND */
+      WARN_UNDEFINED_LINE;
+      return (l);
+    }
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (RecordLength > 0)
+  {
+    My->CurrentFile->width = RecordLength;        /* includes the terminating '\n' */
+    My->CurrentFile->DevMode = DEVMODE_RANDOM;
+    if ((My->CurrentFile->buffer =
+         (char *) calloc (RecordLength, sizeof (char))) == NULL)
+    {
+      WARN_OUT_OF_MEMORY;
+      return (l);
+    }
+    bwb_memset (My->CurrentFile->buffer, ' ', RecordLength);        /* flush */
+  }
+  else
+  {
+    My->CurrentFile->DevMode = DEVMODE_INPUT | DEVMODE_OUTPUT;
+  }
+  /* OK */
+  free (FileName);
+  FileName = NULL;
+  return (l);
+}
+
+static LineType *
+S70_OPEN (LineType * l)
+{
+  int FileNumber;
+  char FileMode;
+  int RecordLength;
+  char *FileName;
+   
+  assert (l != NULL);
+
+  FileNumber = 0;
+  FileMode = 'R';
+  RecordLength = 0;
+  FileName = NULL;
+  /* 
+     SYNTAX: OPEN filenumber, filename$, INPUT | OUTPUT | APPEND | VIRTUAL
+   */
+  /* 
+     --------------------------------------------- 
+     FILE NUMBER
+     --------------------------------------------- 
+   */
+  if (line_skip_FilenumChar (l))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (l, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (line_skip_seperator (l) == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NAME
+     --------------------------------------------- 
+   */
+  if (line_read_string_expression (l, &FileName) == FALSE)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (FileName == NULL)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (is_empty_string (FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (line_skip_seperator (l) == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE MODE 
+     --------------------------------------------- 
+   */
+  /* if( TRUE ) */
+  {
+    if (line_skip_word (l, "INPUT"))
+    {
       FileMode = 'I';
-      /* 
-      --------------------------------------------- 
-      DO IT
-      --------------------------------------------- 
-      */
-      My->CurrentFile = find_file_by_number( FileNumber );
-      if( My->CurrentFile == NULL )
-      {
-         My->CurrentFile = file_new();
-         My->CurrentFile->FileNumber = FileNumber;
-      }
-      bwb_strcpy( My->CurrentFile->filename, T->Buffer );
-      strupper( My->CurrentFile->filename ); /* CBASIC-II: file names are always upper case */      
-      if( My->CurrentFile->mode != DEVMODE_CLOSED )
-      {
-         if( My->CurrentFile->cfp != NULL )
-         {
-            fclose( My->CurrentFile->cfp ); /* My->CurrentFile->cfp != NULL */
-         }
-         if( My->CurrentFile->buffer != NULL )
-         {
-            FREE( My->CurrentFile->buffer, "bwb_FILES" );
-         }
-      }
-      My->CurrentFile->width = 0;
-      My->CurrentFile->col = 1;
-      My->CurrentFile->row = 1;
-      My->CurrentFile->delimit = ',';
-      My->CurrentFile->buffer = NULL;
-      My->CurrentFile->mode = DEVMODE_CLOSED;
-      /* open EXISTING text file for update (reading and writing) */
-      
-      if( (My->CurrentFile->cfp = fopen( My->CurrentFile->filename, "r+" )) == NULL )
-      {
-         /* IF END # file_number THEN line_number */
-         if( My->CurrentFile->EOF_LineNumber > 0 )
-         {
-            LineType *x;
-            
-            x = find_line_number( My->CurrentFile->EOF_LineNumber, TRUE ); /* not found in the cache */
-            if (x != NULL)
-            {
-               /* FOUND */
-               line_skip_eol(l);
-               x->position = 0;
-               RELEASE( T );
-               return x;
-            }
-            /* NOT FOUND */
-            WARN_UNDEFINED_LINE;
-            return bwb_zline(l);            
-         }
-         WARN_BAD_FILE_NAME;
-         return bwb_zline(l);
-      }
-      if( RecordLength > 0 )
-      {
-         My->CurrentFile->width = RecordLength;
-         My->CurrentFile->mode = DEVMODE_RANDOM;
-      }
-      else
-      {
-         My->CurrentFile->mode = DEVMODE_INPUT | DEVMODE_OUTPUT;
-      }
+    }
+    else if (line_skip_word (l, "OUTPUT"))
+    {
+      FileMode = 'O';
+    }
+    else if (line_skip_word (l, "APPEND"))
+    {
+      FileMode = 'A';
+    }
+    else if (line_skip_word (l, "VIRTUAL"))
+    {
+      FileMode = 'V';
+    }
+    else
+    {
+      WARN_BAD_FILE_MODE;
+      return (l);
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     RECORD LENGTH
+     --------------------------------------------- 
+   */
+  RecordLength = 0;
+  /* 
+     --------------------------------------------- 
+     DO IT
+     --------------------------------------------- 
+   */
+  bwb_file_open (FileMode, FileNumber, FileName, RecordLength);
+  free (FileName);
+  FileName = NULL;
+  return (l);
+}
+
+static LineType *
+D71_OPEN (LineType * l)
+{
+  int FileNumber;
+  char FileMode;
+  int RecordLength;
+  char *FileName;
+   
+  assert (l != NULL);
+
+  FileNumber = 0;
+  FileMode = 'R';
+  RecordLength = 0;
+  FileName = NULL;
+  /* 
+     SYNTAX: OPEN filename$ [FOR mode] AS FILE filenumber [ ,RECORDSIZE ignored ] [ ,CLUSTERSIZE ignored ] [ ,MODE ignored ]
+   */
+  /* 
+     --------------------------------------------- 
+     FILE NAME
+     --------------------------------------------- 
+   */
+  if (line_read_string_expression (l, &FileName) == FALSE)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (FileName == NULL)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (is_empty_string (FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE MODE
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "FOR"))
+  {
+    if (line_skip_word (l, "INPUT"))
+    {
+      FileMode = 'I';
+    }
+    else if (line_skip_word (l, "OUTPUT"))
+    {
+      FileMode = 'O';
+    }
+    else if (line_skip_word (l, "APPEND"))
+    {
+      FileMode = 'A';
+    }
+    else if (line_skip_word (l, "RANDOM"))
+    {
+      FileMode = 'R';
+    }
+    else if (line_skip_word (l, "BINARY"))
+    {
+      FileMode = 'B';
+    }
+    else if (line_skip_word (l, "VIRTUAL"))
+    {
+      FileMode = 'V';
+    }
+    else
+    {
+      WARN_BAD_FILE_MODE;
+      return (l);
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NUMBER
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "AS") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_word (l, "FILE") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_FilenumChar (l))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (l, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     RECORD LENGTH
+     --------------------------------------------- 
+   */
+  RecordLength = 0;
+  while (line_is_eol (l) == FALSE)
+  {
+    int Ignored;
+
+    Ignored = 0;
+    /*
+       these are all parsed but ignored
+     */
+    if (line_skip_seperator (l))
+    {
       /* OK */
-   }
-   else
-   if( My->CurrentVersion->OptionVersionBitmask & ( I70 | I73 ) )
-   {
-      /* 
-      SYNTAX: OPEN filenumber, filename$, INPUT | OUTPUT
-      */
-      /* 
-      --------------------------------------------- 
-      FILE NUMBER
-      --------------------------------------------- 
-      */
-      if( line_skip_char( l, BasicFileNumberPrefix ) == FALSE )
+    }
+    else if (line_skip_word (l, "RECORDSIZE"))
+    {
+      if (line_read_integer_expression (l, &Ignored) == FALSE)
       {
-         /* OPTIONAL */
+        WARN_SYNTAX_ERROR;
+        return (l);
       }
-      if( line_read_integer_expression( l , &FileNumber ) == FALSE )
+    }
+    else if (line_skip_word (l, "CLUSTERSIZE"))
+    {
+      if (line_read_integer_expression (l, &Ignored) == FALSE)
       {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
+        WARN_SYNTAX_ERROR;
+        return (l);
       }
-      if( FileNumber <= 0 )
+    }
+    else if (line_skip_word (l, "FILESIZE"))
+    {
+      if (line_read_integer_expression (l, &Ignored) == FALSE)
       {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
+        WARN_SYNTAX_ERROR;
+        return (l);
       }
-      if( line_skip_comma( l ) == FALSE )
+    }
+    else if (line_skip_word (l, "MODE"))
+    {
+      if (line_read_integer_expression (l, &Ignored) == FALSE)
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
+        WARN_SYNTAX_ERROR;
+        return (l);
       }
-      /* 
-      --------------------------------------------- 
-      FILE NAME
-      --------------------------------------------- 
-      */
-      if( line_read_expression( l, T ) == FALSE )
+    }
+    else
+    {
+      WARN_SYNTAX_ERROR;
+      return (l);
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     DO IT
+     --------------------------------------------- 
+   */
+  bwb_file_open (FileMode, FileNumber, FileName, RecordLength);
+  free (FileName);
+  FileName = NULL;
+  return (l);
+}
+
+static LineType *
+H80_OPEN (LineType * l)
+{
+  int FileNumber;
+  char FileMode;
+  int RecordLength;
+  char *FileName;
+   
+  assert (l != NULL);
+
+  FileNumber = 0;
+  FileMode = 'R';
+  RecordLength = 0;
+  FileName = NULL;
+  /* 
+     SYNTAX: OPEN filename$ FOR mode AS FILE filenumber 
+   */
+  /* 
+     --------------------------------------------- 
+     FILE NAME
+     --------------------------------------------- 
+   */
+  if (line_read_string_expression (l, &FileName) == FALSE)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (FileName == NULL)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (is_empty_string (FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE MODE
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "FOR") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_word (l, "READ"))
+  {
+    FileMode = 'I';
+  }
+  else if (line_skip_word (l, "WRITE"))
+  {
+    FileMode = 'O';
+  }
+  else if (line_skip_word (l, "VIRTUAL"))
+  {
+    FileMode = 'V';
+  }
+  else
+  {
+    WARN_BAD_FILE_MODE;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NUMBER
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "AS") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_word (l, "FILE") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_FilenumChar (l))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (l, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     RECORD LENGTH
+     --------------------------------------------- 
+   */
+  RecordLength = 0;
+  /* 
+     --------------------------------------------- 
+     DO IT
+     --------------------------------------------- 
+   */
+  bwb_file_open (FileMode, FileNumber, FileName, RecordLength);
+  free (FileName);
+  FileName = NULL;
+  return (l);
+}
+
+
+static LineType *
+M80_OPEN (LineType * l)
+{
+  int FileNumber;
+  char FileMode;
+  int RecordLength;
+  char *FileName;
+   
+  assert (l != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+
+  FileNumber = 0;
+  FileMode = 'R';
+  RecordLength = 0;
+  FileName = NULL;
+  /* 
+     SYNTAX: OPEN filename$ [FOR mode] AS filenumber [LEN reclen] 
+   */
+  /* 
+     --------------------------------------------- 
+     FILE NAME
+     --------------------------------------------- 
+   */
+  if (line_read_string_expression (l, &FileName) == FALSE)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (FileName == NULL)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (is_empty_string (FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE MODE
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "FOR"))
+  {
+    if (line_skip_word (l, "INPUT"))
+    {
+      FileMode = 'I';
+    }
+    else if (line_skip_word (l, "OUTPUT"))
+    {
+      FileMode = 'O';
+    }
+    else if (line_skip_word (l, "APPEND"))
+    {
+      FileMode = 'A';
+    }
+    else if (line_skip_word (l, "RANDOM"))
+    {
+      FileMode = 'R';
+    }
+    else if (line_skip_word (l, "BINARY"))
+    {
+      FileMode = 'B';
+    }
+    else if (line_skip_word (l, "VIRTUAL"))
+    {
+      FileMode = 'V';
+    }
+    else
+    {
+      WARN_BAD_FILE_MODE;
+      return (l);
+    }
+  }
+
+  if (My->CurrentVersion->OptionVersionValue & (H14))
+  {
+    /*
+     **
+     ** these are parsed but ignored
+     **
+     */
+    if (line_skip_word (l, "ACCESS"))
+    {
+      /* ACCESS */
+      if (line_skip_word (l, "READ"))
       {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
+        /* ACCESS READ */
+        if (line_skip_word (l, "WRITE"))
+        {
+          /* ACCESS READ WRITE */
+        }
       }
-      if( T->TypeChar != BasicStringSuffix )
+      else if (line_skip_word (l, "WRITE"))
       {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
+        /* ACCESS WRITE */
       }
-      if( T->Length == 0 )
+    }
+    if (line_skip_word (l, "SHARED"))
+    {
+      /* SHARED */
+    }
+    else if (line_skip_word (l, "LOCK"))
+    {
+      /* LOCK */
+      if (line_skip_word (l, "READ"))
       {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
+        /* LOCK READ */
       }
-      if( line_skip_comma( l ) == FALSE )
+      else if (line_skip_word (l, "WRITE"))
       {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
+        /* LOCK WRITE */
       }
-      /* 
-      --------------------------------------------- 
-      FILE MODE 
-      --------------------------------------------- 
-      */
-      /* if( TRUE ) */
-      {
-         if( line_skip_word( l, "INPUT" ) )
-         {
-            FileMode = 'I';
-         }
-         else
-         if( line_skip_word( l, "OUTPUT" ) )
-         {
-            FileMode = 'O';
-         }
-         else
-         if( line_skip_word( l, "APPEND" ) )
-         {
-            FileMode = 'A';
-         }
-         else
-         {
-            WARN_BAD_FILE_MODE;
-            return bwb_zline( l );
-         }
-      }
-      /* 
-      --------------------------------------------- 
-      RECORD LENGTH
-      --------------------------------------------- 
-      */
-      if( FileMode == 'R' )
-      {
-         RecordLength = 128;
-      }
-      else
-      {
-         RecordLength = 0;
-      }
-      /* 
-      --------------------------------------------- 
-      DO IT
-      --------------------------------------------- 
-      */
-      IsError = bwb_file_open( FileMode, FileNumber, T->Buffer, RecordLength );
-      switch( IsError )
-      {
-      case BasicNulChar:
-         /* OK */
-         break;
-      case 'A':
-         WARN_BAD_FILE_MODE;
-         return bwb_zline( l );
-         break;
-      case 'X':
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-         break;
-      case 'B':
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-         break;
-      case 'Y':
-         WARN_FIELD_OVERFLOW;
-         return bwb_zline( l );
-         break;
-      case 'M':
-         WARN_OUT_OF_MEMORY;
-         return bwb_zline( l );
-         break;
-      default:
-         WARN_INTERNAL_ERROR;
-         return bwb_zline( l );
-         break;
-      }
-      /* OK */
-   }
-   else
-   if( My->CurrentVersion->OptionVersionBitmask & ( D71 ) )
-   {
-      /* 
-      SYNTAX: OPEN filename$ [FOR mode] AS filenumber [ ,RECORDSIZE ignored ] [ ,CLUSTERSIZE ignored ] [ ,MODE ignored ]
-      */
-      /* 
-      --------------------------------------------- 
-      FILE NAME
-      --------------------------------------------- 
-      */
-      if( line_read_expression( l, T ) == FALSE )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      if( T->TypeChar != BasicStringSuffix )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      if( T->Length == 0 )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      /* 
-      --------------------------------------------- 
-      FILE MODE
-      --------------------------------------------- 
-      */
-      if( line_skip_word( l, "FOR" ) )
-      {
-         if( line_skip_word( l, "INPUT" ) )
-         {
-            FileMode = 'I';
-         }
-         else
-         if( line_skip_word( l, "OUTPUT" ) )
-         {
-            FileMode = 'O';
-         }
-         else
-         if( line_skip_word( l, "APPEND" ) )
-         {
-            FileMode = 'A';
-         }
-         else
-         if( line_skip_word( l, "RANDOM" ) )
-         {
-            FileMode = 'R';
-         }
-         else
-         if( line_skip_word( l, "BINARY" ) )
-         {
-            FileMode = 'B';
-         }
-         else
-         {
-            WARN_BAD_FILE_MODE;
-            return bwb_zline( l );
-         }
-      }
-      /* 
-      --------------------------------------------- 
-      FILE NUMBER
-      --------------------------------------------- 
-      */
-      if( line_skip_word( l, "AS"   ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline( l );
-      }
-      if( line_skip_word( l, "FILE" ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline( l );
-      }
-      if( line_skip_char( l, BasicFileNumberPrefix ) == FALSE )
-      {
-         /* OPTIONAL */
-      }
-      if( line_read_integer_expression( l , &FileNumber ) == FALSE )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( FileNumber <= 0 )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      /* 
-      --------------------------------------------- 
-      RECORD LENGTH
-      --------------------------------------------- 
-      */
-      if( FileMode == 'R' )
-      {
-         RecordLength = 512;
-      }
-      else
-      {
-         RecordLength = 0;
-      }
-      while( line_is_eol( l ) == FALSE )
-      {
-         int Ignored = 0;
-         /*
-         these are all parsed but ignored
-         */
-         if( line_skip_comma( l ) )
-         {
-            /* OK */
-         }
-         else
-         if( line_skip_word( l , "RECORDSIZE" ) )
-         {
-            if( line_read_integer_expression( l , &Ignored ) == FALSE )
-            {
-               WARN_SYNTAX_ERROR;
-               return bwb_zline( l );
-            }
-         }
-         else
-         if( line_skip_word( l , "CLUSTERSIZE" ) )
-         {
-            if( line_read_integer_expression( l , &Ignored ) == FALSE )
-            {
-               WARN_SYNTAX_ERROR;
-               return bwb_zline( l );
-            }
-         }
-         else
-         if( line_skip_word( l , "FILESIZE" ) )
-         {
-            if( line_read_integer_expression( l , &Ignored ) == FALSE )
-            {
-               WARN_SYNTAX_ERROR;
-               return bwb_zline( l );
-            }
-         }
-         else
-         if( line_skip_word( l , "MODE" ) )
-         {
-            if( line_read_integer_expression( l , &Ignored ) == FALSE )
-            {
-               WARN_SYNTAX_ERROR;
-               return bwb_zline( l );
-            }
-         }
-         else
-         {
-            WARN_SYNTAX_ERROR;
-            return bwb_zline( l );
-         }
-      }
-      /* 
-      --------------------------------------------- 
-      DO IT
-      --------------------------------------------- 
-      */
-      IsError = bwb_file_open( FileMode, FileNumber, T->Buffer, RecordLength );
-      switch( IsError )
-      {
-      case BasicNulChar:
-         /* OK */
-         break;
-      case 'A':
-         WARN_BAD_FILE_MODE;
-         return bwb_zline( l );
-         break;
-      case 'X':
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-         break;
-      case 'B':
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-         break;
-      case 'Y':
-         WARN_FIELD_OVERFLOW;
-         return bwb_zline( l );
-         break;
-      case 'M':
-         WARN_OUT_OF_MEMORY;
-         return bwb_zline( l );
-         break;
-      default:
-         WARN_INTERNAL_ERROR;
-         return bwb_zline( l );
-         break;
-      }
-      /* OK */
-   }
-   else
-   {
-      /* OPEN filename$ [FOR mode] AS filenumber [LEN reclen] */
-      /* 
-      --------------------------------------------- 
-      FILE NAME
-      --------------------------------------------- 
-      */
-      if( line_read_expression( l, T ) == FALSE )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      if( T->TypeChar != BasicStringSuffix )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      if( T->Length == 0 )
-      {
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-      }
-      /* 
-      --------------------------------------------- 
-      FILE MODE
-      --------------------------------------------- 
-      */
-      if( line_skip_word( l, "FOR" ) )
-      {
-         if( line_skip_word( l, "INPUT" ) )
-         {
-            FileMode = 'I';
-         }
-         else
-         if( line_skip_word( l, "OUTPUT" ) )
-         {
-            FileMode = 'O';
-         }
-         else
-         if( line_skip_word( l, "APPEND" ) )
-         {
-            FileMode = 'A';
-         }
-         else
-         if( line_skip_word( l, "RANDOM" ) )
-         {
-            FileMode = 'R';
-         }
-         else
-         if( line_skip_word( l, "BINARY" ) )
-         {
-            FileMode = 'B';
-         }
-         else
-         {
-            WARN_BAD_FILE_MODE;
-            return bwb_zline( l );
-         }
-      }
-      /* 
-      --------------------------------------------- 
-      FILE NUMBER
-      --------------------------------------------- 
-      */
-      if( line_skip_word( l, "AS"   ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline( l );
-      }
-      if( line_skip_char( l, BasicFileNumberPrefix ) == FALSE )
-      {
-         /* OPTIONAL */
-      }
-      if( line_read_integer_expression( l , &FileNumber ) == FALSE )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      if( FileNumber <= 0 )
-      {
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-      }
-      /* 
-      --------------------------------------------- 
-      RECORD LENGTH
-      --------------------------------------------- 
-      */
-      if( FileMode == 'R' )
-      {
-         RecordLength = 128;
-      }
-      else
-      {
-         RecordLength = 0;
-      }
-      if( line_skip_word( l, "LEN" ) )
-      {
-         if( line_read_integer_expression( l , &RecordLength ) == FALSE )
-         {
-           WARN_FIELD_OVERFLOW;
-            return bwb_zline( l );
-         }
-         if( RecordLength <= 0 )
-         {
-            WARN_FIELD_OVERFLOW;
-            return bwb_zline( l );
-         }
-      }
-      /* 
-      --------------------------------------------- 
-      DO IT
-      --------------------------------------------- 
-      */
-      IsError = bwb_file_open( FileMode, FileNumber, T->Buffer, RecordLength );
-      switch( IsError )
-      {
-      case BasicNulChar:
-         /* OK */
-         break;
-      case 'A':
-         WARN_BAD_FILE_MODE;
-         return bwb_zline( l );
-         break;
-      case 'X':
-         WARN_BAD_FILE_NUMBER;
-         return bwb_zline( l );
-         break;
-      case 'B':
-         WARN_BAD_FILE_NAME;
-         return bwb_zline( l );
-         break;
-      case 'Y':
-         WARN_FIELD_OVERFLOW;
-         return bwb_zline( l );
-         break;
-      case 'M':
-         WARN_OUT_OF_MEMORY;
-         return bwb_zline( l );
-         break;
-      default:
-         WARN_INTERNAL_ERROR;
-         return bwb_zline( l );
-         break;
-      }
-      /* OK */
-   }
-   RELEASE( T );
-   return bwb_zline(l);
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NUMBER
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "AS") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (H14))
+  {
+    if (line_skip_word (l, "FILE"))
+    {
+      /* OPTIONAL */
+    }
+  }
+
+  if (line_skip_FilenumChar (l))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (l, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     RECORD LENGTH
+     --------------------------------------------- 
+   */
+  RecordLength = 0;
+  if (line_skip_word (l, "LEN"))
+  {
+    if (line_skip_EqualChar (l))
+    {
+      /* OPTIONAL */
+    }
+    if (line_read_integer_expression (l, &RecordLength) == FALSE)
+    {
+      WARN_FIELD_OVERFLOW;
+      return (l);
+    }
+    if (RecordLength <= 0)
+    {
+      WARN_FIELD_OVERFLOW;
+      return (l);
+    }
+  }
+  /* 
+     --------------------------------------------- 
+     DO IT
+     --------------------------------------------- 
+   */
+  bwb_file_open (FileMode, FileNumber, FileName, RecordLength);
+  free (FileName);
+  FileName = NULL;
+  return (l);
+}
+
+static LineType *
+T79_OPEN (LineType * l)
+{
+  int FileNumber;
+  char FileMode;
+  int RecordLength;
+  char *FileName;
+   
+  assert (l != NULL);
+
+  FileNumber = 0;
+  FileMode = 'R';
+  RecordLength = 0;
+  FileName = NULL;
+  /* 
+     SYNTAX: OPEN [NEW | OLD] filename$ AS filenumber
+   */
+  /* 
+     --------------------------------------------- 
+     FILE MODE
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "NEW"))
+  {
+    FileMode = 'O';
+  }
+  else if (line_skip_word (l, "OLD"))
+  {
+    FileMode = 'I';
+  }
+  else if (line_skip_word (l, "VIRTUAL"))
+  {
+    FileMode = 'V';
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NAME
+     --------------------------------------------- 
+   */
+  if (line_read_string_expression (l, &FileName) == FALSE)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (FileName == NULL)
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (is_empty_string (FileName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     FILE NUMBER
+     --------------------------------------------- 
+   */
+  if (line_skip_word (l, "AS") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_skip_FilenumChar (l))
+  {
+    /* OPTIONAL */
+  }
+  if (line_read_integer_expression (l, &FileNumber) == FALSE)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  if (FileNumber <= 0)
+  {
+    WARN_BAD_FILE_NUMBER;
+    return (l);
+  }
+  /* 
+     --------------------------------------------- 
+     RECORD LENGTH
+     --------------------------------------------- 
+   */
+  RecordLength = 0;
+  /* 
+     --------------------------------------------- 
+     DO IT
+     --------------------------------------------- 
+   */
+  bwb_file_open (FileMode, FileNumber, FileName, RecordLength);
+  free (FileName);
+  FileName = NULL;
+  return (l);
+}
+
+LineType *
+bwb_OPEN (LineType * l)
+{
+   
+  assert (l != NULL);
+  assert(My != NULL);
+  assert(My->CurrentVersion != NULL);
+
+  if (My->CurrentVersion->OptionVersionValue & (S70 | I70 | I73))
+  {
+    return S70_OPEN (l);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (D71))
+  {
+    return D71_OPEN (l);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (C77))
+  {
+    return C77_OPEN (l);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (H80))
+  {
+    return H80_OPEN (l);
+  }
+  if (My->CurrentVersion->OptionVersionValue & (T79 | R86))
+  {
+    return T79_OPEN (l);
+  }
+  /* default */
+  return M80_OPEN (l);
 }
 
 /***************************************************************
@@ -900,71 +1231,50 @@ bwb_OPEN(LineType * l)
 
 
 LineType *
-bwb_NAME(LineType * l)
+bwb_NAME (LineType * l)
 {
-   int             r;
-   char            atbuf[BasicStringLengthMax + 1];
-   char            btbuf[BasicStringLengthMax + 1];
+  char *OldName;
+  char *NewName;
+   
+  assert (l != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
-
-   /* get the first argument in atbuf */
-
-   {
-      char * Value = NULL;
-      
-      if( line_read_string_expression( l, &Value ) == FALSE )
-      {
-#if FSLSE
-         if (ERROR_PENDING)
-         {
-            return bwb_zline(l);
-         }
-#endif
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( Value == NULL )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      bwb_strcpy( atbuf, Value );
-      free( Value );
-   }
-   /* skip required word */
-   if( line_skip_word(l, "AS") == FALSE )
-   {
-      WARN_SYNTAX_ERROR;
-      return bwb_zline(l);
-   }
-
-   /* get the second argument in btbuf */
-   {
-      char * Value = NULL;
-      
-      if( line_read_string_expression( l, &Value ) == FALSE )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      if( Value == NULL )
-      {
-         WARN_SYNTAX_ERROR;
-         return bwb_zline(l);
-      }
-      bwb_strcpy( btbuf, Value );
-      free( Value );
-   }
-   /* try to rename the file */
-   r = rename(atbuf, btbuf);
-
-   /* detect error */
-   if (r != 0)
-   {
-      WARN_BAD_FILE_NAME;
-   }
-   return bwb_zline(l);
+  OldName = NULL;
+  NewName = NULL;
+  if (line_read_string_expression (l, &OldName) == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (is_empty_string (OldName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  if (line_skip_word (l, "AS") == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (line_read_string_expression (l, &NewName) == FALSE)
+  {
+    WARN_SYNTAX_ERROR;
+    return (l);
+  }
+  if (is_empty_string (NewName))
+  {
+    WARN_BAD_FILE_NAME;
+    return (l);
+  }
+  /* try to rename the file */
+  if (rename (OldName, NewName) != 0)
+  {
+    WARN_BAD_FILE_NAME;
+  }
+  free (OldName);
+  OldName = NULL;
+  free (NewName);
+  NewName = NULL;
+  return (l);
 }
 
 

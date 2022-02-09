@@ -1,9 +1,0 @@
-HELLO THERE.                                                                    
-bwBASIC: LIST                                                                   
-   10 REM 'NEW' COMMAND TEST PROGRAM                                            
-   20 PRINT "HELLO THERE."                                                      
-   99 END                                                                       
-                                                                                
-bwBASIC: NEW                                                                    
-bwBASIC: LIST                                                                   
-                                                                                

@@ -1,0 +1,22 @@
+COMMAND (LINE NUMBER 1000 TO 1999):999                                          
+COMMAND (LINE NUMBER 1000 TO 1999):2000                                         
+COMMAND (LINE NUMBER 1000 TO 1999):1000 PRINT "HELLO"                           
+ 1000 PRINT "HELLO"                                                             
+                                                                                
+HELLO                                                                           
+COMMAND (LINE NUMBER 1000 TO 1999):1010 PRINT "WORLD"                           
+ 1000 PRINT "HELLO"                                                             
+ 1010 PRINT "WORLD"                                                             
+                                                                                
+HELLO                                                                           
+WORLD                                                                           
+COMMAND (LINE NUMBER 1000 TO 1999):1010 REM                                     
+ 1000 PRINT "HELLO"                                                             
+ 1010 REM                                                                       
+                                                                                
+HELLO                                                                           
+COMMAND (LINE NUMBER 1000 TO 1999):1000 REM                                     
+ 1000 REM                                                                       
+ 1010 REM                                                                       
+                                                                                
+COMMAND (LINE NUMBER 1000 TO 1999):BYE                                          

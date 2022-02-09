@@ -1,0 +1,5 @@
+Trace is ON                                                                     
+[ 10 REM 'TROFF' TEST PROGRAM ][ 20 PRINT "THE FIRST TWO LINES OF THIS PROGRAM" 
+[ 30 TROFF ]Trace is OFF                                                        
+ARE PRINTED WITH THE TRACE TURNED ON.                                           
+THIS LINE IS PRINTED WITH THE TRACE TURNED OFF.                                 

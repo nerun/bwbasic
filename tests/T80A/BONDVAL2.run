@@ -1,0 +1,34 @@
+         VALUE OF A BOND                                                        
+                                                                                
+THIS PROGRAM SHOWS HOW THE VALUE OF A BOND MAY CHANGE                           
+WHEN THE INTEREST RATE CHANGES. WE ASSUME WE HAVE A BOND WITH                   
+A FIXED NUMBER OF YEARS TO MATURITY. FOR VARIOUS INTEREST                       
+RATES THE PRESENT VALUE OF THE FUTURE CASHFLOWS FROM THE                        
+BOND ARE DETERMINED. IT IS VERY INTERESTING TO SEE HOW MUCH                     
+THIS VARIES FOR LONG TERM BONDS.                                                
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+NUMBER OF YEARS TO MATURITY        ? 10                                         
+COUPON INTEREST PAYMENT PER YEAR   ? 40                                         
+MATURITY VALUE OF THE BOND         ? 1000                                       
+LOWEST INTEREST RATE TO CONSIDER(%) ? 1                                         
+HIGHEST INTEREST RATE TO CONSIDER(%)? 20                                        
+DO YOU DESIRE LINE PRINTER OUTPUT(Y/N)? Y                                       
+PRESENT VALUE OF BOND AT VARYING INTEREST RATES                                 
+                                                                                
+ 10 YEARS TO MATURITY.                                                          
+COUPON PAYS $ 40  PER YEAR FOR INTEREST.                                        
+MATURITY VALUE FOR THE BOND IS 1000                                             
+INTEREST RATE       VALUE OF BOND                                               
+      1.0                1284.14                                                
+      2.9                1094.31                                                
+      4.8                 937.62                                                
+      6.7                 807.71                                                
+      8.6                 699.52                                                
+     10.5                 609.04                                                
+     12.4                 533.05                                                
+     14.3                 468.97                                                
+     16.2                 414.71                                                
+     18.1                 368.58                                                
+                                                                                
+PRESS ENTER FOR MORE COMPUTATION? -1                                            

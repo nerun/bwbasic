@@ -1,0 +1,32 @@
+PROGRAM FILE 158: ERROR - USING A STRING AS AN ARGUMENT FOR                     
+        A USER-DEFINED FUNCTION.                                                
+    ANSI STANDARD 7.2, 7.4, 16.2, 16.4                                          
+                                                                                
+SECTION 158.1: ERROR - USING A STRING AS AN ARGUMENT FOR                        
+        A USER-DEFINED FUNCTION.                                                
+                                                                                
+THIS SECTION TESTS WHAT HAPPENS WHEN A USER FUNCTION IS                         
+INVOKED WITH A CHARACTER STRING ARGUMENT, INSTEAD OF A                          
+NUMERIC EXPRESSION.                                                             
+                                                                                
+THIS IS A TEST FOR A NON-STANDARD FEATURE OF MINIMAL BASIC.                     
+TO PASS THIS TEST, THE PROCESSOR MUST EITHER:                                   
+                                                                                
+   1) ACCEPT THE PROGRAM AND BE ACCOMPANIED BY DOCUMENTATION                    
+      ACCURATELY DESCRIBING THE FEATURE'S INTERPRETATION                        
+      BY THE PROCESSOR, OR                                                      
+                                                                                
+   2) REJECT THE PROGRAM WITH AN APPROPRIATE ERROR MESSAGE                      
+                                                                                
+SEE THE NBS MINIMAL BASIC TEST PROGRAMS USER'S MANUAL                           
+FOR DETAILED CRITERIA.                                                          
+                                                                                
+             BEGIN TEST                                                         
+                                                                                
+DEFINITION OF FND(4)=R + 3                                                      
+SETTING X = 5                                                                   
+SETTING X$ = 'ABC'                                                              
+                                                                                
+ABOUT TO ATTEMPT INVOCATION OF FND(X$).                                         
+                                                                                
+ERROR in line 340: Illegal function call                                        

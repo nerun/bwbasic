@@ -3,7 +3,7 @@
                               README file for
 
 
-               Bywater BASIC Interpreter, version 3.10
+               Bywater BASIC Interpreter, version 3.20
                ---------------------------------------------
 
                     Copyright (c) 1993, Ted A. Campbell
@@ -39,6 +39,8 @@
                Version 3.10 modifications by Howard Wulf, AF5NE
                                27 July 2016
 
+               Version 3.20 modifications by Howard Wulf, AF5NE
+                                4 June 2017
 
 
 
@@ -46,11 +48,10 @@
 DESCRIPTION:
 
    The Bywater BASIC Interpreter (bwBASIC) implements a large
-   superset of the ANSI Standard for Minimal BASIC (X3.60-1978)
-   and a significant subset of the ANSI Standard for Full BASIC
-   (X3.113-1987) in C. It also offers shell programming facilities
-   as an extension of BASIC. bwBASIC seeks to be as portable
-   as possible.
+   superset of the ANSI Standard for Minimal BASIC (X3.60-1978),
+   a significant subset of the ANSI Standard for Full BASIC
+   (X3.113-1987), and many classic BASIC dialects in C.  bwBASIC 
+   seeks to be as portable as possible.
 
    This version of Bywater BASIC is released under the terms of the 
    GNU General Public License (GPL), which is distributed with this 
@@ -68,7 +69,6 @@ OBTAINING THE SOURCE CODE:
    http://bwbasic.sourceforge.net
 
 
-
 COMMUNICATIONS:
 
    email:  tcamp@delphi.com  (for Ted Campbell)
@@ -78,562 +78,245 @@ COMMUNICATIONS:
 
 A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
 
-   Be aware that many of these commands and functions will not be
-   available unless you have enabled a particular dialect using
-   the OPTION VERSION command. 
-
-      # X
-      + X
-      - X
-      ? expressions...
-      A$ LIKE B$
-      APPEND filename$ | APPEND # filenumber
-      AS string-variable$ [, ...]
-      AUTO [start [, increment]]
-      BACKSPACE # X
-      BREAK line [, ...]]
-      BYE
-      CALL subroutine-name( [parameter [, ...] ] )
-      CASE ELSE
-      CASE constant [TO constant] | CASE IF partial-expression | CASE IS partial-expression
-      CHAIN filename$ [, linenumber]
-      CHANGE A$ TO X | CHANGE X TO A$
-      CLEAR
-      CLOAD [file-name$]
-      CLOAD* ArrayName
-      CLOSE filename$ [, ...]
-      CLR
-      CMDS
-      COMMON variable [, ...]
-      CONSOLE [WIDTH width]
-      CONT
-      CREATE filename$ [ RECL reclen ] AS filenum [ BUFF number ] [ RECS size ]
-      CSAVE [file-name$]
-      CSAVE* ArrayName
-      DATA constant [, ...]
-      DEF FNname[(arg...)] [= expression]
-      DEF SUB
-      DEFBYT letter[-letter] [, ...]
-      DEFCUR letter[-letter] [, ...]
-      DEFDBL letter[-letter] [, ...]
-      DEFINT  letter[-letter] [, ...]
-      DEFLNG letter[-letter] [, ...]
-      DEFSNG letter[-letter] [, ...]
-      DEFSTR letter[-letter] [, ...]
-      DELETE line [- line]
-      DELIMIT # X, A$
-      DIM variable( elements [, ...]) [, ...]
-      DO [UNTIL|WHILE expression]
-      DSP variable [, ...]]
-      EDIT
-      ELSE
-      ELSEIF
-      END
-      END FUNCTION
-      END IF
-      END SELECT
-      END SUB
-      ERASE variable [, ...]
-      EXCHANGE variable, variable
-      EXIT
-      EXIT DO
-      EXIT FOR
-      EXIT FUNCTION
-      EXIT SUB
-      EXIT UNTIL
-      EXIT WHILE
-      FEND
-      FIELD [#] device-number, number AS string-variable$ [, ...]
-      FILE # X, A$
-      FILES A$[, ...]
-      FNCS
-      FNEND
-      FOR variable = start TO finish [STEP increment]
-      FUNCTION [ ( parameter [, ...  ] ) ]
-      GET filename$ , scalar [, ...]
-      GO
-      GO SUB line
-      GO TO line
-      GOODBYE
-      GOSUB line
-      GOTO line
-      HELP name
-      IF END # filenum THEN line1 [ELSE line2]
-      IF MORE # filenum THEN line1 [ELSE line2]
-      IF expression THEN
-      IF expression THEN line1 [ELSE line2]
-      IMAGE "format string" 
-      INPUT [# device-number]|[;]["prompt string";] variable [, ...]s
-      LINE INPUT [[#] device-number,]["prompt string";] string-variable$
-      LIST line1 [- line2]
-      LLIST line1 [- line2]
-      LOAD [file-name$]
-      LOOP [UNTIL|WHILE expression]
-      LPRINT [USING format-string$;] expressions...
-      LPRINTER [WIDTH width]
-      LSET string-variable$ = expression
-      MAINTAINER
-      MARGIN # filenumber, width
-      MAT GET filename$, arrayname
-      MAT INPUT arrayname
-      MAT PRINT arrayname
-      MAT PUT filename$, arrayname
-      MAT READ arrayname
-      MAT WRITE arrayname
-      MAT arrayname = expression
-      MERGE file-name
-      MID$( variable$, start [, count ] ) = expression
-      N  = ABS( X )
-      N  = ACOS( X )
-      N  = ACS( X )
-      N  = ACSD( X )
-      N  = ACSG( X )
-      N  = ANGLE( X, Y )
-      N  = ARCSIN( X )
-      N  = ARCTAN( X )
-      N  = ARGC
-      N  = ARGV( X )
-      N  = ASC( A$ )
-      N  = ASC( A$, X )
-      N  = ASCII( A$ )
-      N  = ASIN( X )
-      N  = ASN( X )
-      N  = ASND( X )
-      N  = ASNG( X )
-      N  = ATAN( X )
-      N  = ATN( X )
-      N  = ATND( X )
-      N  = ATNG( X )
-      N  = BASE
-      N  = CATALOG
-      N  = CATALOG( A$ )
-      N  = CCUR( X )
-      N  = CDBL( X )
-      N  = CEIL( X )
-      N  = CHDIR( A$ )
-      N  = CINT( X )
-      N  = CLG( X )
-      N  = CLK( X )
-      N  = CLNG( X )
-      N  = CLOG( X )
-      N  = CLOSE
-      N  = CLOSE( X )
-      N  = CLS
-      N  = CODE( A$ )
-      N  = COLOR( X, Y )
-      N  = COS( X )
-      N  = COSD( X )
-      N  = COSG( X )
-      N  = COSH( X )
-      N  = COT( X )
-      N  = COUNT
-      N  = CSC( X )
-      N  = CSH( X )
-      N  = CSNG( X )
-      N  = CVC( A$ )
-      N  = CVD( A$ )
-      N  = CVI( A$ )
-      N  = CVL( A$ )
-      N  = CVS( A$ )
-      N  = DATE
-      N  = DEF FN
-      N  = DEG
-      N  = DEG( X )
-      N  = DEGREE
-      N  = DEGREE( X )
-      N  = DET
-      N  = DIM( ... )
-      N  = ENVIRON( A$ )
-      N  = EOF( X )
-      N  = EPS( X )
-      N  = ERL
-      N  = ERR
-      N  = ERRL
-      N  = ERRN
-      N  = ERROR( X )
-      N  = ERROR( X, A$ )
-      N  = EXAM( X )
-      N  = EXP( X )
-      N  = FETCH( X )
-      N  = FILEATTR( X, Y )
-      N  = FILES
-      N  = FILES( A$ )
-      N  = FILL( X, Y )
-      N  = FIX( X )
-      N  = FLOAT( X )
-      N  = FLOW
-      N  = FP( X )
-      N  = FRAC( X )
-      N  = FRE
-      N  = FRE( A$ )
-      N  = FRE( X )
-      N  = FREE
-      N  = FREE( A$ )
-      N  = FREE( X )
-      N  = FREEFILE
-      N  = GET( X )
-      N  = GET( X, Y )
-      N  = GRAD
-      N  = GRADIAN
-      N  = HCS( X )
-      N  = HOME
-      N  = HSN( X )
-      N  = HTN( X )
-      N  = INDEX( A$, B$ )
-      N  = INITIALIZE
-      N  = INP( X )
-      N  = INSTR( A$, B$ )
-      N  = INSTR( X, A$, B$ )
-      N  = INT%( X )
-      N  = INT( X )
-      N  = IP( X )
-      N  = KILL( A$ )
-      N  = LBOUND( ... )
-      N  = LEN( A$ )
-      N  = LGT( X )
-      N  = LN( X )
-      N  = LOC( X )
-      N  = LOCATE( X, Y )
-      N  = LOF( X )
-      N  = LOG( X )
-      N  = LOG10( X )
-      N  = LOG2( X )
-      N  = LOGE( X )
-      N  = LPOS
-      N  = LTW( X )
-      N  = LWIDTH( X )
-      N  = MATCH( A$, B$, X )
-      N  = MAX( X, Y )
-      N  = MAXBYT
-      N  = MAXCUR
-      N  = MAXDBL
-      N  = MAXDEV
-      N  = MAXINT
-      N  = MAXLEN( A$ )
-      N  = MAXLNG
-      N  = MAXLVL
-      N  = MAXNUM
-      N  = MAXSNG
-      N  = MEM
-      N  = MIN( X, Y )
-      N  = MINBYT
-      N  = MINCUR
-      N  = MINDBL
-      N  = MINDEV
-      N  = MININT
-      N  = MINLNG
-      N  = MINNUM
-      N  = MINSNG
-      N  = MKDIR( A$ )
-      N  = MOD( X, Y )
-      N  = NAME( A$, B$ )
-      N  = NOFLOW
-      N  = NOTRACE
-      N  = NULL( X )
-      N  = NUM
-      N  = NUM( A$ )
-      N  = OPEN( A$, X, B$ )
-      N  = OPEN( A$, X, B$, Y )
-      N  = ORD( A$ )
-      N  = OUT( X, Y )
-      N  = PAUSE( X )
-      N  = PDL( X )
-      N  = PEEK( X )
-      N  = PI
-      N  = PI( X )
-      N  = PIN( X )
-      N  = POKE( X, Y )
-      N  = POS
-      N  = POS( A$, B$ )
-      N  = POS( A$, B$, X )
-      N  = POS( X )
-      N  = PUT( X )
-      N  = PUT( X, Y )
-      N  = RAD
-      N  = RAD( X )
-      N  = RADIAN
-      N  = RAN
-      N  = RAN( X )
-      N  = RANDOM
-      N  = RANDOM( X )
-      N  = RANDOMIZE
-      N  = RANDOMIZE( X )
-      N  = REMAINDER( X, Y )
-      N  = RENAME( A$, B$ )
-      N  = RESET
-      N  = RMDIR( A$ )
-      N  = RND
-      N  = RND( X )
-      N  = ROUND( X, Y )
-      N  = SEC( X )
-      N  = SEEK( X )
-      N  = SEEK( X, Y )
-      N  = SGN( X )
-      N  = SHELL( A$ )
-      N  = SIN( X )
-      N  = SIND( X )
-      N  = SING( X )
-      N  = SINH( X )
-      N  = SIZE( ... )
-      N  = SIZE( A$ )
-      N  = SLEEP( X )
-      N  = SNH( X )
-      N  = SQR( X )
-      N  = SQRT( X )
-      N  = STUFF( X, Y )
-      N  = TAN( X )
-      N  = TAND( X )
-      N  = TANG( X )
-      N  = TANH( X )
-      N  = TI
-      N  = TIM
-      N  = TIM( X )
-      N  = TIME
-      N  = TIME( X )
-      N  = TIMER
-      N  = TOP
-      N  = TRACE
-      N  = TROFF
-      N  = TRON
-      N  = TRUNCATE( X, Y )
-      N  = UBOUND( ... )
-      N  = UNSAVE( A$ )
-      N  = VAL( A$ )
-      N  = VTAB( X )
-      N  = WAIT( X )
-      N  = WAIT( X, Y )
-      N  = WAIT( X, Y, Z )
-      N  = WIDTH( X )
-      N  = WIDTH( X, Y )
-      NAME old-file-name AS new-file-name
-      NEW
-      NEXT [variable]
-      NOT X
-      OF line, ...
-      OLD [file-name$]
-      ON ERROR ...
-      ON ERROR GOSUB errline
-      ON ERROR GOTO errline
-      ON ERROR RESUME ...
-      ON ERROR RESUME NEXT
-      ON ERROR RETURN ...
-      ON ERROR RETURN NEXT
-      ON TIMER count GOSUB line
-      ON expression GOTO | GOSUB line [, ...]
-      OPEN file-name [FOR INPUT|OUTPUT|APPEND|BINARY|RANDOM] AS [#]device-number [LEN = record-length]
-      OPTION ...
-      OPTION ANGLE ...
-      OPTION ANGLE DEGREES
-      OPTION ANGLE GRADIANS
-      OPTION ANGLE RADIANS
-      OPTION ARITHMETIC
-      OPTION ARITHMETIC DECIMAL
-      OPTION ARITHMETIC FIXED
-      OPTION ARITHMETIC NATIVE
-      OPTION BASE X
-      OPTION BUGS
-      OPTION BUGS OFF
-      OPTION BUGS ON
-      OPTION COMMENT char
-      OPTION COMPARE
-      OPTION COMPARE BINARY
-      OPTION COMPARE DATABASE
-      OPTION COMPARE TEXT
-      OPTION COVERAGE
-      OPTION COVERAGE OFF
-      OPTION COVERAGE ON
-      OPTION DATE format
-      OPTION DISABLE
-      OPTION DISABLE COMMAND name
-      OPTION DISABLE FUNCTION name
-      OPTION DISABLE OPERATOR name
-      OPTION ENABLE
-      OPTION ENABLE COMMAND name
-      OPTION ENABLE FUNCTION name
-      OPTION ENABLE OPERATOR name
-      OPTION ERROR
-      OPTION ERROR GOSUB
-      OPTION ERROR GOTO
-      OPTION EXPLICIT
-      OPTION IMAGE char
-      OPTION IMPLICIT
-      OPTION INDENT number
-      OPTION LABELS
-      OPTION LABELS OFF
-      OPTION LABELS ON
-      OPTION PRINT char
-      OPTION ROUND
-      OPTION ROUND BANK
-      OPTION ROUND MATH
-      OPTION ROUND TRUNCATE
-      OPTION SLEEP number
-      OPTION STATEMENT char
-      OPTION STDERR filename$
-      OPTION STDIN filename$
-      OPTION STDOUT filename$
-      OPTION STRICT
-      OPTION STRICT OFF
-      OPTION STRICT ON
-      OPTION TERMINAL
-      OPTION TERMINAL ADM
-      OPTION TERMINAL ANSI
-      OPTION TERMINAL NONE
-      OPTION TIME format
-      OPTION TRACE
-      OPTION TRACE OFF
-      OPTION TRACE ON
-      OPTION USING string$
-      OPTION VERSION [version]
-      PAUSE [comment]
-      POP
-      PRINT [# device-number,][USING format$;] expressions ...
-      PUT filename$ , value [, ...]
-      QUIT
-      READ variable [, ...]
-      RECALL ArrayName
-      REM ...
-      RENAME [file-name$]
-      RENUM
-      RENUMBER
-      RESET filename$ [, ...]
-      RESTORE [line]
-      RESUME [ 0 | line | NEXT ]
-      RETURN
-      RSET string-variable$ = expression
-      RUN [line | file-name$]
-      S$ = ARGT$( X )
-      S$ = ARGV$( X )
-      S$ = CHAR$( X )
-      S$ = CHAR( X, Y )
-      S$ = CHR$( X )
-      S$ = CHR( X )
-      S$ = CLK$
-      S$ = CLK( X )
-      S$ = COMMAND$( X )
-      S$ = CUR( X, Y )
-      S$ = DAT$
-      S$ = DATE$
-      S$ = DATE$( X )
-      S$ = ENVIRON$( A$ )
-      S$ = ERR$
-      S$ = ERROR$
-      S$ = HEX$( X )
-      S$ = INKEY$
-      S$ = INPUT$( X )
-      S$ = INPUT$( X, Y )
-      S$ = KEY
-      S$ = KEY$
-      S$ = LCASE$( A$ )
-      S$ = LEFT$( A$, X )
-      S$ = LEFT( A$, X )
-      S$ = LIN( X )
-      S$ = LTRIM$( A$ )
-      S$ = MAX( A$, B$ )
-      S$ = MID$( A$, X )
-      S$ = MID$( A$, X, Y )
-      S$ = MID( A$, X )
-      S$ = MID( A$, X, Y )
-      S$ = MIN( A$, B$ )
-      S$ = MKC$( X )
-      S$ = MKD$( X )
-      S$ = MKI$( X )
-      S$ = MKL$( X )
-      S$ = MKS$( X )
-      S$ = NUM$( X )
-      S$ = OCT$( X )
-      S$ = REPEAT$( X, A$ )
-      S$ = REPEAT$( X, Y )
-      S$ = RIGHT$( A$, X )
-      S$ = RIGHT( A$, X )
-      S$ = RTRIM$( A$ )
-      S$ = SEG$( A$, X, Y )
-      S$ = SEG( A$, X, Y )
-      S$ = SPA( X )
-      S$ = SPACE$( X )
-      S$ = SPACE( X )
-      S$ = SPC( X )
-      S$ = STR$( X )
-      S$ = STR( X, Y )
-      S$ = STRING$( X, A$ )
-      S$ = STRING$( X, Y )
-      S$ = STRING( X, Y )
-      S$ = TAB( X )
-      S$ = TI$
-      S$ = TIME$
-      S$ = TIME$( X )
-      S$ = TRIM$( A$ )
-      S$ = UCASE$( A$ )
-      SAVE [file-name$]
-      SCRATCH # X
-      SELECT
-      SELECT CASE expression
-      STEP
-      STOP
-      STORE ArrayName
-      SUB name [ ( parameter [,...] ) ]
-      SUBEND
-      SWAP variable, variable
-      SYSTEM
-      TEXT letter[-letter] [, ...]
-      THEN line1
-      TIMER
-      TIMER OFF
-      TIMER ON
-      TIMER STOP
-      TLOAD [file-name$]
-      TO
-      TRACE OFF
-      TRACE ON
-      TRACE ON | OFF
-      TSAVE [file-name$]
-      UEND
-      UNTIL expression
-      USE parameter$
-      USER LBL
-      VARS
-      WEND
-      WHILE
-      WRITE [# device-number,] element [, .... ]
-      X # Y
-      X & Y
-      X * Y
-      X ** Y
-      X + Y
-      X - Y
-      X / Y
-      X < Y
-      X <= Y
-      X <> Y
-      X = Y
-      X =< Y
-      X => Y
-      X > Y
-      X >< Y
-      X >= Y
-      X AND Y
-      X EQ Y
-      X EQV Y
-      X GE Y
-      X GT Y
-      X IMP Y
-      X LE Y
-      X LT Y
-      X MAX Y
-      X MIN Y
-      X MOD Y
-      X NE Y
-      X OR Y
-      X XOR Y
-      X XRA Y
-      X [ Y
-      X \ Y
-      X ^ Y
-      [LET] variable = expression
-
-
+   The complete list of over 500 commands, functions and operators is 
+   in the file "ALL.txt" in the DOCS directory.  Documentation for each 
+   dialect is also in the DOCS directory.  Be aware that the commands,
+   functions and operators available depend upon the particular BASIC
+   dialect selected using the OPTION VERSION command.  
 
 
 CHANGE HISTORY
+
+CHANGES FROM 3.10 to 3.20
+
+   * Implements most of the following BASIC dialects:
+      OPTION VERSION "BYWATER"        ' Bywater BASIC 3
+      OPTION VERSION "BYWATER-2"      ' Bywater BASIC 2
+      OPTION VERSION "CALL/360"       ' SBC CALL/360 Mainframe BASIC
+      OPTION VERSION "CBASIC-II"      ' CBASIC-II for CP/M
+      OPTION VERSION "DARTMOUTH"      ' Dartmouth DTSS BASIC
+      OPTION VERSION "ECMA-55"        ' ANSI Minimal BASIC
+      OPTION VERSION "ECMA-116"       ' ANSI Full BASIC
+      OPTION VERSION "GCOS"           ' GE 600 Mainframe BASIC
+      OPTION VERSION "HAARDT"         ' bas 2.4 by Michael Haardt
+      OPTION VERSION "HANDBOOK1"      ' The BASIC Handbook, 1st Edition
+      OPTION VERSION "HANDBOOK2"      ' The BASIC Handbook, 2nd Edition
+      OPTION VERSION "HEATH"          ' Heath Benton Harbor BASIC
+      OPTION VERSION "MARK-I"         ' GE 265 Mainframe BASIC
+      OPTION VERSION "MARK-II"        ' GE 435 Mainframe BASIC
+      OPTION VERSION "MBASIC"         ' Microsoft BASIC-80 for Xenix
+      OPTION VERSION "PDP-8"          ' DEC PDP-8 BASIC
+      OPTION VERSION "PDP-11"         ' DEC PDP-11 BASIC
+      OPTION VERSION "RBASIC"         ' Micronics RBASIC for 6809 FLEX
+      OPTION VERSION "RSTS-11"        ' DEC RSTS-11 BASIC-PLUS
+      OPTION VERSION "SYSTEM/360"     ' IBM System/360 Mainframe BASIC
+      OPTION VERSION "SYSTEM/370"     ' IBM System/370 Mainframe BASIC
+      OPTION VERSION "TRS-80"         ' TRS-80 Model I/III/4 LBASIC
+      OPTION VERSION "VINTAGE"        ' Vintage BASIC 1.0.1
+      OPTION VERSION "XBASIC"         ' TSC XBASIC for 6800 FLEX
+      
+   * CONST variable [, ...] = value
+      Assigns the value to variable.  
+      Any later assignment to the variable causus a VARIABLE NOT DECLARED error.
+
+   * DIM now supports lower and upper bounds.
+      OPTION BASE 1
+      DIM X(      9 ) ' lower bound is 1
+      DIM Y( 5 TO 9 ) ' lower bound is 5
+
+   * DIM now supports virtual variables.
+      OPTION BASE 1
+      OPEN "VIRTUAL.DAT" FOR VIRTUAL AS # 3 ' virtual data file 
+      DIM # 3, A( 1000 )        ' array is virtual
+      LET A( 1000 ) = 0         ' value is written to the file
+      LET X = A( 1000 )         ' value is read from the file
+      CLOSE # 3                 ' array is no longer valid
+
+   * ERROR 27, "Bad DATA"
+      Occurs when the READ command detects garbage in a DATA command.
+
+   * INPUT LINE
+      Same as LINE INPUT.
+
+   * MAT now supports lower and upper bounds.
+      OPTION BASE 1
+      MAT X(      9 ) = ZER ' lower bound is 1
+      MAT Y( 5 TO 9 ) = ZER ' lower bound is 5
+      MAT X = ZER(      9 ) ' lower bound is 1
+      MAT Y - ZER( 5 TO 9 ) ' lower bound is 5
+
+   * MAXLEN()
+     Returns the maximum string length.
+
+   * OPTION DIGITS integer
+      Sets the number of significant digits for PRINT.  
+      Setting the value to zero restores the default.   
+      
+   * OPTION EDIT string$
+      Sets the program name used by the EDIT command.
+      Setting this to "" disables EDIT command.
+
+   * OPTION FILES string$
+      Sets the program name used by the FILES command.
+      Setting this to "" disables FILES command.
+      
+   * OPTION PROMPT string$
+      Sets the prompt.
+
+   * OPTION PUNCT AT char$
+      Sets the PRINT AT character, commonly "@".
+      Setting this to "" disables PRINT AT.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT BYTE char$
+      Sets the BYTE type suffix, commonly "~".
+      Setting this to "" disables BYTE suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT COMMENT char$
+      Sets the trailing COMMENT character, commonly "'".
+      Setting this to "" disables trailing comments.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT CURRENCY char$
+      Sets the CURRENCY type suffix, commonly "@".
+      Setting this to "" disables CURRENCY suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT DOUBLE char$
+      Sets the DOUBLE type suffix, commonly "#".
+      Setting this to "" disables DOUBLE suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT FILENUM char$
+      Sets the FILE NUMBER prefix, commonly "#".
+      Setting this to "" disables the FILE NUMBER prefix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT IMAGE char$
+      Sets the shortcut IMAGE character, commonly ":".
+      Setting this to "" disables the shortcut IMAGE character.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT INPUT char$
+      Sets the shortcut INPUT character, commonly "!".
+      Setting this to "" disables the shortcut INPUT character.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT INTEGER char$
+      Sets the INTEGER type suffix, commonly "%".
+      Setting this to "" disables INTEGER suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT LONG char$
+      Sets the LONG type suffix, commonly "&".
+      Setting this to "" disables LONG suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT LPAREN char$
+      Sets the LEFT PARENTHESIS character, commonly "(".
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT PRINT char$
+      Sets the shortcut PRINT character, commonly "?".
+      Setting this to "" disables the shortcut PRINT character.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT QUOTE char$
+      Sets the QUOTE character, commonly """".
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT RPAREN char$
+      Sets the RIGHT PARENTHESIS character, commonly ")".
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT SINGLE char$
+      Sets the SINGLE type suffix, commonly "!".
+      Setting this to "" disables SINGLE suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT STATEMENT char$
+      Sets the shortcut STATEMENT seperator character, commonly ":".
+      Setting this to "" disables the STATEMENT seperator.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION PUNCT STRING char$
+      Sets the STRING type suffix, commonly "$".
+      Setting this to "" disables STRING suffix.
+      Setting this to a non-punctuation character is not supported.
+
+   * OPTION RECLEN integer
+      Sets the default record length for RANDOM files, commonly 128.
+      Setting thisto zero means there is no default RANDOM record 
+      length, so the record  length must be specified in the OPEN 
+      statement.
+      With OPTION RECLEN 128:
+         OPEN "FILE.DAT" FOR RANDOM AS #3
+      is considered to be the same as
+         OPEN "FILE.DAT" FOR RANDOM AS #3 LEN 128
+      With OPTION RECLEN 0:
+         OPEN "FILE.DAT" FOR RANDOM AS #3
+      causes an error.
+         
+   * OPTION RENUM string$
+      Sets the program name used by the RENUM command.
+      Setting this to "" disables RENUM command.
+   
+   * OPTION SCALE integer
+      Sets the number of digits to round after the decimal point for PRINT.
+      Setting the value to zero disables rounding.
+      
+   * OPTION USING DIGIT
+   * OPTION USING COMMA
+   * OPTION USING PERIOD
+   * OPTION USING PLUS
+   * OPTION USING MINUS
+   * OPTION USING EXRAD
+   * OPTION USING DOLLAR
+   * OPTION USING FILLER
+   * OPTION USING LITERAL
+   * OPTION USING FIRST
+   * OPTION USING ALL
+   * OPTION USING LENGTH
+      Sets the characters recognized by PRINT USING.
+      Setting these to a non-punctuation character is not supported.
+      
+   * OPTION VERSION now requires a string instead of a literal.
+      Some version names have changed.
+
+   * OPTION VERSION "PDP-8"
+      Added LPT, PTP, PTR, TTY, TTY IN and TTY OUT commands.
+      Added GET() and PUT() functions.
+
+   * OPTION VERSION "CALL/360"
+   * OPTION VERSION "SYSTEM/360"
+   * OPTION VERSION "SYSTEM/370"
+      Added alphabet extenders.  $ is a string variable.
+
+   * OPTION ZONE integer
+      Sets the PRINT zone width.  
+      Setting the value to zero restores the default.
+   
+   * REPEAT - UNTIL added
+      REPEAT
+        ...
+        EXIT REPEAT
+        ...
+      UNTIL expression ' exits when expression != 0
+
+   * SPC( X ) and TAB( X )
+      No longer use control codes.
+   
+   * UNTIL - UEND removed (to add REPEAT - UNTIL)
+     Here is a work-around for existin code using UNTIL-UEND:
+      UNITL expression -->> WHILE NOT expression
+        ...                   ...
+        EXIT UNTIL     -->>   EXIT WHILE
+        ...                   ...
+      UEND             -->> WEND
+            
+   * from Howard Wulf, AF5NE
+
 
 CHANGES FROM 3.00 to 3.10
 

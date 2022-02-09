@@ -1,0 +1,7 @@
+ENTER A WORD - TYPE 'DONE' TO QUIT                                              
+? START                                                                         
+ANOTHER? CHECK                                                                  
+ANOTHER? EXIT                                                                   
+ANOTHER? HERE                                                                   
+ANOTHER? DONE                                                                   
+'EXIT' PASSED THE TEST.  'DONE' WAS WORD NUMBER 5                               

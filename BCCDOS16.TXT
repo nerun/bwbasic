@@ -1,0 +1,48 @@
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Syntax is: BCC [ options ] file[s]     * = default; -x- = turn switch x off
+  -1      80186/286 Instructions    -2      80286 Protected Mode Inst.
+  -Ax     Disable extensions        -B      Compile via assembly
+  -C      Allow nested comments     -Dxxx   Define macro
+  -Exxx   Alternate Assembler name  -G      Generate for speed
+  -Hxxx   Use pre-compiled headers  -Ixxx   Include files directory
+  -K      Default char is unsigned  -Lxxx   Libraries directory
+  -M      Generate link map         -N      Check stack overflow
+  -Ox     Optimizations             -P      Force C++ compile
+  -Qxxx   Memory usage control      -S      Produce assembly output
+  -Txxx   Set assembler option      -Uxxx   Undefine macro
+  -Vx     Virtual table control     -Wxxx   Create Windows application
+  -X      Suppress autodep. output  -Yx     Overlay control
+  -Z      Suppress register reloads -a      Generate word alignment
+  -b    * Treat enums as integers   -c      Compile only
+  -d      Merge duplicate strings   -exxx   Executable file name
+  -fxx    Floating point options    -gN     Stop after N warnings
+  -iN     Max. identifier length    -jN     Stop after N errors
+  -k      Standard stack frame      -lx     Set linker option
+  -mx     Set Memory Model          -nxxx   Output file directory
+  -oxxx   Object file name          -p      Pascal calls
+  -r    * Register variables        -u    * Underscores on externs
+  -v      Source level debugging    -wxxx   Warning control
+  -y      Produce line number info  -zxxx   Set segment namesBorland C++  Version 3.1 Copyright (c) 1992 Borland International
+bwbasic.c:
+Warning bwbasic.c 302: Parameter 'x' is never used in function break_mes
+Warning bwbasic.c 371: Condition is always true in function bwx_TIMER
+bwb_cmd.c:
+Warning bwb_cmd.c 5907: Condition is always true in function bwb_ON_TIMER
+bwb_cnd.c:
+bwb_dio.c:
+bwb_exp.c:
+bwb_fnc.c:
+bwb_inp.c:
+Warning bwb_inp.c 2424: Unreachable code in function user_input_loop
+bwb_int.c:
+bwb_prn.c:
+bwb_stc.c:
+bwb_str.c:
+bwb_tbl.c:
+bwb_var.c:
+bwd_cmd.c:
+bwd_fun.c:
+bwx_tty.c:
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 3614708

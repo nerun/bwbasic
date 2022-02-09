@@ -1,0 +1,22 @@
+THIS PROGRAM WILL ESTIMATE EXPECTED EARNINGS PER SHARE FOR                      
+A COMPANY BASED UPON VARIOUS CURRENT AND EXPECTED PARAMETERS.                   
+                                                                                
+HOW MANY YEARS INTO FUTURE SHOULD ESTIMATE BE? 5                                
+CURRENT SALES                                ? 876543                           
+EXPECTED SALES IN  5  YEARS                  ? 987654                           
+CURRENT PROFIT MARGIN                        ? 12                               
+EXPECTED PROFIT MARGIN IN  5  YEARS          ? 14                               
+CURRENT TURNOVER                             ? 2                                
+EXPECTED TURNOVER IN  5  YEARS               ? 3                                
+CURRENT LEVERAGE                             ? 7                                
+EXPECTED LEVERAGE IN  5  YEARS               ? 8                                
+CURRENT PROFIT ON NET WORTH                  ? 12345                            
+EXPECTED PROFIT ON NET WORTH IN 5 YEARS      ? 23456                            
+CURRENT DIVIDEND PAY-OUT RATIO               ? 7                                
+EXPECTED DIVIDEND PAY-OUT RATIO IN 5 YEARS   ? 6                                
+ENTER BOOK/MARKET RATIO                      ? 1.25                             
+CURRENT EARNINGS PER SHARE                   ? 65.43                            
+                                                                                
+EXPECTED EARNINGS PER SHARE IN  5 YEARS =  0                                    
+                                                                                
+PRESS ENTER TO CONTINUE? -1                                                     

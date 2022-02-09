@@ -1,6 +1,0 @@
- 3 -.5 -.5                                                                      
--1  0  1                                                                        
--1  .5 -.5                                                                      
-'MAT INV' PASSED THE TEST IF  3 -.5 -.5                                         
-                             -1  0   1                                          
-                             -1  .5 -.5 WAS PRINTED                             

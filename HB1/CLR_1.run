@@ -1,4 +1,0 @@
-BEFORE THE 'CLR' STATEMENT A= 300                                               
-AND STRING VARIABLE A$=TEST STRING                                              
-AFTER  THE 'CLR' STATEMENT A= 0                                                 
-AND STRING VARIABLE A$=                                                         

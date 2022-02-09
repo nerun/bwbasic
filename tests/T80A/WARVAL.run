@@ -1,0 +1,16 @@
+          VALUE OF A WARRENT                                                    
+                                                                                
+THIS PROGRAM WILL ALLOW THE USER TO COMPUTE THE THEORETICAL                     
+VALUE OF A WARRANT AND THE VALUES OF BOTH SHORT TERM AND                        
+LONG TERM WARRANTS.                                                             
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+HOW MANY SHARES MAY BE PURCHASED WITH ONE WARRANT? 12                           
+WHAT IS THE EXERCISE PRICE PER SHARE OF STOCK    ? 334                          
+WHAT IS THE MARKET PRICE OF ONE SHARE OF STOCK   ? 4456                         
+                                                                                
+IS WARRANT LIFE AT LEAST 5 YEARS(Y/N)? Y                                        
+THE VALUE OF THE WARRANT EQUALS  49614.                                         
+THE THEORETICAL VALUE OF THE WARRANT =  49464                                   
+                                                                                
+PRESS ENTER FOR MORE COMPUTATION? -1                                            

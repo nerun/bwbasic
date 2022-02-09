@@ -1,0 +1,132 @@
+Digital Mars Compiler Version 8.42n
+Copyright (C) Digital Mars 2000-2004.  All Rights Reserved.
+Written by Walter Bright  www.digitalmars.com/ctg/sc.html
+DMC is a one-step program to compile and link C++, C and ASM files.
+Usage ([] means optional, ... means zero or more):
+
+	DMC file... [flags...] [@respfile] 
+
+file...		.CPP, .C or .ASM source, .OBJ object or .LIB library file name
+@respfile...	pick up arguments from response file or environment variable
+flags...	one of the following:
+-a[1|2|4|8] alignment of struct members	-A  strict ANSI C/C++
+-Aa enable new[] and delete[]		-Ab enable bool
+-Ae enable exception handling		-Ar enable RTTI
+-B[e|f|g|j] message language: English, French, German, Japanese
+-c  skip the link, do compile only	-cpp  source files are C++
+-cod  generate .cod (assembly) file	-C  no inline function expansion
+-d  generate .dep (make dependency) file
+-D  #define DEBUG 1			-Dmacro[=text]  define macro
+-e  show results of preprocessor	-EC do not elide comments
+-EL #line directives not output		-f  IEEE 754 inline 8087 code
+-fd work around FDIV problem		-ff fast inline 8087 code
+-g  generate debug info
+-gf disable debug info optimization	-gg make static functions global
+-gh symbol info for globals		-gl debug line numbers only
+-gp generate pointer validations	-gs debug symbol info only
+-gt generate trace prolog/epilog	-GTnnnn set data threshold to nnnn
+-H  use precompiled headers (ph)	-HDdirectory  use ph from directory
+-HF[filename]  generate ph to filename	-HHfilename  read ph from filename
+-HIfilename   #include "filename"	-HO include files only once
+-HS only search -I directories          -HX automatic precompiled headers
+
+-Ipath	#include file search path	-j[0|1|2]  Asian language characters
+    0: Japanese 1: Taiwanese and Chinese 2: Korean
+-Jm relaxed type checking		-Ju char==unsigned char
+-Jb no empty base class optimization    -J  chars are unsigned
+-l[listfile]  generate list file	-L  using non-Digital Mars linker
+-Llink  specify linker to use		-L/switch  pass /switch to linker
+-Masm   specify assembler to use	-M/switch  pass /switch to assembler
+-m[tsmclvfnrpxz][do][w][u] set memory model
+    s: small code and data		m: large code, small data
+    c: small code, large data		l: large code and data
+    v: VCM				r: Rational 16 bit DOS Extender
+    p: Pharlap 32 bit DOS Extender	x: DOSX 32 bit DOS Extender
+    z: ZPM 16 bit DOS Extender		f: OS/2 2.0 32 bit
+    t: .COM file			n: Windows 32s/95/98/NT/2000/ME/XP
+    d: DOS 16 bit			o: OS/2 16 bit
+    w: SS != DS				u: reload DS
+-Nc function level linking		-NL no default library
+-Ns place expr strings in code seg	-NS new code seg for each function
+-NTname  set code segment name		-NV vtables in far data
+-o[-+flag]  run optimizer with flag	-ooutput  output filename
+-p  turn off autoprototyping		-P  default to pascal linkage
+-Pz default to stdcall linkage		-r  strict prototyping
+-R  put switch tables in code seg	-s  stack overflow checking
+-S  always generate stack frame		-u  suppress predefined macros
+-v[0|1|2] verbose compile		-w  suppress all warnings
+-wc warn on C style casts
+-wn suppress warning number n		-wx treat warnings as errors
+-W{0123ADabdefmrstuvwx-+}  Windows prolog/epilog
+	-WA  Windows EXE
+	-WD  Windows DLL
+-x  turn off error maximum		-XD instantiate templates
+-XItemp<type>  instantiate template class temp<type>
+-XIfunc(type)  instantiate template function func(type)
+-[0|2|3|4|5|6]  8088/286/386/486/Pentium/P6 code
+      setjmp(My->mark);
+                      ^
+bwbasic.c(757) : Warning 6: value of expression is not used
+      setjmp(My->mark);
+                      ^
+bwbasic.c(847) : Warning 6: value of expression is not used
+      setjmp(My->mark);
+                      ^
+bwbasic.c(921) : Warning 6: value of expression is not used
+                     for( l = l->OtherLine; l->cmdnum != C_END_IF; l = l->OtherLine );
+                                                                                    ^
+bwbasic.c(2478) : Warning 7: possible extraneous ';'
+                     for( l = l->OtherLine; l->cmdnum != C_END_SELECT; l = l->OtherLine );
+                                                                                        ^
+bwbasic.c(2483) : Warning 7: possible extraneous ';'
+         for( x = x->OtherLine; x->cmdnum != C_END_IF; x = x->OtherLine );
+                                                                        ^
+bwb_cmd.c(6066) : Warning 7: possible extraneous ';'
+         for( x = x->OtherLine; x->cmdnum != C_END_SELECT; x = x->OtherLine );
+                                                                            ^
+bwb_cmd.c(6071) : Warning 7: possible extraneous ';'
+   for( l = l->OtherLine; l->OtherLine != NULL; l = l->OtherLine );
+                                                                 ^
+bwb_cnd.c(579) : Warning 7: possible extraneous ';'
+   for( l = l->OtherLine; l->OtherLine != NULL; l = l->OtherLine );
+                                                                 ^
+bwb_cnd.c(597) : Warning 7: possible extraneous ';'
+   for( l = l->OtherLine; l->OtherLine != NULL; l = l->OtherLine );
+                                                                 ^
+bwb_cnd.c(896) : Warning 7: possible extraneous ';'
+   for( l = l->OtherLine; l->OtherLine != NULL; l = l->OtherLine );
+                                                                 ^
+bwb_cnd.c(914) : Warning 7: possible extraneous ';'
+               for( m = 0; m < n && buff_skip_char( buffer, &q, T->Name[ m ] ); m++ );
+                                                                                    ^
+bwb_exp.c(1729) : Warning 7: possible extraneous ';'
+         for( ; x->cmdnum != C_DATA && x != My->EndMarker; x = x->next );
+                                                                       ^
+bwb_inp.c(930) : Warning 7: possible extraneous ';'
+      for( x = My->StartMarker->next; x != My->EndMarker && x->number < number; x = x->next );
+                                                                                            ^
+bwb_stc.c(1327) : Warning 7: possible extraneous ';'
+      for (argn = argv; argn->next != NULL; argn = argn->next);
+                                                             ^
+bwb_stc.c(1357) : Warning 7: possible extraneous ';'
+            while( line_skip_seperator(l) );
+                                          ^
+bwb_var.c(111) : Warning 7: possible extraneous ';'
+bwbasic.c:
+bwb_cmd.c:
+bwb_cnd.c:
+bwb_dio.c:
+bwb_exp.c:
+bwb_fnc.c:
+bwb_inp.c:
+bwb_int.c:
+bwb_prn.c:
+bwb_stc.c:
+bwb_str.c:
+bwb_tbl.c:
+bwb_var.c:
+bwd_cmd.c:
+bwd_fun.c:
+bwx_tty.c:
+link bwbasic+bwb_cmd+bwb_cnd+bwb_dio+bwb_exp+bwb_fnc+bwb_inp+bwb_int+bwb_prn+bwb_stc+bwb_str+bwb_tbl+bwb_var+bwd_cmd+bwd_fun+bwx_tty,BWBASIC.EXE,,user32+kernel32/noi;
+

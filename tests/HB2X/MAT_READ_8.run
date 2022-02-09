@@ -1,0 +1,33 @@
+MAT READ #, DEFAULT DELIMITER                                                   
+ 11             12                                                              
+ 21             22                                                              
+MAT READ #, CUSTOM DELIMITER                                                    
+ 11             12                                                              
+ 21             22                                                              
+MAT READ #, BAR DELIMITER                                                       
+ 11             12                                                              
+ 21             22                                                              
+MAT PRINT, DEFAULT DELIMITER                                                    
+ 11             12                                                              
+ 21             22                                                              
+MAT PRINT #, DEFAULT DELIMITER                                                  
+ 11             12                                                              
+ 21             22                                                              
+MAT WRITE, DEFAULT DELIMITER                                                    
+ 11, 12                                                                         
+ 21, 22                                                                         
+MAT WRITE #, DEFAULT DELIMITER                                                  
+ 11, 12                                                                         
+ 21, 22                                                                         
+MAT PRINT, CUSTOM DELIMITER                                                     
+ 11             12                                                              
+ 21             22                                                              
+MAT PRINT #, CUSTOM DELIMITER                                                   
+ 11             12                                                              
+ 21             22                                                              
+MAT WRITE, CUSTOM DELIMITER                                                     
+ 11* 12                                                                         
+ 21* 22                                                                         
+MAT WRITE #, CUSTOM DELIMITER                                                   
+ 11* 12                                                                         
+ 21* 22                                                                         

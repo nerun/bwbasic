@@ -1,0 +1,3 @@
+FOR without NEXT: 230 FOR I=1 TO 5                                              
+                                                                                
+ERROR: Can't continue                                                           

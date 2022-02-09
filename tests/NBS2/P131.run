@@ -1,0 +1,41 @@
+PROGRAM FILE 131: RND FUNCTION WITH THE RANDOMIZE STATEMENT.                    
+    ANSI STANDARD 8.2, 8.4, 17.L2, 17.4                                         
+                                                                                
+SECTION 131.1: RND FUNCTION WITH THE RANDOMIZE STATEMENT.                       
+                                                                                
+THIS TEST DETERMINES WHETHER THE RANDOMIZE STATEMENT                            
+CAUSES A DIFFERENT SEQUENCE OF NUMBERS TO BE PRODUCED                           
+BY THE RND FUNCTION FOR EACH PROGRAM EXECUTION.                                 
+                                                                                
+             BEGIN TEST                                                         
+                                                                                
+POSITION       VALUE                                                            
+ 1              .728831                                                         
+ 2              .615109                                                         
+ 3              .110502                                                         
+ 4              .228558                                                         
+ 5              6.86214E-2                                                      
+ 6              .612693                                                         
+ 7              .225376                                                         
+ 8              .167302                                                         
+ 9              .249147                                                         
+ 10             .774105                                                         
+ 11             .623406                                                         
+ 12             .091191                                                         
+ 13             .201218                                                         
+ 14             .703157                                                         
+ 15             .364542                                                         
+ 16             .669822                                                         
+ 17             .469054                                                         
+ 18             .532366                                                         
+ 19             .100096                                                         
+ 20             .630643                                                         
+                                                                                
+TO DETERMINE WHETHER THIS TEST PASSES, THE USER MUST RUN                        
+THIS PROGRAM THREE TIMES, NOTING THE SEQUENCE OF NUMBERS                        
+PRODUCED EACH TIME. IF ALL THREE ARE DIFFERENT, THEN                            
+***  TEST PASSED  ***                                                           
+                                                                                
+             END TEST                                                           
+                                                                                
+END PROGRAM 131                                                                 

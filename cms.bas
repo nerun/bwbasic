@@ -63,7 +63,7 @@ while not eof( #1 )
     while left$( L$, 1 ) = "*"
       L$ = trim$(mid$( L$, 2 ))
     wend
-    if L$ = "main" then
+    if L$ = "main" or L$ = "putenv" or L$="sleep" then
       ' ignore magic function name
     else
       ' pad for alignment

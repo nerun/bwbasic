@@ -34,6 +34,8 @@
 /*                                                               */
 /* Version 3.10 by Howard Wulf, AF5NE                            */
 /*                                                               */
+/* Version 3.20 by Howard Wulf, AF5NE                            */
+/*                                                               */
 /*---------------------------------------------------------------*/
 
 
@@ -41,152 +43,95 @@
 #include "bwbasic.h"
 
 
-
-
-
-
-
-
-
-
-
-
-/***************************************************************
-  
-      FUNCTION:       bwb_edit()
-  
-   DESCRIPTION:    This function implements the BASIC EDIT
-         program by shelling out to a default editor
-         specified by the variable BWB.EDITOR$.
-  
-   SYNTAX:     EDIT
-  
-***************************************************************/
-
-LineType *
-bwb_EDIT(LineType * l)
+extern void
+bwx_LOCATE (int Row, int Col)
 {
-   VariableType *v; 
-   char            tbuf[BasicStringLengthMax + 1];
+  /* position the cursor to Row and Col */
+  /* Row is 1 based, 1..24 */
+  /* Col is 1 based, 1..80 */
+  assert (My != NULL);
+  assert (My->SYSOUT != NULL);
+  assert (My->SYSOUT->cfp != NULL);
 
-   bwx_DEBUG(__FUNCTION__);
 
-   if( is_empty_filename( My->progfile ) )
-   {
-      WARN_BAD_FILE_NAME;
-      return bwb_zline(l);
-   }
-   if( (v = var_find(DEFVNAME_EDITOR,0,FALSE)) == NULL )
-   {
-       bwb_strcpy(tbuf, DEF_EDITOR );
-   }
-   else
-   {
-      VariantType variant;
-      
-      if( var_get( v, &variant ) == FALSE )
-      {
-         bwb_strcpy(tbuf, DEF_EDITOR );
-      }
-      else
-      {
-         if( variant.TypeChar == '$' )
-         {
-            bwb_strcpy(tbuf, variant.Buffer );
-            RELEASE( (&variant) );
-         }
-         else
-         {
-            bwb_strcpy(tbuf, DEF_EDITOR );
-         }
-      }
-   }
-   bwb_strcat( tbuf, " " );
-   bwb_strcat( tbuf,  My->progfile );
-   system(tbuf);
-
-   /* open edited file for read */
-   bwb_NEW(l);    /* Relocated by JBV (bug found by DD) */
-   if( bwb_fload( NULL /* My->progfile */ ) == FALSE )
-   {
-      WARN_BAD_FILE_NAME;
-      return bwb_zline(l);
-   }
-   return bwb_zline(l);
+  if (Row < 1 || Col < 1)
+  {
+    WARN_ILLEGAL_FUNCTION_CALL;
+    return;
+  }
+  switch (My->OptionTerminalType)
+  {
+  case C_OPTION_TERMINAL_NONE:
+    break;
+  case C_OPTION_TERMINAL_ADM:
+    fprintf (My->SYSOUT->cfp, "%c=%c%c", 27, Row + 32, Col + 32);
+    break;
+  case C_OPTION_TERMINAL_ANSI:
+    fprintf (My->SYSOUT->cfp, "%c[%d;%dH", 27, Row, Col);
+    break;
+  default:
+    WARN_ADVANCED_FEATURE;
+    break;
+  }
+  fflush (My->SYSOUT->cfp);
+  My->SYSOUT->row = Row;
+  My->SYSOUT->col = Col;
 }
 
-/***************************************************************
-  
-        FUNCTION:       bwb_renum()
-  
-   DESCRIPTION:    This function implements the BASIC RENUM
-         command by shelling out to a default
-         renumbering program called "renum".
-         Added by JBV 10/95
-  
-   SYNTAX:     RENUM
-  
-***************************************************************/
-
-LineType *
-bwb_RENUM(LineType * l)
+extern void
+bwx_CLS (void)
 {
-   VariableType *v; 
-   char            tbuf[BasicStringLengthMax + 1];
-
-   bwx_DEBUG(__FUNCTION__);
-
-   if( is_empty_filename( My->progfile ) )
-   {
-      WARN_BAD_FILE_NAME;
-      return bwb_zline(l);
-   }
-   if( (v = var_find(DEFVNAME_RENUM,0,FALSE)) == NULL )
-   {
-       bwb_strcpy(tbuf, DEF_RENUM );
-   }
-   else
-   {
-      VariantType variant;
-      
-      if( var_get( v, &variant ) == FALSE )
-      {
-         bwb_strcpy(tbuf, DEF_EDITOR );
-      }
-      else
-      {
-         if( variant.TypeChar == '$' )
-         {
-            bwb_strcpy(tbuf, variant.Buffer );
-            RELEASE( (&variant) );
-         }
-         else
-         {
-            bwb_strcpy(tbuf, DEF_EDITOR );
-         }
-      }
-   }
-   bwb_strcat( tbuf, " " );
-   bwb_strcat( tbuf,  My->progfile );
-   system(tbuf);
-
-   /* open edited file for read */
-   bwb_NEW(l);    /* Relocated by JBV (bug found by DD) */
-   if( bwb_fload( NULL /* My->progfile */ ) == FALSE )
-   {
-      WARN_BAD_FILE_NAME;
-      return bwb_zline(l);
-   }
-   return bwb_zline(l);
+  /* clear screen */
+  assert (My != NULL);
+  assert (My->SYSOUT != NULL);
+  assert (My->SYSOUT->cfp != NULL);
+  switch (My->OptionTerminalType)
+  {
+  case C_OPTION_TERMINAL_NONE:
+    break;
+  case C_OPTION_TERMINAL_ADM:
+    fprintf (My->SYSOUT->cfp, "%c", 26);
+    break;
+  case C_OPTION_TERMINAL_ANSI:
+    fprintf (My->SYSOUT->cfp, "%c[2J", 27);
+    break;
+  default:
+    WARN_ADVANCED_FEATURE;
+    break;
+  }
+  bwx_LOCATE (1, 1);
 }
 
-
-
-LineType *
-bwb_RENUMBER(LineType * l)
+extern void
+bwx_COLOR (int Fore, int Back)
 {
-   return bwb_RENUM(l); 
+  /* set foreground and background color */
+  /* Fore is 0 based, 0..15 */
+  /* Back is 0 based, 0..15 */
+  assert (My != NULL);
+  assert (My->SYSOUT != NULL);
+  assert (My->SYSOUT->cfp != NULL);
+  if (Fore < 0 || Back < 0)
+  {
+    WARN_ILLEGAL_FUNCTION_CALL;
+    return;
+  }
+  switch (My->OptionTerminalType)
+  {
+  case C_OPTION_TERMINAL_NONE:
+    break;
+  case C_OPTION_TERMINAL_ADM:
+    break;
+  case C_OPTION_TERMINAL_ANSI:
+    fprintf (My->SYSOUT->cfp, "%c[%d;%dm", 27, 30 + Fore, 40 + Back);
+    break;
+  default:
+    WARN_ADVANCED_FEATURE;
+    break;
+  }
+  fflush (My->SYSOUT->cfp);
 }
+
 
 
 /* EOF */

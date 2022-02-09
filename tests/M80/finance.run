@@ -1,0 +1,257 @@
+ THIS PROGRAM IS A COLLECTION OF BUSINESS                                       
+APPLICATIONS. HERE IS A LIST OF THE VALUES THAT                                 
+CAN BE COMPUTED GIVEN SUPPORTING DATA:                                          
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 1                                     
+                                                                                
+FUTURE VALUE OF AN INVESTMENT                                                   
+                                                                                
+INITIAL INVESTMENT (0 TO STOP) ? 23456                                          
+NOMINAL INTEREST RATE (0 TO 100) ? 7.89                                         
+NUMBER OF COMPOUNDING PERIODS PER YEAR? 12                                      
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 5,6           
+FUTURE VALUE = $ 36149.2                                                        
+                                                                                
+INITIAL INVESTMENT (0 TO STOP) ? 0                                              
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 2                                     
+                                                                                
+FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                      
+                                                                                
+AMOUNT OF REGULAR DEPOSITS (0 TO STOP)? 345.67                                  
+NOMINAL INTEREST RATE (0 TO 100) ? 8.90                                         
+NUMBER OF DEPOSITS PER YEAR? 12                                                 
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 3,4           
+FUTURE VALUE = $ 16028.                                                         
+                                                                                
+AMOUNT OF REGULAR DEPOSITS (0 TO STOP)? 0                                       
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 3                                     
+                                                                                
+REGULAR DEPOSITS                                                                
+                                                                                
+TOTAL VALUE AFTER Y YEARS (0 TO STOP) ? 45678                                   
+NOMINAL INTEREST RATE (0 TO 100) ? 9.01                                         
+NUMBER OF DEPOSITS PER YEAR? 23                                                 
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 4,5           
+REGULAR DEPOSITS:  $ 1581.46                                                    
+                                                                                
+TOTAL VALUE AFTER Y YEARS (0 TO STOP) ? 0                                       
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 4                                     
+                                                                                
+REGULAR WITHDRAWALS FROM AN INVESTMENT                                          
+                                                                                
+INITIAL INVESTMENT (0 TO STOP) ? 56789                                          
+NOMINAL INTEREST RATE (0 TO 100) ? 10                                           
+NUMBER OF WITHDRAWALS PER YEAR? 24                                              
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 5,6           
+AMOUNT OF EACH WITHDRAWAL = $ 560.19                                            
+                                                                                
+INITIAL INVESTMENT (0 TO STOP) ? 0                                              
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 5                                     
+                                                                                
+INITIAL INVESTMENT                                                              
+                                                                                
+TOTAL VALUE AFTER Y YEARS (0 TO STOP) ? 67890                                   
+NUMBER OF COMPOUNDING PERIODS PER YEAR? 12                                      
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 3,4           
+NOMINAL INTEREST RATE (0 TO 100) ? 5.67                                         
+INITIAL INVESTMENT = $ 56223.4                                                  
+                                                                                
+TOTAL VALUE AFTER Y YEARS (0 TO STOP) ? 0                                       
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 6                                     
+                                                                                
+MINIMUM INVESTMENT FOR WITHDRAWALS                                              
+                                                                                
+AMOUNT OF WITHDRAWALS (0 TO STOP) ? 789.01                                      
+NOMINAL INTEREST RATE (0 TO 100) ? 2.34                                         
+NUMBER OF WITHDRAWALS PER YEAR? 56                                              
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 7,8           
+MINIMUM INVESTMENT = $ 310042.                                                  
+                                                                                
+AMOUNT OF WITHDRAWALS (0 TO STOP) ? 0                                           
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 7                                     
+                                                                                
+NOMINAL INTEREST RATE ON INVESTMENTS                                            
+                                                                                
+PRINCIPAL (0 TO STOP)? 89012                                                    
+TOTAL VALUE? 345678                                                             
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 9,10          
+NUMBER OF COMPOUNDING PERIODS PER YEAR? 12                                      
+NOMINAL INTEREST RATE =  13.8769 %                                              
+                                                                                
+PRINCIPAL (0 TO STOP)? 0                                                        
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 8                                     
+                                                                                
+EFFECTIVE INTEREST RATE ON INVESTMENTS                                          
+                                                                                
+INITIAL INVESTMENT (0 TO STOP) ? 90123                                          
+TOTAL VALUE AFTER Y YEARS? 456789                                               
+NUMBER OF YEARS AND MONTHS (2 NUMBERS WITH A COMMA BETWEEN THEM)? 10,11         
+ANNUAL INTEREST RATE =  16.0297 %                                               
+                                                                                
+INITIAL INVESTMENT (0 TO STOP) ? 0                                              
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 9 , OR 0 TO END RUN )? 9                                     
+                                                                                
+**** EARNED INTEREST TABLE GENERATOR ***                                        
+                                                                                
+PRINCIPAL? 123456                                                               
+NOMINAL INTEREST RATE (0 TO 100) ? 7.89                                         
+NUMBER OF DEPOSITS/WITHDRAWALS PER YEAR? 12                                     
+AMOUNT OF DEPOSIT/WITHDRAWAL? 3456.78                                           
+START WITH WHAT YEAR (WHERE 1 MEANS THE FIRST, 2 THE SECOND, ETC.) ? 1          
+END WITH WHAT YEAR? 2                                                           
+                                                                                
+                       EARNED INTEREST TABLE                                    
+  PRINCIPAL= $ 123456     AT  7.89 % NOMINAL    FOR  2 YEARS                    
+REGULAR DEPOSIT/WITHDRAWAL $ 3456.78 .     12  TIMES PER YEAR                   
+          EFFECTIVE INTEREST RATE 8.21 % PER YEAR                               
+                                                                                
+YEAR           BALANCE        INTEREST       ACCUM. INTEREST                    
+                                                                                
+ 1               127728.       815.07         815.07                            
+                 132028.       843.24         1658.31                           
+                 136356.       871.61         2529.91                           
+                 140713.       900.15         3430.06                           
+                 145099.       928.89         4358.96                           
+                 149513.       957.82         5316.78                           
+                 153957.       986.94         6303.72                           
+                 158430.       1016.25        7319.97                           
+                 162933.       1045.75        8365.72                           
+                 167465.       1075.45        9441.17                           
+                 172027.       1105.35        10546.5                           
+                 176619.       1135.44        11682.                            
+                                                                                
+ 2               181242.       1165.73        12847.7                           
+                 185895.       1196.22        14043.9                           
+                 190579.       1226.91        15270.8                           
+                 195293.       1257.8         16528.6                           
+                 200039.       1288.9         17817.5                           
+                 204816.       1320.2         19137.7                           
+                 209624.       1351.71        20489.4                           
+                 214464.       1383.43        21872.8                           
+                 219337.       1415.35        23288.2                           
+                 224241.       1447.49        24735.7                           
+                 229177.       1479.84        26215.5                           
+                 234147.       1512.4         27727.9                           
+                                                                                
+CHANGE DATA AND RECOMPUTE ? N                                                   
+                                                                                
+1) FUTURE VALUE OF AN INVESTMENT                                                
+2) FUTURE VALUE OF REGULAR DEPOSITS (ANNUITY)                                   
+3) REGULAR DEPOSITS                                                             
+4) REGULAR DEPOSITS FROM AN INVESTMENT                                          
+5) INITIAL INVESTMENT                                                           
+6) MINIMUM INVESTMENT FOR WITHDRAWALS                                           
+7) NOMINAL INTEREST RATE ON INVESTMENTS                                         
+8) EFFECTIVE INTEREST RATE ON INVESTMENTS                                       
+9) EARNED INTEREST TABLE                                                        
+                                                                                
+WHICH OF THE ABOVE VALUES WOULD YOU LIKE                                        
+TO COMPUTE  ( 1 TO 13 , OR 0 TO END RUN )? 0                                    
+                                                                                

@@ -1,4 +1,0 @@
-6000 REM MERGE START 100 
-LET A$ = "    yyyy     "
-6010 LET VN  = VAL( A$ )
-6099 REM MERGE STOP 100 

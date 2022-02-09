@@ -1,7 +1,0 @@
-'TRACE ON' TRACES EACH LINE                                                     
-Trace is ON                                                                     
-[ 40 GOTO 90 ][ 90 PRINT "THAT FOLLOWS THE 'TRACE ON' STATEMENT" ]THAT FOLLOWS T
-[ 100 GOTO 50 ][ 50 PRINT "UNTIL TURNED OFF BY" ]UNTIL TURNED OFF BY            
-[ 60 TRACE OFF ]Trace is OFF                                                    
-THE 'TRACE OFF' STATEMENT                                                       
-AS ILLUSTRATED BY THIS LINE                                                     

@@ -1,0 +1,17 @@
+bwBASIC: LIST                                                                   
+   99 END                                                                       
+                                                                                
+bwBASIC: AUTO 10, 5                                                             
+10 REM 'AUTO' TEST PROGRAM                                                      
+15 PRINT "THE NEXT LINE NUMBER SHOULD INCREASE BY 5"                            
+20 PRINT "PRESS THE BREAK KEY TO STOP THE AUTO FEATURE"                         
+25 MAN                                                                          
+bwBASIC: LIST                                                                   
+   10 REM 'AUTO' TEST PROGRAM                                                   
+   15 PRINT "THE NEXT LINE NUMBER SHOULD INCREASE BY 5"                         
+   20 PRINT "PRESS THE BREAK KEY TO STOP THE AUTO FEATURE"                      
+   99 END                                                                       
+                                                                                
+bwBASIC: RUN                                                                    
+THE NEXT LINE NUMBER SHOULD INCREASE BY 5                                       
+PRESS THE BREAK KEY TO STOP THE AUTO FEATURE                                    

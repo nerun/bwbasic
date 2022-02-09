@@ -1,0 +1,9 @@
+BINOMIAL DISTRIBUTION                                                           
+                                                                                
+(TO END PROGRAM ENTER 0)                                                        
+NUMBER OF TRIALS? 56                                                            
+EXACT NUMBER OF SUCCESSES? 5                                                    
+PROBABILITY OF SUCCESS? .1                                                      
+PROBABILITY OF 5 SUCCESSES IN 56 TRIALS = .177178                               
+                                                                                
+NUMBER OF TRIALS? 0                                                             

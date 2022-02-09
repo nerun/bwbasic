@@ -12,18 +12,18 @@ CC=             qcl
 #
 #		These are the normal flags I used to compile bwBASIC:
 #
-CFLAGS=         -O -AL -W3 -Za -DMSDOS
+CFLAGS=         -O -AL -W3 -Za -DHAVE_MSDOS
 #
 #		The following flags can be used for debugging:
 #
-#CFLAGS=         -Od -AL -W3 -Za -Zr -Zi -DMSDOS
+#CFLAGS=         -Od -AL -W3 -Za -Zr -Zi -DHAVE_MSDOS
 
 LFLAGS=         /NOE /ST:8192
 
-OFILES=         bwbasic.obj bwb_cmd.obj bwb_cnd.obj bwb_dio.obj bwb_elx.obj\
-                bwb_exp.obj bwb_fnc.obj bwb_inp.obj bwb_int.obj bwb_ops.obj\
-                bwb_prn.obj bwb_stc.obj bwb_str.obj bwb_tbl.obj bwb_var.obj\
-                bwd_cmd.obj bwd_fun.obj bwx_tty.obj 
+OFILES=         bwbasic.obj bwb_cmd.obj bwb_cnd.obj bwb_dio.obj\
+                bwb_exp.obj bwb_fnc.obj bwb_inp.obj bwb_int.obj\
+                bwb_prn.obj bwb_stc.obj bwb_str.obj bwb_tbl.obj\
+                bwb_var.obj bwd_cmd.obj bwd_fun.obj bwx_tty.obj 
 
 HFILES=         bwbasic.h
 
@@ -37,12 +37,10 @@ bwbasic.obj +
 bwb_cmd.obj +
 bwb_cnd.obj +
 bwb_dio.obj +
-bwb_elx.obj +
 bwb_exp.obj +
 bwb_fnc.obj +
 bwb_inp.obj +
 bwb_int.obj +
-bwb_ops.obj +
 bwb_prn.obj +
 bwb_stc.obj +
 bwb_str.obj +

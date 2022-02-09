@@ -1,6 +1,0 @@
-----------------------------------------                                        
-MAT PUT varname( ubound [,...] ) , 1 dimension                                  
-----------------------------------------                                        
-MAT PUT varname( ubound [,...] ) , 2 dimensions                                 
-----------------------------------------                                        
-MAT PUT varname( ubound [,...] ) , 3 dimensions                                 

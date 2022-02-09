@@ -34,7 +34,7 @@ LINK=		wlink
 # 	-wx	Display warnings at maximum level
 # 	-za	ANSI C syntax only; no language extensions
 #
-CFLAGS=         -bc -c -ox -q -wx -za -DMSDOS -D__WATCOM__
+CFLAGS=         -bc -c -ox -q -wx -za -DHAVE_MSDOS -D__WATCOM__
 
 LFLAGS=         OPTION QUIET
 

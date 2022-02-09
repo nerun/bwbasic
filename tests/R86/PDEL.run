@@ -1,0 +1,60 @@
+LINE 20                                                                         
+LINE 30                                                                         
+LINE 40                                                                         
+LINE 50                                                                         
+LINE 60                                                                         
+LINE 70 - END OF PDEL TEST                                                      
+bwBASIC: LIST                                                                   
+   10 REM 'PDEL' TEST PROGRAM                                                   
+   20 PRINT "LINE 20"                                                           
+   30 PRINT "LINE 30"                                                           
+   40 PRINT "LINE 40"                                                           
+   50 PRINT "LINE 50"                                                           
+   60 PRINT "LINE 60"                                                           
+   70 PRINT "LINE 70 - END OF PDEL TEST"                                        
+   99 END                                                                       
+                                                                                
+bwBASIC: PDEL 50                                                                
+bwBASIC: LIST                                                                   
+   10 REM 'PDEL' TEST PROGRAM                                                   
+   20 PRINT "LINE 20"                                                           
+   30 PRINT "LINE 30"                                                           
+   40 PRINT "LINE 40"                                                           
+   60 PRINT "LINE 60"                                                           
+   70 PRINT "LINE 70 - END OF PDEL TEST"                                        
+   99 END                                                                       
+                                                                                
+bwBASIC: RUN                                                                    
+LINE 20                                                                         
+LINE 30                                                                         
+LINE 40                                                                         
+LINE 60                                                                         
+LINE 70 - END OF PDEL TEST                                                      
+bwBASIC: PDEL 30-40                                                             
+bwBASIC: LIST                                                                   
+   10 REM 'PDEL' TEST PROGRAM                                                   
+   20 PRINT "LINE 20"                                                           
+   60 PRINT "LINE 60"                                                           
+   70 PRINT "LINE 70 - END OF PDEL TEST"                                        
+   99 END                                                                       
+                                                                                
+bwBASIC: RUN                                                                    
+LINE 20                                                                         
+LINE 60                                                                         
+LINE 70 - END OF PDEL TEST                                                      
+bwBASIC: PDEL 20,40-60                                                          
+bwBASIC: LIST                                                                   
+   10 REM 'PDEL' TEST PROGRAM                                                   
+   70 PRINT "LINE 70 - END OF PDEL TEST"                                        
+   99 END                                                                       
+                                                                                
+bwBASIC: RUN                                                                    
+LINE 70 - END OF PDEL TEST                                                      
+bwBASIC: PDEL 30-                                                               
+bwBASIC: LIST                                                                   
+   10 REM 'PDEL' TEST PROGRAM                                                   
+                                                                                
+bwBASIC: RUN                                                                    
+bwBASIC: PDEL -999                                                              
+bwBASIC: LIST                                                                   
+                                                                                

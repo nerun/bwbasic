@@ -1,0 +1,54 @@
+PROGRAM FILE 139: PERMUTATION TEST FOR THE RND FUNCTION.                        
+    ANSI STANDARD 8.4                                                           
+                                                                                
+SECTION 139.1: PERMUTATION TEST FOR THE RND FUNCTION.                           
+                                                                                
+THIS PROGRAM TESTS TO SEE THAT WITHIN FIXED SIZE GROUPS                         
+OF RANDOM NUMBERS, ALL ORDERS OF THE VALUES ARE EQUALLY                         
+PROBABLE. CHI-SQUARE IS COMPUTED AND DISPLAYED TO SEE                           
+WHETHER THE RESULTS ARE COMPATIBLE WITH THE EXPECTED                            
+EXPECTED DISTRIBUTION FOR UNIFORM RANDOM NUMBERS.                               
+                                                                                
+***** THIS TEST IS INFORMATIVE ONLY *****                                       
+                                                                                
+                 BEGIN TEST                                                     
+                                                                                
+                                                                                
+ORDER ID       ACTUAL COUNT                                                     
+(EXPECTED COUNT = 10 FOR ALL CASES.)                                            
+                                                                                
+ 0              14                                                              
+ 1              11                                                              
+ 2              10                                                              
+ 3              10                                                              
+ 4              9                                                               
+ 5              18                                                              
+ 6              12                                                              
+ 7              13                                                              
+ 8              9                                                               
+ 9              10                                                              
+ 10             7                                                               
+ 11             5                                                               
+ 12             17                                                              
+ 13             6                                                               
+ 14             9                                                               
+ 15             9                                                               
+ 16             5                                                               
+ 17             9                                                               
+ 18             13                                                              
+ 19             9                                                               
+ 20             11                                                              
+ 21             9                                                               
+ 22             7                                                               
+ 23             8                                                               
+                                                                                
+FOR 23 D.F., SHOULD HAVE 13.0905 <= CHI-SQ <= 35.1725                           
+(5% TAIL AT EACH END.)                                                          
+                                                                                
+ACTUAL CHI-SQ =  24.8                                                           
+                                                                                
+*** INFORMATIVE TEST PASSED ***                                                 
+                                                                                
+                   END TEST                                                     
+                                                                                
+END PROGRAM 139                                                                 

@@ -1,0 +1,3 @@
+MISSING SPACE AFTER LINE NUMBER: 250LET X=10                                    
+MISSING SPACE AFTER LINE NUMBER: 260IF X=10THEN 330                             
+MISSING SPACE AFTER LINE NUMBER: 280IF X=0 THEN 360                             

@@ -1,0 +1,24 @@
+PARTS OF A TRIANGLE                                                             
+                                                                                
+PROBLEM TYPES: 1=ASA,2=SAS,3=AAS,4=SSA,5=SSS,6=END PROGAM                       
+ENTER PROBLEM TYPE? 1                                                           
+ENTER ANGLE,SIDE,ANGLE? 60,567,30                                               
+                                                                                
+SIDE 1 =-193.32                                                                 
+OPPOSITE ANGLE= 60.03 RADIANS                                                   
+SIDE 2 =-626.64                                                                 
+OPPOSITE ANGLE= 30.015 RADIANS                                                  
+                                                                                
+NO SOLUTION                                                                     
+                                                                                
+ENTER PROBLEM TYPE? 1                                                           
+ENTER ANGLE,SIDE,ANGLE? .3,567,.4                                               
+                                                                                
+SIDE 1 = 260.098                                                                
+OPPOSITE ANGLE= .3 RADIANS                                                      
+SIDE 2 = 342.742                                                                
+OPPOSITE ANGLE= .4 RADIANS                                                      
+SIDE 3 = 567                                                                    
+OPPOSITE ANGLE= 2.442 RADIANS                                                   
+                                                                                
+ENTER PROBLEM TYPE? 6                                                           

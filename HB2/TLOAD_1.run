@@ -1,8 +1,0 @@
-bwBASIC: TLOAD "TLOAD_1.DAT"                                                    
-bwBASIC: LIST                                                                   
-   10 REM 'TLOAD' TEST PROGRAM                                                  
-   20 PRINT "THIS PROGRAM TESTS THE TLOAD FEATURE"                              
-   99 END                                                                       
-                                                                                
-bwBASIC: RUN                                                                    
-THIS PROGRAM TESTS THE TLOAD FEATURE                                            

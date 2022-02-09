@@ -1,0 +1,3 @@
+LOAD "RUN_3.DAT"
+RUN 40
+LIST

@@ -1,0 +1,4 @@
+2 rem This is ALL.BAS used to include FORMAT and CONTROL
+
+%INCLUDE FORMAT.BAS
+%INCLUDE CONTROL.BAS

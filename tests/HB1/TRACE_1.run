@@ -1,0 +1,7 @@
+'TRACE' TRACES EACH LINE                                                        
+Trace is ON                                                                     
+[ 40 GOTO 90 ][ 90 PRINT "THAT FOLLOWS THE 'TRACE' STATEMENT" ]THAT FOLLOWS THE 
+[ 100 GOTO 50 ][ 50 PRINT "UNTIL TURNED OFF BY" ]UNTIL TURNED OFF BY            
+[ 60 NOTRACE ]Trace is OFF                                                      
+THE 'NOTRACE' STATEMENT                                                         
+AS ILLUSTRATED BY THIS LINE                                                     

@@ -8,14 +8,17 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAX_LINE_LENGTH  255
+#define MAX_LINE_COUNT   1500
+
 int instr();
 char *midstr1();
 char *midstr2();
 void binary_search(void);
 
 int f2, l2, n, x;
-int sidx[1500][2];
-char rstr[255];
+int sidx[MAX_LINE_COUNT][2];
+char rstr[MAX_LINE_LENGTH];
 
 main(argc, argv)
    int argc;
@@ -24,8 +27,13 @@ main(argc, argv)
    int f, d, s, p, s1, t, l, g;
    int c, f1, c1, i, f8, r, l1, l3;
    int v1, f6, l6, b, f9, x9, b1, p8, p9, a, d9;
-   char pstr[255], sstr[255], f9str[255], s9str[255], tempstr[255];
-   FILE *fdin, *fdout;
+   char pstr[MAX_LINE_LENGTH];
+   char sstr[MAX_LINE_LENGTH];
+   char f9str[MAX_LINE_LENGTH];
+   char s9str[MAX_LINE_LENGTH];
+   char tempstr[MAX_LINE_LENGTH];
+   FILE *fdin;
+   FILE *fdout;
    int skip, bp, temp, getout, disp_msg;
 
    f = 1;
@@ -34,7 +42,7 @@ main(argc, argv)
    else
    {
       printf("Program in file? ");
-      gets(pstr);
+      fgets(pstr,MAX_LINE_LENGTH, stdin);
    }
    if (strlen(pstr) == 0) strcpy(pstr, "0.doc");
 
@@ -46,10 +54,10 @@ main(argc, argv)
    }
    strcpy(f9str, pstr);
 
-#if !defined(__MVS__) && !defined(__CMS__)
-   strcpy(pstr, "editfl");
-#else
+#if defined(__MVS__) || defined(__CMS__)
    strcpy(pstr, "dd:editfl");
+#else
+   strcpy(pstr, "editfl");
 #endif
    fdout = fopen(pstr, "w");
    if (fdout == NULL)
@@ -62,7 +70,7 @@ main(argc, argv)
    s = 0; l2 = 0; d = 0;
    f2 = 10000;
    printf ("PLEASE WAIT A FEW SECONDS!\n");
-   while (fgets(pstr, 255, fdin) != NULL)
+   while (fgets(pstr, MAX_LINE_LENGTH, fdin) != NULL)
    {
       pstr[strlen(pstr) - 1] = '\0';
       p = instr(pstr, " ");
@@ -72,6 +80,15 @@ main(argc, argv)
          if (n != 0)
          {
             s++;
+            if( s < MAX_LINE_COUNT )
+            {
+              /* OK */
+            }
+            else
+            {
+              printf("Too many lines\n");
+              exit(1);
+            }
             sidx[s][0] = n;
             s1 = s;
             while (s1 >= 2)
@@ -124,7 +141,7 @@ main(argc, argv)
       skip = 0;
       bp = 0;
       printf("RENUMBER-");
-      gets(pstr);
+      fgets(pstr,MAX_LINE_LENGTH,stdin);
       p = strlen(pstr);
 
       if (g == 0)
@@ -268,7 +285,7 @@ main(argc, argv)
       printf("%d -> %d\n", sidx[r][0], sidx[r][1]); */
 
    printf("VERIFY? ");
-   gets(pstr);
+   fgets(pstr,MAX_LINE_LENGTH,stdin);
    v1 = 0;
    if (strcmp(midstr2(pstr, 1, 1), "N") == 0) v1 = 1;
 
@@ -282,7 +299,7 @@ main(argc, argv)
    f6 = sidx[f2][0];
    l6 = sidx[l2][0];
 
-   while (fgets(pstr, 255, fdin) != NULL)
+   while (fgets(pstr, MAX_LINE_LENGTH, fdin) != NULL)
    {
       pstr[strlen(pstr) - 1] = '\0';
       b = instr(pstr, " ");
@@ -503,7 +520,7 @@ char *midstr1(astr, start)
    char *astr;
    int start;
 {
-   static char tempstr[255];
+   static char tempstr[MAX_LINE_LENGTH];
    char *startptr;
 
    strcpy(tempstr, astr);
@@ -517,7 +534,7 @@ char *midstr2(astr, start, len)
    char *astr;
    int start, len;
 {
-   static char tempstr[255];
+   static char tempstr[MAX_LINE_LENGTH];
    char *startptr, *endptr;
 
    strcpy(tempstr, astr);
@@ -531,13 +548,15 @@ char *midstr2(astr, start, len)
 
 void binary_search(void)
 {
-   int f5, l5, m;
+   int f5, l5;
 
    f5 = f2;
    l5 = l2 + 1;
 
    while(1)
    {
+      int m;
+      
       m = (f5 + l5)/2;
 
       if (sidx[m][0] == n)

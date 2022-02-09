@@ -1,0 +1,20 @@
+ 10 REM * MAT INV * TEST PROGRAM
+ 20 DIM A(3,3), B(3,3)
+ 30 FOR I=1 TO 3
+ 40   FOR J=1 TO 3
+ 50     READ A(I,J)
+ 60   NEXT J
+ 70 NEXT I
+ 80 MAT B=INV(A)
+ 90 FOR I=1 TO 3
+100  FOR J=1 TO 3
+110    PRINT B(I,J);
+120  NEXT J
+130  PRINT
+140 NEXT I
+150 PRINT "'MAT INV' PASSED THE TEST IF  3 -.5 -.5"
+160 PRINT "                             -1  0   1 "
+170 PRINT "                             -1  .5 -.5 WAS PRINTED"
+180 DATA 1,1,1,  3,4,5,   1,2,1
+999 END
+ 

@@ -1,0 +1,34 @@
+         BAYES PROBABILITIES                                                    
+                                                                                
+THIS THEOREM USES BAYES THEOREM TO REVISE ESTIMATES OF                          
+THE PROBABILITIES OF THE OCCURRENCE OF THE VARIOUS STATES OF                    
+NATURE. INPUT TO THIS PROGRAM ARE THE PROBABILITIES OF A                        
+A FINITE AND USER SELECTABLE NUMBER OF STATES OF NATURE,                        
+THESE PROBABILITIES MUST SUM UP TO 1. IN ADDITION,                              
+THERE MUST BE INPUT FOR EACH STATE OF NATURE THE PROBABILITY                    
+OF A CERTAIN EVENT,SAY B, OCCURRING GIVEN THAT STATE OF                         
+IS THE TRUE STATE OF NATURE. THEN THE PROGRAM WILL COMPUTE                      
+THE CONDITIONAL PROBAILITIES OF EACH OF THE STATES OF NATURE                    
+BEING TRUE GIVEN THAT EVENT B OCCURS. THESE ARE CALLED                          
+POSTERIOR PROBABILITIES AND MAY BE USED IN DECISION MAKING                      
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+ENTER PROBABILITIES OF POSSIBLE STATES OF NATURE 1 BY 1.                        
+THESE PROBABILITIES SHOULD ADD TO 1.                                            
+                                                                                
+ENTER PROB. ST. OF NATURE 1 (-1 TO END)? 12                                     
+ENTER PROB. ST. OF NATURE 2 (-1 TO END)? 34                                     
+ENTER PROB. ST. OF NATURE 3 (-1 TO END)? 56                                     
+ENTER PROB. ST. OF NATURE 4 (-1 TO END)? -1                                     
+PROBABILITIES SUM TO 102 THIS SHOULD BE STANDARDIZED                            
+TO SUM TO 1. ENTER 1 TO STANDARDIZE, 0 TO END? 1                                
+ENTER COND.PROB. OF EVENT B GIVEN ST.OF.NATURE 1 ? .145                         
+ENTER COND.PROB. OF EVENT B GIVEN ST.OF.NATURE 2 ? .267                         
+ENTER COND.PROB. OF EVENT B GIVEN ST.OF.NATURE 3 ? .389                         
+IS LINE PRINTER OUTPUT DESIRED(Y/N)? Y                                          
+S OF N    ORIG.      PROB B       POSTERIOR PROB                                
+          PROB.   GIVEN S OF N    S OF N GIVEN B                                
+   1      0.118      0.145            0.053                                     
+   2      0.333      0.267            0.278                                     
+   3      0.549      0.389            0.668                                     
+PRESS ENTER FOR ANOTHER COMPUTATION? 0                                          

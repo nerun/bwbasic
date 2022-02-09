@@ -75,15 +75,15 @@ int read(int fno, void *buf, size_t bytes)
 
 int write(int fno, const void *buf, size_t bytes)
 {
-    size_t wb;
+    size_t wb = 0;
 
     if (fno == 1)
     {
-        fwrite(buf, 1, bytes, stdout);
+        wb = fwrite(buf, 1, bytes, stdout);
     }
     else if (fno == 2)
     {
-        fwrite(buf, 1, bytes, stderr);
+        wb = fwrite(buf, 1, bytes, stderr);
     }
     else if (fno > 2)
     {

@@ -1,0 +1,23 @@
+100                                                                             
+110                                                                             
+120                                                                             
+130                                                                             
+140                                                                             
+150                                                                             
+bwBASIC: BREAK 110-130                                                          
+bwBASIC: RUN                                                                    
+100                                                                             
+                                                                                
+Program interrupted at line 110                                                 
+bwBASIC: CONT                                                                   
+110                                                                             
+                                                                                
+Program interrupted at line 120                                                 
+bwBASIC: CONT                                                                   
+120                                                                             
+                                                                                
+Program interrupted at line 130                                                 
+bwBASIC: CONT                                                                   
+130                                                                             
+140                                                                             
+150                                                                             

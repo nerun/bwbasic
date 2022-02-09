@@ -1,0 +1,72 @@
+SelCase.bas -- test SELECT CASE statement                                       
+d=-11                                                                           
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-10                                                                           
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-9                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-8                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-7                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-6                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-5                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-4                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-3                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-2                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d=-1                                                                            
+In Case If < 0                                                                  
+The number is less than 0                                                       
+d= 0                                                                            
+In Case Else                                                                    
+The number is 0, 1, 2 or 10.                                                    
+d= 1                                                                            
+In Case Else                                                                    
+The number is 0, 1, 2 or 10.                                                    
+d= 2                                                                            
+In Case Else                                                                    
+The number is 0, 1, 2 or 10.                                                    
+d= 3                                                                            
+In Case 3 to 5                                                                  
+The number is between 3 and 5.                                                  
+d= 4                                                                            
+In Case 3 to 5                                                                  
+The number is between 3 and 5.                                                  
+d= 5                                                                            
+In Case 3 to 5                                                                  
+The number is between 3 and 5.                                                  
+d= 6                                                                            
+In Case 6                                                                       
+The number you entered is 6.                                                    
+d= 7                                                                            
+In Case 7 to 9                                                                  
+The number is between 7 and 9.                                                  
+d= 8                                                                            
+In Case 7 to 9                                                                  
+The number is between 7 and 9.                                                  
+d= 9                                                                            
+In Case 7 to 9                                                                  
+The number is between 7 and 9.                                                  
+d= 10                                                                           
+In Case Else                                                                    
+The number is 0, 1, 2 or 10.                                                    
+d= 11                                                                           
+In Case If > 10                                                                 
+The number is greater than 10                                                   
+*** ALL TESTS PASSED ***                                                        
+                                                                                

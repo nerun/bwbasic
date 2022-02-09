@@ -1,0 +1,12 @@
+COORDINATE CONVERSION                                                           
+                                                                                
+                ( 1=CARTESIAN TO POLAR)                                         
+                (-1=POLAR TO CARTESIAN)                                         
+                ( 0=END PROGRAM)                                                
+WHICH DIRECTION? 1                                                              
+X,Y? 23,45                                                                      
+R = 50.54 , A = 62.93                                                           
+WHICH DIRECTION? -1                                                             
+R,A? 9,65                                                                       
+X = 3.8 ,  Y = 8.16                                                             
+WHICH DIRECTION? 0                                                              

@@ -1,0 +1,459 @@
+COMMAND            PI                                                           
+DIGITS  0           3.14159                                                     
+DIGITS  1           3.                                                          
+DIGITS  2           3.1                                                         
+DIGITS  3           3.14                                                        
+DIGITS  4           3.142                                                       
+DIGITS  5           3.1416                                                      
+DIGITS  6           3.14159                                                     
+DIGITS  7           3.141593                                                    
+DIGITS  8           3.1415927                                                   
+DIGITS  9           3.14159265                                                  
+DIGITS  10          3.141592654                                                 
+DIGITS  11          3.1415926536                                                
+DIGITS  12          3.14159265359                                               
+DIGITS  13          3.14159265359                                               
+DIGITS  14          3.1415926535898                                             
+DIGITS  15          3.14159265358979                                            
+DIGITS  0 , 0       3.14159                                                     
+DIGITS  1 , 0       3.                                                          
+DIGITS  1 , 1       3.                                                          
+DIGITS  2 , 0       3.1                                                         
+DIGITS  2 , 1       3.1                                                         
+DIGITS  2 , 2       3.1                                                         
+DIGITS  3 , 0       3.14                                                        
+DIGITS  3 , 1       3.1                                                         
+DIGITS  3 , 2       3.14                                                        
+DIGITS  3 , 3       3.14                                                        
+DIGITS  4 , 0       3.142                                                       
+DIGITS  4 , 1       3.1                                                         
+DIGITS  4 , 2       3.14                                                        
+DIGITS  4 , 3       3.142                                                       
+DIGITS  4 , 4       3.142                                                       
+DIGITS  5 , 0       3.1416                                                      
+DIGITS  5 , 1       3.1                                                         
+DIGITS  5 , 2       3.14                                                        
+DIGITS  5 , 3       3.142                                                       
+DIGITS  5 , 4       3.1416                                                      
+DIGITS  5 , 5       3.1416                                                      
+DIGITS  6 , 0       3.14159                                                     
+DIGITS  6 , 1       3.1                                                         
+DIGITS  6 , 2       3.14                                                        
+DIGITS  6 , 3       3.142                                                       
+DIGITS  6 , 4       3.1416                                                      
+DIGITS  6 , 5       3.14159                                                     
+DIGITS  6 , 6       3.14159                                                     
+DIGITS  7 , 0       3.141593                                                    
+DIGITS  7 , 1       3.1                                                         
+DIGITS  7 , 2       3.14                                                        
+DIGITS  7 , 3       3.142                                                       
+DIGITS  7 , 4       3.1416                                                      
+DIGITS  7 , 5       3.14159                                                     
+DIGITS  7 , 6       3.141593                                                    
+DIGITS  7 , 7       3.141593                                                    
+DIGITS  8 , 0       3.1415927                                                   
+DIGITS  8 , 1       3.1                                                         
+DIGITS  8 , 2       3.14                                                        
+DIGITS  8 , 3       3.142                                                       
+DIGITS  8 , 4       3.1416                                                      
+DIGITS  8 , 5       3.14159                                                     
+DIGITS  8 , 6       3.141593                                                    
+DIGITS  8 , 7       3.1415927                                                   
+DIGITS  8 , 8       3.1415927                                                   
+DIGITS  9 , 0       3.14159265                                                  
+DIGITS  9 , 1       3.1                                                         
+DIGITS  9 , 2       3.14                                                        
+DIGITS  9 , 3       3.142                                                       
+DIGITS  9 , 4       3.1416                                                      
+DIGITS  9 , 5       3.14159                                                     
+DIGITS  9 , 6       3.141593                                                    
+DIGITS  9 , 7       3.1415927                                                   
+DIGITS  9 , 8       3.14159265                                                  
+DIGITS  9 , 9       3.14159265                                                  
+DIGITS  10 , 0      3.141592654                                                 
+DIGITS  10 , 1      3.1                                                         
+DIGITS  10 , 2      3.14                                                        
+DIGITS  10 , 3      3.142                                                       
+DIGITS  10 , 4      3.1416                                                      
+DIGITS  10 , 5      3.14159                                                     
+DIGITS  10 , 6      3.141593                                                    
+DIGITS  10 , 7      3.1415927                                                   
+DIGITS  10 , 8      3.14159265                                                  
+DIGITS  10 , 9      3.141592654                                                 
+DIGITS  10 , 10     3.141592654                                                 
+DIGITS  11 , 0      3.1415926536                                                
+DIGITS  11 , 1      3.1                                                         
+DIGITS  11 , 2      3.14                                                        
+DIGITS  11 , 3      3.142                                                       
+DIGITS  11 , 4      3.1416                                                      
+DIGITS  11 , 5      3.14159                                                     
+DIGITS  11 , 6      3.141593                                                    
+DIGITS  11 , 7      3.1415927                                                   
+DIGITS  11 , 8      3.14159265                                                  
+DIGITS  11 , 9      3.141592654                                                 
+DIGITS  11 , 10     3.1415926536                                                
+DIGITS  11 , 11     3.1415926536                                                
+DIGITS  12 , 0      3.14159265359                                               
+DIGITS  12 , 1      3.1                                                         
+DIGITS  12 , 2      3.14                                                        
+DIGITS  12 , 3      3.142                                                       
+DIGITS  12 , 4      3.1416                                                      
+DIGITS  12 , 5      3.14159                                                     
+DIGITS  12 , 6      3.141593                                                    
+DIGITS  12 , 7      3.1415927                                                   
+DIGITS  12 , 8      3.14159265                                                  
+DIGITS  12 , 9      3.141592654                                                 
+DIGITS  12 , 10     3.1415926536                                                
+DIGITS  12 , 11     3.14159265359                                               
+DIGITS  12 , 12     3.14159265359                                               
+DIGITS  13 , 0      3.14159265359                                               
+DIGITS  13 , 1      3.1                                                         
+DIGITS  13 , 2      3.14                                                        
+DIGITS  13 , 3      3.142                                                       
+DIGITS  13 , 4      3.1416                                                      
+DIGITS  13 , 5      3.14159                                                     
+DIGITS  13 , 6      3.141593                                                    
+DIGITS  13 , 7      3.1415927                                                   
+DIGITS  13 , 8      3.14159265                                                  
+DIGITS  13 , 9      3.141592654                                                 
+DIGITS  13 , 10     3.1415926536                                                
+DIGITS  13 , 11     3.14159265359                                               
+DIGITS  13 , 12     3.14159265359                                               
+DIGITS  13 , 13     3.14159265359                                               
+DIGITS  14 , 0      3.1415926535898                                             
+DIGITS  14 , 1      3.1                                                         
+DIGITS  14 , 2      3.14                                                        
+DIGITS  14 , 3      3.142                                                       
+DIGITS  14 , 4      3.1416                                                      
+DIGITS  14 , 5      3.14159                                                     
+DIGITS  14 , 6      3.141593                                                    
+DIGITS  14 , 7      3.1415927                                                   
+DIGITS  14 , 8      3.14159265                                                  
+DIGITS  14 , 9      3.141592654                                                 
+DIGITS  14 , 10     3.1415926536                                                
+DIGITS  14 , 11     3.14159265359                                               
+DIGITS  14 , 12     3.14159265359                                               
+DIGITS  14 , 13     3.1415926535898                                             
+DIGITS  14 , 14     3.1415926535898                                             
+DIGITS  15 , 0      3.14159265358979                                            
+DIGITS  15 , 1      3.1                                                         
+DIGITS  15 , 2      3.14                                                        
+DIGITS  15 , 3      3.142                                                       
+DIGITS  15 , 4      3.1416                                                      
+DIGITS  15 , 5      3.14159                                                     
+DIGITS  15 , 6      3.141593                                                    
+DIGITS  15 , 7      3.1415927                                                   
+DIGITS  15 , 8      3.14159265                                                  
+DIGITS  15 , 9      3.141592654                                                 
+DIGITS  15 , 10     3.1415926536                                                
+DIGITS  15 , 11     3.14159265359                                               
+DIGITS  15 , 12     3.14159265359                                               
+DIGITS  15 , 13     3.1415926535898                                             
+DIGITS  15 , 14     3.14159265358979                                            
+DIGITS  15 , 15     3.14159265358979                                            
+COMMAND            PI * 1000                                                    
+DIGITS  0           3141.59                                                     
+DIGITS  1           3.E+3                                                       
+DIGITS  2           3.1E+3                                                      
+DIGITS  3           3.14E+3                                                     
+DIGITS  4           3142.                                                       
+DIGITS  5           3141.6                                                      
+DIGITS  6           3141.59                                                     
+DIGITS  7           3141.593                                                    
+DIGITS  8           3141.5927                                                   
+DIGITS  9           3141.59265                                                  
+DIGITS  10          3141.592654                                                 
+DIGITS  11          3141.5926536                                                
+DIGITS  12          3141.59265359                                               
+DIGITS  13          3141.59265359                                               
+DIGITS  14          3141.5926535898                                             
+DIGITS  15          3141.59265358979                                            
+DIGITS  0 , 0       3141.59                                                     
+DIGITS  1 , 0       3.E+3                                                       
+DIGITS  1 , 1       3.E+3                                                       
+DIGITS  2 , 0       3.1E+3                                                      
+DIGITS  2 , 1       3.1E+3                                                      
+DIGITS  2 , 2       3.1E+3                                                      
+DIGITS  3 , 0       3.14E+3                                                     
+DIGITS  3 , 1       3.14E+3                                                     
+DIGITS  3 , 2       3.14E+3                                                     
+DIGITS  3 , 3       3.14E+3                                                     
+DIGITS  4 , 0       3142.                                                       
+DIGITS  4 , 1       3142.                                                       
+DIGITS  4 , 2       3142.                                                       
+DIGITS  4 , 3       3142.                                                       
+DIGITS  4 , 4       3142.                                                       
+DIGITS  5 , 0       3141.6                                                      
+DIGITS  5 , 1       3141.6                                                      
+DIGITS  5 , 2       3141.6                                                      
+DIGITS  5 , 3       3141.6                                                      
+DIGITS  5 , 4       3141.6                                                      
+DIGITS  5 , 5       3141.6                                                      
+DIGITS  6 , 0       3141.59                                                     
+DIGITS  6 , 1       3141.6                                                      
+DIGITS  6 , 2       3141.59                                                     
+DIGITS  6 , 3       3141.59                                                     
+DIGITS  6 , 4       3141.59                                                     
+DIGITS  6 , 5       3141.59                                                     
+DIGITS  6 , 6       3141.59                                                     
+DIGITS  7 , 0       3141.593                                                    
+DIGITS  7 , 1       3141.6                                                      
+DIGITS  7 , 2       3141.59                                                     
+DIGITS  7 , 3       3141.593                                                    
+DIGITS  7 , 4       3141.593                                                    
+DIGITS  7 , 5       3141.593                                                    
+DIGITS  7 , 6       3141.593                                                    
+DIGITS  7 , 7       3141.593                                                    
+DIGITS  8 , 0       3141.5927                                                   
+DIGITS  8 , 1       3141.6                                                      
+DIGITS  8 , 2       3141.59                                                     
+DIGITS  8 , 3       3141.593                                                    
+DIGITS  8 , 4       3141.5927                                                   
+DIGITS  8 , 5       3141.5927                                                   
+DIGITS  8 , 6       3141.5927                                                   
+DIGITS  8 , 7       3141.5927                                                   
+DIGITS  8 , 8       3141.5927                                                   
+DIGITS  9 , 0       3141.59265                                                  
+DIGITS  9 , 1       3141.6                                                      
+DIGITS  9 , 2       3141.59                                                     
+DIGITS  9 , 3       3141.593                                                    
+DIGITS  9 , 4       3141.5927                                                   
+DIGITS  9 , 5       3141.59265                                                  
+DIGITS  9 , 6       3141.59265                                                  
+DIGITS  9 , 7       3141.59265                                                  
+DIGITS  9 , 8       3141.59265                                                  
+DIGITS  9 , 9       3141.59265                                                  
+DIGITS  10 , 0      3141.592654                                                 
+DIGITS  10 , 1      3141.6                                                      
+DIGITS  10 , 2      3141.59                                                     
+DIGITS  10 , 3      3141.593                                                    
+DIGITS  10 , 4      3141.5927                                                   
+DIGITS  10 , 5      3141.59265                                                  
+DIGITS  10 , 6      3141.592654                                                 
+DIGITS  10 , 7      3141.592654                                                 
+DIGITS  10 , 8      3141.592654                                                 
+DIGITS  10 , 9      3141.592654                                                 
+DIGITS  10 , 10     3141.592654                                                 
+DIGITS  11 , 0      3141.5926536                                                
+DIGITS  11 , 1      3141.6                                                      
+DIGITS  11 , 2      3141.59                                                     
+DIGITS  11 , 3      3141.593                                                    
+DIGITS  11 , 4      3141.5927                                                   
+DIGITS  11 , 5      3141.59265                                                  
+DIGITS  11 , 6      3141.592654                                                 
+DIGITS  11 , 7      3141.5926536                                                
+DIGITS  11 , 8      3141.5926536                                                
+DIGITS  11 , 9      3141.5926536                                                
+DIGITS  11 , 10     3141.5926536                                                
+DIGITS  11 , 11     3141.5926536                                                
+DIGITS  12 , 0      3141.59265359                                               
+DIGITS  12 , 1      3141.6                                                      
+DIGITS  12 , 2      3141.59                                                     
+DIGITS  12 , 3      3141.593                                                    
+DIGITS  12 , 4      3141.5927                                                   
+DIGITS  12 , 5      3141.59265                                                  
+DIGITS  12 , 6      3141.592654                                                 
+DIGITS  12 , 7      3141.5926536                                                
+DIGITS  12 , 8      3141.59265359                                               
+DIGITS  12 , 9      3141.59265359                                               
+DIGITS  12 , 10     3141.59265359                                               
+DIGITS  12 , 11     3141.59265359                                               
+DIGITS  12 , 12     3141.59265359                                               
+DIGITS  13 , 0      3141.59265359                                               
+DIGITS  13 , 1      3141.6                                                      
+DIGITS  13 , 2      3141.59                                                     
+DIGITS  13 , 3      3141.593                                                    
+DIGITS  13 , 4      3141.5927                                                   
+DIGITS  13 , 5      3141.59265                                                  
+DIGITS  13 , 6      3141.592654                                                 
+DIGITS  13 , 7      3141.5926536                                                
+DIGITS  13 , 8      3141.59265359                                               
+DIGITS  13 , 9      3141.59265359                                               
+DIGITS  13 , 10     3141.59265359                                               
+DIGITS  13 , 11     3141.59265359                                               
+DIGITS  13 , 12     3141.59265359                                               
+DIGITS  13 , 13     3141.59265359                                               
+DIGITS  14 , 0      3141.5926535898                                             
+DIGITS  14 , 1      3141.6                                                      
+DIGITS  14 , 2      3141.59                                                     
+DIGITS  14 , 3      3141.593                                                    
+DIGITS  14 , 4      3141.5927                                                   
+DIGITS  14 , 5      3141.59265                                                  
+DIGITS  14 , 6      3141.592654                                                 
+DIGITS  14 , 7      3141.5926536                                                
+DIGITS  14 , 8      3141.59265359                                               
+DIGITS  14 , 9      3141.59265359                                               
+DIGITS  14 , 10     3141.5926535898                                             
+DIGITS  14 , 11     3141.5926535898                                             
+DIGITS  14 , 12     3141.5926535898                                             
+DIGITS  14 , 13     3141.5926535898                                             
+DIGITS  14 , 14     3141.5926535898                                             
+DIGITS  15 , 0      3141.59265358979                                            
+DIGITS  15 , 1      3141.6                                                      
+DIGITS  15 , 2      3141.59                                                     
+DIGITS  15 , 3      3141.593                                                    
+DIGITS  15 , 4      3141.5927                                                   
+DIGITS  15 , 5      3141.59265                                                  
+DIGITS  15 , 6      3141.592654                                                 
+DIGITS  15 , 7      3141.5926536                                                
+DIGITS  15 , 8      3141.59265359                                               
+DIGITS  15 , 9      3141.59265359                                               
+DIGITS  15 , 10     3141.5926535898                                             
+DIGITS  15 , 11     3141.59265358979                                            
+DIGITS  15 , 12     3141.59265358979                                            
+DIGITS  15 , 13     3141.59265358979                                            
+DIGITS  15 , 14     3141.59265358979                                            
+DIGITS  15 , 15     3141.59265358979                                            
+COMMAND            PI / 1000                                                    
+DIGITS  0           3.14159E-3                                                  
+DIGITS  1           3.E-3                                                       
+DIGITS  2           3.1E-3                                                      
+DIGITS  3           3.14E-3                                                     
+DIGITS  4           3.142E-3                                                    
+DIGITS  5           3.1416E-3                                                   
+DIGITS  6           3.14159E-3                                                  
+DIGITS  7           3.141593E-3                                                 
+DIGITS  8           3.1415927E-3                                                
+DIGITS  9           3.14159265E-3                                               
+DIGITS  10          3.141592654E-3                                              
+DIGITS  11          3.1415926536E-3                                             
+DIGITS  12          3.14159265359E-3                                            
+DIGITS  13          3.14159265359E-3                                            
+DIGITS  14          3.1415926535898E-3                                          
+DIGITS  15          .00314159265359                                             
+DIGITS  0 , 0       3.14159E-3                                                  
+DIGITS  1 , 0       3.E-3                                                       
+DIGITS  1 , 1       0                                                           
+DIGITS  2 , 0       3.1E-3                                                      
+DIGITS  2 , 1       0                                                           
+DIGITS  2 , 2       0                                                           
+DIGITS  3 , 0       3.14E-3                                                     
+DIGITS  3 , 1       0                                                           
+DIGITS  3 , 2       0                                                           
+DIGITS  3 , 3       .003                                                        
+DIGITS  4 , 0       3.142E-3                                                    
+DIGITS  4 , 1       0                                                           
+DIGITS  4 , 2       0                                                           
+DIGITS  4 , 3       .003                                                        
+DIGITS  4 , 4       .0031                                                       
+DIGITS  5 , 0       3.1416E-3                                                   
+DIGITS  5 , 1       0                                                           
+DIGITS  5 , 2       0                                                           
+DIGITS  5 , 3       .003                                                        
+DIGITS  5 , 4       .0031                                                       
+DIGITS  5 , 5       .00314                                                      
+DIGITS  6 , 0       3.14159E-3                                                  
+DIGITS  6 , 1       0                                                           
+DIGITS  6 , 2       0                                                           
+DIGITS  6 , 3       .003                                                        
+DIGITS  6 , 4       .0031                                                       
+DIGITS  6 , 5       .00314                                                      
+DIGITS  6 , 6       .003142                                                     
+DIGITS  7 , 0       3.141593E-3                                                 
+DIGITS  7 , 1       0                                                           
+DIGITS  7 , 2       0                                                           
+DIGITS  7 , 3       .003                                                        
+DIGITS  7 , 4       .0031                                                       
+DIGITS  7 , 5       .00314                                                      
+DIGITS  7 , 6       .003142                                                     
+DIGITS  7 , 7       .0031416                                                    
+DIGITS  8 , 0       3.1415927E-3                                                
+DIGITS  8 , 1       0                                                           
+DIGITS  8 , 2       0                                                           
+DIGITS  8 , 3       .003                                                        
+DIGITS  8 , 4       .0031                                                       
+DIGITS  8 , 5       .00314                                                      
+DIGITS  8 , 6       .003142                                                     
+DIGITS  8 , 7       .0031416                                                    
+DIGITS  8 , 8       .00314159                                                   
+DIGITS  9 , 0       3.14159265E-3                                               
+DIGITS  9 , 1       0                                                           
+DIGITS  9 , 2       0                                                           
+DIGITS  9 , 3       .003                                                        
+DIGITS  9 , 4       .0031                                                       
+DIGITS  9 , 5       .00314                                                      
+DIGITS  9 , 6       .003142                                                     
+DIGITS  9 , 7       .0031416                                                    
+DIGITS  9 , 8       .00314159                                                   
+DIGITS  9 , 9       .003141593                                                  
+DIGITS  10 , 0      3.141592654E-3                                              
+DIGITS  10 , 1      0                                                           
+DIGITS  10 , 2      0                                                           
+DIGITS  10 , 3      .003                                                        
+DIGITS  10 , 4      .0031                                                       
+DIGITS  10 , 5      .00314                                                      
+DIGITS  10 , 6      .003142                                                     
+DIGITS  10 , 7      .0031416                                                    
+DIGITS  10 , 8      .00314159                                                   
+DIGITS  10 , 9      .003141593                                                  
+DIGITS  10 , 10     .0031415927                                                 
+DIGITS  11 , 0      3.1415926536E-3                                             
+DIGITS  11 , 1      0                                                           
+DIGITS  11 , 2      0                                                           
+DIGITS  11 , 3      .003                                                        
+DIGITS  11 , 4      .0031                                                       
+DIGITS  11 , 5      .00314                                                      
+DIGITS  11 , 6      .003142                                                     
+DIGITS  11 , 7      .0031416                                                    
+DIGITS  11 , 8      .00314159                                                   
+DIGITS  11 , 9      .003141593                                                  
+DIGITS  11 , 10     .0031415927                                                 
+DIGITS  11 , 11     .00314159265                                                
+DIGITS  12 , 0      3.14159265359E-3                                            
+DIGITS  12 , 1      0                                                           
+DIGITS  12 , 2      0                                                           
+DIGITS  12 , 3      .003                                                        
+DIGITS  12 , 4      .0031                                                       
+DIGITS  12 , 5      .00314                                                      
+DIGITS  12 , 6      .003142                                                     
+DIGITS  12 , 7      .0031416                                                    
+DIGITS  12 , 8      .00314159                                                   
+DIGITS  12 , 9      .003141593                                                  
+DIGITS  12 , 10     .0031415927                                                 
+DIGITS  12 , 11     .00314159265                                                
+DIGITS  12 , 12     .003141592654                                               
+DIGITS  13 , 0      3.14159265359E-3                                            
+DIGITS  13 , 1      0                                                           
+DIGITS  13 , 2      0                                                           
+DIGITS  13 , 3      .003                                                        
+DIGITS  13 , 4      .0031                                                       
+DIGITS  13 , 5      .00314                                                      
+DIGITS  13 , 6      .003142                                                     
+DIGITS  13 , 7      .0031416                                                    
+DIGITS  13 , 8      .00314159                                                   
+DIGITS  13 , 9      .003141593                                                  
+DIGITS  13 , 10     .0031415927                                                 
+DIGITS  13 , 11     .00314159265                                                
+DIGITS  13 , 12     .003141592654                                               
+DIGITS  13 , 13     .0031415926536                                              
+DIGITS  14 , 0      3.1415926535898E-3                                          
+DIGITS  14 , 1      0                                                           
+DIGITS  14 , 2      0                                                           
+DIGITS  14 , 3      .003                                                        
+DIGITS  14 , 4      .0031                                                       
+DIGITS  14 , 5      .00314                                                      
+DIGITS  14 , 6      .003142                                                     
+DIGITS  14 , 7      .0031416                                                    
+DIGITS  14 , 8      .00314159                                                   
+DIGITS  14 , 9      .003141593                                                  
+DIGITS  14 , 10     .0031415927                                                 
+DIGITS  14 , 11     .00314159265                                                
+DIGITS  14 , 12     .003141592654                                               
+DIGITS  14 , 13     .0031415926536                                              
+DIGITS  14 , 14     .00314159265359                                             
+DIGITS  15 , 0      3.14159265358979E-3                                         
+DIGITS  15 , 1      0                                                           
+DIGITS  15 , 2      0                                                           
+DIGITS  15 , 3      .003                                                        
+DIGITS  15 , 4      .0031                                                       
+DIGITS  15 , 5      .00314                                                      
+DIGITS  15 , 6      .003142                                                     
+DIGITS  15 , 7      .0031416                                                    
+DIGITS  15 , 8      .00314159                                                   
+DIGITS  15 , 9      .003141593                                                  
+DIGITS  15 , 10     .0031415927                                                 
+DIGITS  15 , 11     .00314159265                                                
+DIGITS  15 , 12     .003141592654                                               
+DIGITS  15 , 13     .0031415926536                                              
+DIGITS  15 , 14     .00314159265359                                             
+DIGITS  15 , 15     .00314159265359                                             

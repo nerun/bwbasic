@@ -1,0 +1,15 @@
+LBOUND= 10     UBOUND= 20                                                       
+Line           Result                                                           
+ 180           # 10                                                             
+ 180           # 11                                                             
+ 180           # 12                                                             
+ 180           # 13                                                             
+ 180           # 14                                                             
+ 180           # 15                                                             
+ 180           # 16                                                             
+ 180           # 17                                                             
+ 180           # 18                                                             
+ 180           # 19                                                             
+ 180           # 20                                                             
+ 220           ERL= 220       ERR= 9         ERR$=Subscript out of range        
+ 240           ERL= 240       ERR= 9         ERR$=Subscript out of range        

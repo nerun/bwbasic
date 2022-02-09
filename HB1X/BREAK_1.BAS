@@ -1,6 +1,0 @@
-100 print "100"
-110 print "110"
-120 print "120"
-130 print "130"
-140 print "140"
-150 print "150"

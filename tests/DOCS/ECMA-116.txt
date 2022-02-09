@@ -1,0 +1,1328 @@
+============================================================
+                    GENERAL                                 
+============================================================
+
+
+OPTION VERSION "ECMA-116"
+REM INTERNAL ID: E86
+REM DESCRIPTION: ANSI Full BASIC
+REM   REFERENCE: STANDARD ECMA-116: Full BASIC
+REM              by EUROPEAN COMPUTER MANUFACTURERS ASSOCIATION
+REM              (c) 1986, EUROPEAN COMPUTER MANUFACTURERS ASSOCIATION
+REM              http://www.ecma-international.org/publications/files/
+REM              ECMA-ST-WITHDRAWN/ECMA-116,%201st%20edition,%20June%201986.pdf
+REM
+OPTION STRICT ON
+OPTION ANGLE RADIANS
+OPTION BUGS OFF
+OPTION LABELS ON
+OPTION COMPARE BINARY
+OPTION COVERAGE OFF
+OPTION TRACE OFF
+OPTION ERROR GOTO
+OPTION IMPLICIT
+OPTION BASE          1
+OPTION RECLEN        128
+OPTION DATE          "%Y-%m-%d"
+OPTION TIME          "%H:%M:%S"
+OPTION PUNCT STRING        "$"
+OPTION PUNCT DOUBLE        "#"
+OPTION PUNCT SINGLE        "!"
+OPTION PUNCT CURRENCY      " "
+OPTION PUNCT LONG          "&"
+OPTION PUNCT INTEGER       "%"
+OPTION PUNCT BYTE          " "
+OPTION PUNCT QUOTE         """
+OPTION PUNCT COMMENT       "!"
+OPTION PUNCT STATEMENT     " "
+OPTION PUNCT PRINT         " "
+OPTION PUNCT INPUT         " "
+OPTION PUNCT IMAGE         " "
+OPTION PUNCT LPAREN        "("
+OPTION PUNCT RPAREN        ")"
+OPTION PUNCT FILENUM       "#"
+OPTION PUNCT AT            " "
+OPTION USING DIGIT   "#"
+OPTION USING COMMA   ","
+OPTION USING PERIOD  "."
+OPTION USING PLUS    "+"
+OPTION USING MINUS   "-"
+OPTION USING EXRAD   "^"
+OPTION USING DOLLAR  "$"
+OPTION USING FILLER  "*"
+OPTION USING LITERAL "_"
+OPTION USING FIRST   "!"
+OPTION USING ALL     "&"
+OPTION USING LENGTH  "%"
+
+
+============================================================
+                    COMMANDS                                
+============================================================
+
+
+------------------------------------------------------------
+     SYNTAX: CASE constant [TO constant]
+DESCRIPTION: Introduces an element of a SELECT CASE
+             statement.  Multiple tests must be seperated
+             a comma.  For example:  CASE 1, 2 TO 3, IS >
+             4, IF < 5
+------------------------------------------------------------
+     SYNTAX: CASE IF operator constant
+DESCRIPTION: Introduces an element of a SELECT CASE
+             statement.  Multiple tests must be seperated
+             a comma.  For example:  CASE 1, 2 TO 3, IS >
+             4, IF < 5
+------------------------------------------------------------
+     SYNTAX: CASE IS operator constant
+DESCRIPTION: Introduces an element of a SELECT CASE
+             statement.  Multiple tests must be seperated
+             a comma.  For example:  CASE 1, 2 TO 3, IS >
+             4, IF < 5
+------------------------------------------------------------
+     SYNTAX: CASE ELSE
+DESCRIPTION: Introduces a default SELECT CASE element.
+------------------------------------------------------------
+     SYNTAX: COMMON variable [, ...]
+DESCRIPTION: Designates variables to be passed to a CHAINed
+             program.
+------------------------------------------------------------
+     SYNTAX: DATA constant [, ...]
+DESCRIPTION: Stores numeric and string constants to be
+             accessed by READ.
+------------------------------------------------------------
+     SYNTAX: DEF FNname[( arg [,...] )] = value
+DESCRIPTION: Defines a single-line function.  Single-line
+             functions require an equal sign.
+------------------------------------------------------------
+     SYNTAX: DIM [# filenum,] variable([ lower TO ] upper)
+DESCRIPTION: Declares variables and specifies the
+             dimensions of array variables.  For array
+             variables, if the lower bound is not
+             provided, then the OPTION BASE value is used.
+             If filenum is provided, then the variable is
+             virtual.
+------------------------------------------------------------
+     SYNTAX: DO UNTIL value
+DESCRIPTION: Top of a DO - LOOP structure.  Exits when
+             value is non-zero.
+------------------------------------------------------------
+     SYNTAX: DO
+DESCRIPTION: Top of a DO - LOOP structure.
+------------------------------------------------------------
+     SYNTAX: DO WHILE value
+DESCRIPTION: Top of a DO - LOOP structure.  Exits when
+             value is zero.
+------------------------------------------------------------
+     SYNTAX: EDIT
+DESCRIPTION: implementation defined.
+------------------------------------------------------------
+     SYNTAX: ELSE
+DESCRIPTION: Introduces a default condition in a multi-line
+             IF statement.
+------------------------------------------------------------
+     SYNTAX: ELSEIF
+DESCRIPTION: Introduces a secondary condition in a
+             multi-line IF statement.
+------------------------------------------------------------
+     SYNTAX: END
+DESCRIPTION: Terminates program execution. If the BASIC
+             program was executed from the operating
+             system level, then control returns to the
+             operating system, oterwise control reuturns
+             to the BASIC prompt.
+------------------------------------------------------------
+     SYNTAX: END FUNCTION
+DESCRIPTION: Specifies the last line of a multi-line
+             FUNCTION definition.
+------------------------------------------------------------
+     SYNTAX: END IF
+DESCRIPTION: Specifies the last line of a multi-line IF
+             definition.
+------------------------------------------------------------
+     SYNTAX: END SELECT
+DESCRIPTION: Specifies the last line of a multi-line SELECT
+             CASE definition.
+------------------------------------------------------------
+     SYNTAX: END SUB
+DESCRIPTION: Specifies the last line of a multi-line SUB
+             definition.
+------------------------------------------------------------
+     SYNTAX: EXIT
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: EXIT DO
+DESCRIPTION: Immediately exits the inner-most DO-LOOP
+             strucure.
+------------------------------------------------------------
+     SYNTAX: EXIT FOR
+DESCRIPTION: Immediately exits the inner-most FOR-NEXT
+             strucure.
+------------------------------------------------------------
+     SYNTAX: EXIT FUNCTION
+DESCRIPTION: Immediately exits the inner-most multi-line
+             FUNCTION strucure.
+------------------------------------------------------------
+     SYNTAX: EXIT SUB
+DESCRIPTION: Immediately exits the inner-most multi-line
+             SUB strucure.
+------------------------------------------------------------
+     SYNTAX: EXIT WHILE
+DESCRIPTION: Immediately exits the inner-most WHILE-END
+             strucure.
+------------------------------------------------------------
+     SYNTAX: FOR variable = start TO finish [STEP
+             increment]
+DESCRIPTION: Top of a FOR - NEXT structure.  The loop will
+             continue a fixed number of times, which is
+             determined by the values of start, finish,
+             and increment.
+------------------------------------------------------------
+     SYNTAX: FUNCTION [ ( parameter [, ...  ] ) ]
+DESCRIPTION: Top line of a multi-line FUNCTION definition. 
+             The variable names specified are local to the
+             FUNCTION definition, and are initialized
+             BYVAL when the function is invoked by another
+             routine.
+------------------------------------------------------------
+     SYNTAX: GO
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: GO SUB line
+DESCRIPTION: Initiates a subroutine call to the line
+             specified.  The subroutine must end with
+             RETURN.  The line may be a number or a label.
+------------------------------------------------------------
+     SYNTAX: GO TO line
+DESCRIPTION: Branches program execution to the specified
+             line.  The line may be a number or a label.
+------------------------------------------------------------
+     SYNTAX: GOSUB line
+DESCRIPTION: Initiates a subroutine call to the line
+             specified.  The subroutine must end with
+             RETURN.  The line may be a number or a label.
+------------------------------------------------------------
+     SYNTAX: GOTO line
+DESCRIPTION: Branches program execution to the specified
+             line.  The line may be a number or a label.
+------------------------------------------------------------
+     SYNTAX: IF value THEN line1 [ELSE line2]
+DESCRIPTION: Single line standard IF command.  If the value
+             is non-zero, then branh to line1.  If the
+             value is zero and ELSE is provided, then
+             branch to line2.  Otherwise continue to the
+             next line.  LABELS are not allowed.
+------------------------------------------------------------
+     SYNTAX: IF value THEN
+DESCRIPTION: Top of a multi-line IF - END IF structure.  If
+             the value is non-zero, then the program lines
+             upto the next ELSE or ELSE IF command are
+             executed, otherwise the program branches to
+             the next ELSE or ELSE IF command.
+------------------------------------------------------------
+     SYNTAX: INPUT "prompt string" , variable [, ...]
+DESCRIPTION: Reads input from the terminal after displaying
+             a prompt.
+------------------------------------------------------------
+     SYNTAX: INPUT # filenum , variable [, ...]s
+DESCRIPTION: Reads input from the file specified by
+             filenum.
+------------------------------------------------------------
+     SYNTAX: INPUT variable [, ...]
+DESCRIPTION: Reads input from the terminal.
+------------------------------------------------------------
+     SYNTAX: [LET] variable [, ...] = value
+DESCRIPTION: Assigns the value to the variable.  The LET
+             keyword is optional.
+------------------------------------------------------------
+     SYNTAX: LIST line1 [- line2]
+DESCRIPTION: Lists BASIC program lines from line1 to line2
+             to the console on stdout.
+------------------------------------------------------------
+     SYNTAX: LOAD [filename$]
+DESCRIPTION: Loads an ASCII BASIC program into memory.
+------------------------------------------------------------
+     SYNTAX: LOOP UNTIL value
+DESCRIPTION: Bottom of a DO - LOOP structure.  Exits when
+             value is nonz-zero.
+------------------------------------------------------------
+     SYNTAX: LOOP WHILE value
+DESCRIPTION: Bottom of a DO - LOOP structure.  Exits when
+             value is zero.
+------------------------------------------------------------
+     SYNTAX: LOOP
+DESCRIPTION: Bottom of a DO - LOOP structure.
+------------------------------------------------------------
+     SYNTAX: LPRINT [USING format-string$;] value ...
+DESCRIPTION: Send output to the printer (stderr).
+------------------------------------------------------------
+     SYNTAX: MAINTAINER
+DESCRIPTION: This command is reserved for use by the
+             Bywater BASIC maintainer.  It is not for the
+             BASIC programmer.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER CMDS
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER CMDS HTML
+DESCRIPTION: Dump COMMAND vs VERSION as HTML table
+------------------------------------------------------------
+     SYNTAX: MAINTAINER CMDS ID
+DESCRIPTION: Dump COMMAND #define.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER CMDS MANUAL
+DESCRIPTION: Dump COMMAND manual.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER CMDS_SWITCH
+DESCRIPTION: Dump COMMAND switch.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER CMDS TABLE
+DESCRIPTION: Dump COMMAND table.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER DEBUG
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER DEBUG OFF
+DESCRIPTION: Disable degug tracing.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER DEBUG ON
+DESCRIPTION: Enable degug tracing.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER FNCS
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER FNCS HTML
+DESCRIPTION: Dump FUNCTION vs VERSION as HTML table.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER FNCS ID
+DESCRIPTION: Dump FUNCTION #define.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER FNCS MANUAL
+DESCRIPTION: Dump FUNCTION manual.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER FNCS SWITCH
+DESCRIPTION: Dump FUNCTION switch.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER FNCS TABLE
+DESCRIPTION: Dump FUNCTION table.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER MANUAL
+DESCRIPTION: Dump manual for the currently selected OPTION
+             VERSION.
+------------------------------------------------------------
+     SYNTAX: MAINTAINER STACK
+DESCRIPTION: Dump the current BASIC stack.
+------------------------------------------------------------
+     SYNTAX: NEW
+DESCRIPTION: Deletes the program in memory and clears all
+             variables.
+------------------------------------------------------------
+     SYNTAX: NEXT [variable]
+DESCRIPTION: The bottom line of a FOR - NEXT structure.
+------------------------------------------------------------
+     SYNTAX: OF
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: ON value GOSUB line [, ...]
+DESCRIPTION: Calls based on the rounded value.
+------------------------------------------------------------
+     SYNTAX: ON value GOTO line [, ...]
+DESCRIPTION: Branches based on the rounded value.
+------------------------------------------------------------
+     SYNTAX: OPTION
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION ANGLE
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION ANGLE DEGREES
+DESCRIPTION: Configures these math functions to accept and
+             return angles in degrees:  ACOS, ACS, ANGLE,
+             ARCSIN, ASIN, ASN, ARCTAN, ATN, ATAN, COS,
+             COT, CSC, SEC, SIN and TAN.
+------------------------------------------------------------
+     SYNTAX: OPTION ANGLE GRADIANS
+DESCRIPTION: Configures these math functions to accept and
+             return angles in gradians:  ACOS, ANGLE,
+             ASIN, ASN, ATN, ATAN, COS, COT, CSC, SEC, SIN
+             and TAN.
+------------------------------------------------------------
+     SYNTAX: OPTION ANGLE RADIANS
+DESCRIPTION: Configures these math functions to accept and
+             return angles in radians:  ACOS, ANGLE, ASIN,
+             ASN, ATN, ATAN, COS, COT, CSC, SEC, SIN and
+             TAN.
+------------------------------------------------------------
+     SYNTAX: OPTION ARITHMETIC
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION ARITHMETIC DECIMAL
+DESCRIPTION: Currently has no effect.
+------------------------------------------------------------
+     SYNTAX: OPTION ARITHMETIC FIXED
+DESCRIPTION: Currently has no effect.
+------------------------------------------------------------
+     SYNTAX: OPTION ARITHMETIC NATIVE
+DESCRIPTION: Currently has no effect.
+------------------------------------------------------------
+     SYNTAX: OPTION BASE integer
+DESCRIPTION: Sets the default lowest array subscript.
+------------------------------------------------------------
+     SYNTAX: OPTION BUGS
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION BUGS BOOLEAN
+DESCRIPTION: Boolean results are 1 or 0 instead of bitwise.
+------------------------------------------------------------
+     SYNTAX: OPTION BUGS OFF
+DESCRIPTION: Disables bugs commonly found in many BASIC
+             dialects.
+------------------------------------------------------------
+     SYNTAX: OPTION BUGS ON
+DESCRIPTION: Enables bugs commonly found in many BASIC
+             dialects.
+------------------------------------------------------------
+     SYNTAX: OPTION COMPARE
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION COMPARE BINARY
+DESCRIPTION: Causes string comparisons to be
+             case-sensitive.
+------------------------------------------------------------
+     SYNTAX: OPTION COMPARE DATABASE
+DESCRIPTION: Causes string comparisons to be
+             case-insensitive.
+------------------------------------------------------------
+     SYNTAX: OPTION COMPARE TEXT
+DESCRIPTION: Causes string comparisons to be
+             case-insensitive.
+------------------------------------------------------------
+     SYNTAX: OPTION COVERAGE
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION COVERAGE OFF
+DESCRIPTION: Disables BASIC code coverage recording,
+             displayed using the LIST command.
+------------------------------------------------------------
+     SYNTAX: OPTION COVERAGE ON
+DESCRIPTION: Enables BASIC code coverage recording,
+             displayed using the LIST command.
+------------------------------------------------------------
+     SYNTAX: OPTION DATE format$
+DESCRIPTION: Sets the date format string used by C
+             strftime() for DATE$.
+------------------------------------------------------------
+     SYNTAX: OPTION DIGITS integer
+DESCRIPTION: Sets the number of significant digits for
+             PRINT.  Setting the value to zero restores
+             the default.
+------------------------------------------------------------
+     SYNTAX: OPTION DISABLE
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION DISABLE COMMAND name$
+DESCRIPTION: Disables the specified BASIC command.
+------------------------------------------------------------
+     SYNTAX: OPTION DISABLE FUNCTION name$
+DESCRIPTION: Disables the specified BASIC function.
+------------------------------------------------------------
+     SYNTAX: OPTION DISABLE OPERATOR name$
+DESCRIPTION: Disables the specified BASIC operator.
+------------------------------------------------------------
+     SYNTAX: OPTION EDIT string$
+DESCRIPTION: Sets the program name used by the EDIT
+             command.
+------------------------------------------------------------
+     SYNTAX: OPTION ENABLE
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION ENABLE COMMAND name$
+DESCRIPTION: Enables the specified BASIC command.
+------------------------------------------------------------
+     SYNTAX: OPTION ENABLE FUNCTION name$
+DESCRIPTION: Enables the specified BASIC function.
+------------------------------------------------------------
+     SYNTAX: OPTION ENABLE OPERATOR name$
+DESCRIPTION: Enables the specified BASIC operator.
+------------------------------------------------------------
+     SYNTAX: OPTION ERROR
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION ERROR GOSUB
+DESCRIPTION: When an error occurs, GOSUB to the error
+             handler.  The error handler exits with
+             RETURN.
+------------------------------------------------------------
+     SYNTAX: OPTION ERROR GOTO
+DESCRIPTION: When an error occurs, GOTO to the error
+             handler.  The error handler exits with
+             RESUME.
+------------------------------------------------------------
+     SYNTAX: OPTION EXPLICIT
+DESCRIPTION: All variables must be declared using DIM.
+------------------------------------------------------------
+     SYNTAX: OPTION EXTENSION string$
+DESCRIPTION: Sets the BASIC filename extension, commonly
+             ".bas".
+------------------------------------------------------------
+     SYNTAX: OPTION FILES string$
+DESCRIPTION: Sets the program name used by the FILES
+             command.
+------------------------------------------------------------
+     SYNTAX: OPTION IMPLICIT
+DESCRIPTION: Variables need not be declared using DIM,
+             provided arrays have no more that 10
+             elements.  This is the opposite of OPTION
+             EXPLICIT, and is the default for all versions
+             of BASIC.
+------------------------------------------------------------
+     SYNTAX: OPTION INDENT integer
+DESCRIPTION: Sets indention level for LIST.  Zero means no
+             indention.  Default is 2.
+------------------------------------------------------------
+     SYNTAX: OPTION LABELS
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION LABELS OFF
+DESCRIPTION: Disables text labels.
+------------------------------------------------------------
+     SYNTAX: OPTION LABELS ON
+DESCRIPTION: Enables text labels.
+------------------------------------------------------------
+     SYNTAX: OPTION PROMPT string$
+DESCRIPTION: Sets the BASIC prompt.
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT AT char$
+DESCRIPTION: Sets the PRINT AT character, commonly "@".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT BYTE char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type BYTE, commonly "~".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT COMMENT char$
+DESCRIPTION: Sets the shortcut COMMENT character, commonly
+             "'".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT CURRENCY char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type CURRENCY, commonly "@".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT DOUBLE char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type DOUBLE, commonly "#".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT FILENUM char$
+DESCRIPTION: Sets the FILE NUMBER prefix character,
+             commonly "#".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT IMAGE char$
+DESCRIPTION: Sets the shortcut IMAGE character, commonly
+             ":".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT INPUT char$
+DESCRIPTION: Sets the shortcut INPUT character, commonly
+             "!".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT INTEGER char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type INTEGER, commonly "%".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT LONG char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type LONG, commonly "&".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT LPAREN char$
+DESCRIPTION: Sets the LEFT PARENTHESIS character, commonly
+             "(".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT_PRINT char$
+DESCRIPTION: Sets the shortcut PRINT character, commonly
+             "?".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT QUOTE char$
+DESCRIPTION: Sets the QUOTE character, commonly """
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT RPAREN char$
+DESCRIPTION: Sets the RIGHT PARENTHESIS character, commonly
+             ")".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT SINGLE char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type SINGLE, commonly "!".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT STATEMENT char$
+DESCRIPTION: Sets the statement seperator character,
+             commonly ":".
+------------------------------------------------------------
+     SYNTAX: OPTION PUNCT STRING char$
+DESCRIPTION: Sets the suffix character that indicates a
+             variable is of type STRING, commonly "$".
+------------------------------------------------------------
+     SYNTAX: OPTION RECLEN integer
+DESCRIPTION: Sets the default RANDOM record length.
+------------------------------------------------------------
+     SYNTAX: OPTION RENUM string$
+DESCRIPTION: Sets the program name used by the RENUM
+             command.
+------------------------------------------------------------
+     SYNTAX: OPTION ROUND
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION ROUND BANK
+DESCRIPTION: Round using the Banker rule.
+------------------------------------------------------------
+     SYNTAX: OPTION ROUND MATH
+DESCRIPTION: Round using mathematical rules.
+------------------------------------------------------------
+     SYNTAX: OPTION ROUND TRUNCATE
+DESCRIPTION: Round using truncation.
+------------------------------------------------------------
+     SYNTAX: OPTION SCALE integer
+DESCRIPTION: Sets the number of digits to round after the
+             decimal point for PRINT.  Setting the value
+             to zero disables rounding.
+------------------------------------------------------------
+     SYNTAX: OPTION SLEEP double
+DESCRIPTION: Sets multiplier for SLEEP and WAIT.  Zero
+             means no waiting.  Default is 1.
+------------------------------------------------------------
+     SYNTAX: OPTION STDERR filename$
+DESCRIPTION: Sets the file used for STDERR, which is used
+             by LPRINT commands.
+------------------------------------------------------------
+     SYNTAX: OPTION STDIN filename$
+DESCRIPTION: Sets the file used for STDIN, which is used by
+             INPUT commands.
+------------------------------------------------------------
+     SYNTAX: OPTION STDOUT filename$
+DESCRIPTION: Sets the file used for STDOUT, which is used
+             by PRINT commands.
+------------------------------------------------------------
+     SYNTAX: OPTION STRICT
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION STRICT OFF
+DESCRIPTION: Disables checking for implicit array creation
+             without using the DIM command.
+------------------------------------------------------------
+     SYNTAX: OPTION STRICT ON
+DESCRIPTION: Enables checking for implicit array creation
+             without using the DIM command.
+------------------------------------------------------------
+     SYNTAX: OPTION TERMINAL
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION TERMINAL ADM
+DESCRIPTION: Enables ADM-3A terminal control codes for CLS,
+             COLOR, and LOCATE.
+------------------------------------------------------------
+     SYNTAX: OPTION TERMINAL ANSI
+DESCRIPTION: Enables ANSI terminal control codes for CLS,
+             COLOR, and LOCATE.
+------------------------------------------------------------
+     SYNTAX: OPTION TERMINAL NONE
+DESCRIPTION: Disables terminal control codes for CLS,
+             COLOR, and LOCATE.
+------------------------------------------------------------
+     SYNTAX: OPTION TIME format$
+DESCRIPTION: Sets the time format string used by C
+             strftime() for TIME$.
+------------------------------------------------------------
+     SYNTAX: OPTION TRACE
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION TRACE OFF
+DESCRIPTION: Disables displaying a stack trace when an
+             ERROR occurs.
+------------------------------------------------------------
+     SYNTAX: OPTION TRACE ON
+DESCRIPTION: Enables displaying a stack trace when an ERROR
+             occurs.
+------------------------------------------------------------
+     SYNTAX: OPTION TYPO
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION TYPO OFF
+DESCRIPTION: Does not require a variable to be written
+             before it is read.
+------------------------------------------------------------
+     SYNTAX: OPTION TYPO ON
+DESCRIPTION: Requires all variables to be written before
+             they are read.  Any attempt to read a
+             variable that has not been written causes
+             VARIABLE NOT ASSIGNED.
+------------------------------------------------------------
+     SYNTAX: OPTION USING
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: OPTION USING ALL char$
+DESCRIPTION: Specifies the magic ALL character for the
+             PRINT USING command.  A common value is "&".
+------------------------------------------------------------
+     SYNTAX: OPTION USING COMMA char$
+DESCRIPTION: Specifies the magic COMMA character for the
+             PRINT USING command.  A common value is ",".
+------------------------------------------------------------
+     SYNTAX: OPTION USING DIGIT char$
+DESCRIPTION: Specifies the magic DIGIT character for the
+             PRINT USING command.  A common value is "#".
+------------------------------------------------------------
+     SYNTAX: OPTION USING DOLLAR char$
+DESCRIPTION: Specifies the magic DOLLAR character for the
+             PRINT USING command.  A common value is "$".
+------------------------------------------------------------
+     SYNTAX: OPTION USING EXRAD char$
+DESCRIPTION: Specifies the magic EXRAD character for the
+             PRINT USING command.  A common value is "^".
+------------------------------------------------------------
+     SYNTAX: OPTION USING FILLER char$
+DESCRIPTION: Specifies the magic FILLER character for the
+             PRINT USING command.  A common value is "*".
+------------------------------------------------------------
+     SYNTAX: OPTION USING FIRST char$
+DESCRIPTION: Specifies the magic FIRST character for the
+             PRINT USING command.  A common value is "!".
+------------------------------------------------------------
+     SYNTAX: OPTION USING LENGTH char$
+DESCRIPTION: Specifies the magic LENGTH character for the
+             PRINT USING command.  A common value is "\".
+------------------------------------------------------------
+     SYNTAX: OPTION USING LITERAL char$
+DESCRIPTION: Specifies the magic LITERAL character for the
+             PRINT USING command.  A common value is "_".
+------------------------------------------------------------
+     SYNTAX: OPTION USING MINUS char$
+DESCRIPTION: Specifies the magic MINUS character for the
+             PRINT USING command.  A common value is "-".
+------------------------------------------------------------
+     SYNTAX: OPTION USING PERIOD char$
+DESCRIPTION: Specifies the magic PERIOD character for the
+             PRINT USING command.  A common value is ".".
+------------------------------------------------------------
+     SYNTAX: OPTION USING PLUS char$
+DESCRIPTION: Specifies the magic PLUS character for the
+             PRINT USING command.  A common value is "+".
+------------------------------------------------------------
+     SYNTAX: OPTION VERSION version$
+DESCRIPTION: Selects a specific BASIC version, which is a
+             combination of OPTION settings, commands,
+             functions and operators.  If no version is
+             specified, displays a list of the available
+             versions.
+------------------------------------------------------------
+     SYNTAX: OPTION ZONE integer
+DESCRIPTION: Sets the PRINT zone width.  Setting the value
+             to zero restores the default.
+------------------------------------------------------------
+     SYNTAX: PRINT # filenum , [USING format$;] value ...
+DESCRIPTION: Sends output to a file.
+------------------------------------------------------------
+     SYNTAX: PRINT [USING format$;] value ...
+DESCRIPTION: Sends output to the screen.
+------------------------------------------------------------
+     SYNTAX: QUIT
+DESCRIPTION: Exits to the operating system.
+------------------------------------------------------------
+     SYNTAX: READ variable [, ...]
+DESCRIPTION: Reads values from DATA statements.
+------------------------------------------------------------
+     SYNTAX: REM ...
+DESCRIPTION: Remark.
+------------------------------------------------------------
+     SYNTAX: RESTORE [line]
+DESCRIPTION: Resets the line used for the next READ
+             statement.  line may be either a number or a
+             label.
+------------------------------------------------------------
+     SYNTAX: RETURN
+DESCRIPTION: Concludes a subroutine called by GOSUB.
+------------------------------------------------------------
+     SYNTAX: RUN filename$
+DESCRIPTION: Loads a new BAASIC program and executes the
+             program from the start.
+------------------------------------------------------------
+     SYNTAX: RUN line
+DESCRIPTION: Executes the program in memory beginning at
+             line.
+------------------------------------------------------------
+     SYNTAX: RUN
+DESCRIPTION: Executes the program in memory from the start.
+------------------------------------------------------------
+     SYNTAX: SAVE [filename$]
+DESCRIPTION: Saves the current program into the file
+             filename$ in ASCII format.
+------------------------------------------------------------
+     SYNTAX: SELECT
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: SELECT CASE value
+DESCRIPTION: Introduces a multi-line conditional selection
+             statement.
+------------------------------------------------------------
+     SYNTAX: STEP
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: STOP
+DESCRIPTION: Interrupts program execution and displays the
+             line number of the STOP command.  For use
+             when debugging BASIC programs.  Whether STOP
+             issues a SIGINT signal is implementation
+             defined.
+------------------------------------------------------------
+     SYNTAX: SUB name [ ( parameter [,...] ) ]
+DESCRIPTION: Top line of a multi-line SUB definition.  The
+             variable names specified are local to the SUB
+             definition, and are initialized BYVAL when
+             the subroutine is invoked by another routine.
+------------------------------------------------------------
+     SYNTAX: SYSTEM
+DESCRIPTION: Exits to the operating system.
+------------------------------------------------------------
+     SYNTAX: THEN
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+     SYNTAX: TO
+DESCRIPTION: Syntax Error.
+------------------------------------------------------------
+
+
+============================================================
+                    FUNCTIONS                               
+============================================================
+
+
+------------------------------------------------------------
+     SYNTAX: N  = ABS( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The absolute value of X.
+------------------------------------------------------------
+     SYNTAX: N  = ACOS( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The arccosine of X in radians, where 0 <=
+             ACOS(X) <= PI.  X shall be in the range -1 <=
+             X <= 1.
+------------------------------------------------------------
+     SYNTAX: N  = ANGLE( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number
+DESCRIPTION: The angle in radians between the positive
+             x-axis and the vector joining the origin to
+             the point with coordinates (X, Y), where -PI
+             < ANGLE(X,Y) <= PI.  X and Y must not both be
+             0.  Note that the counterclockwise is
+             positive, e.g., ANGLE(1,1) = 45 degrees.
+------------------------------------------------------------
+     SYNTAX: N  = ASC( A$ )
+  PARAMETER: A$ is a string, LEN >= 1
+DESCRIPTION: The numeric code for the first letter in A$. 
+             For example, ASC("ABC") returns 65 on ASCII
+             systems.
+------------------------------------------------------------
+     SYNTAX: N  = ASIN( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The arcsine of X in radians, where -PI/2 <=
+             ASIN(X) <= PI/2; X shall be in the range -1
+             <= X <= 1.
+------------------------------------------------------------
+     SYNTAX: N  = ATN( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The arctangent of X in radians, i.e. the angle
+             whose tangent is X, where -PI/2 < ATN(X) <
+             PI/2.
+------------------------------------------------------------
+     SYNTAX: N  = CEIL( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The smallest integer not less than X.
+------------------------------------------------------------
+     SYNTAX: S$ = CHR$( X )
+  PARAMETER: X  is a number, [0,255]
+DESCRIPTION: The one-character string with the character
+             corresponding to the numeric code X.  On
+             ASCII systems, CHR$(65) returns "A".
+------------------------------------------------------------
+     SYNTAX: N  = COS( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The cosine of X, where X is in radians.
+------------------------------------------------------------
+     SYNTAX: N  = COSH( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The hyperbolic cosine of X.
+------------------------------------------------------------
+     SYNTAX: N  = COT( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The cotangent of X, where X is in radians.
+------------------------------------------------------------
+     SYNTAX: N  = CSC( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The cosecant of X, where X is in radians.
+------------------------------------------------------------
+     SYNTAX: N  = DATE
+DESCRIPTION: The current date in decimal form YYYDDD, where
+             YYY are the number of years since 1900 and
+             DDD is the ordinal number of the current day
+             of the year; e.g., the value of DATE on May
+             9, 1977 was 77129.  If there is no calendar
+             available, then the value of DATE shall be
+             -1.
+------------------------------------------------------------
+     SYNTAX: S$ = DATE$
+DESCRIPTION: The current date based on the internal clock
+             as a string in the format set by OPTION DATE.
+------------------------------------------------------------
+     SYNTAX: N  = DEG( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The number of degrees in X radians.
+------------------------------------------------------------
+     SYNTAX: N  = EPS( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The maximum of (X-X1,X2-X, sigma) where X1 and
+             X2 are the predecessor and successor of X and
+             signma is the smallest positive value
+             representable.  If X has no predecessor the
+             X1=X and if X has no successor the X2=X. 
+             Note EPS(0) is the smallest positive number
+             representable by the implementation, and is
+             therefor implementation-defined.  Note also
+             that EPS may produce different results for
+             different arithmetic options (see OPTION
+             ARITHMETIC).
+------------------------------------------------------------
+     SYNTAX: N  = EXP( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The exponential value of X, i.e., the value of
+             the base of natural logarithms (e = 2.71828)
+             raised to the power of X;  if EXP(X) is less
+             that machine infinitesimal, then its value
+             shall be replaced with zero.
+------------------------------------------------------------
+     SYNTAX: N  = FIX( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The truncated integer, part of X. FIX (X) is
+             equivalent to SGN(X)*INT(ABS(X)). The major
+             difference between FIX and INT is that FIX
+             does not return the next lower number for
+             negative X.
+------------------------------------------------------------
+     SYNTAX: N  = FP( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The fractional part of X, i.e. X - IP(X).
+------------------------------------------------------------
+     SYNTAX: N  = INT( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The largest integer not greater than X; e.g.
+             INT(1.3) = 1 and INT(-1.3) = 2.
+------------------------------------------------------------
+     SYNTAX: N  = IP( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The integer part of X, i.e.,
+             SGN(X)*INT(ABS(X)).
+------------------------------------------------------------
+     SYNTAX: N  = LBOUND( ... )
+DESCRIPTION: LBOUND( arrayname [, dimension] ).  The lower
+             bound of the array.  The dimension defaults
+             to 1.  dimension in [1,DIM(arrayname)]
+------------------------------------------------------------
+     SYNTAX: S$ = LCASE$( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The string of characters from the value
+             associatedwith A$ by replacing each
+             upper-case-letter in the string by its
+             lower-case version.
+------------------------------------------------------------
+     SYNTAX: S$ = LEFT$( A$, X )
+  PARAMETER: A$ is a string, LEN >= 0
+  PARAMETER: X  is a number, [0,MAXLEN]
+DESCRIPTION: The X left-most characters of A$, beginning
+             from postion 1.
+------------------------------------------------------------
+     SYNTAX: N  = LEN( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The length of A$.
+------------------------------------------------------------
+     SYNTAX: N  = LOC( X )
+  PARAMETER: X  is a number, [MININT,MAXINT]
+DESCRIPTION: The location of file X; the next record that
+             GET or PUT statements will use.
+------------------------------------------------------------
+     SYNTAX: N  = LOF( X )
+  PARAMETER: X  is a number, [MININT,MAXINT]
+DESCRIPTION: The length of file X.
+------------------------------------------------------------
+     SYNTAX: N  = LOG( X )
+  PARAMETER: X  is a number, >  0
+DESCRIPTION: The natural logarithm of X; X shall be greater
+             than zero.
+------------------------------------------------------------
+     SYNTAX: N  = LOG10( X )
+  PARAMETER: X  is a number, >  0
+DESCRIPTION: The common logarithm of X; X shall be greater
+             than zero.
+------------------------------------------------------------
+     SYNTAX: N  = LOG2( X )
+  PARAMETER: X  is a number, >  0
+DESCRIPTION: The base 2 logarithm of X; X shall be greater
+             than zero.
+------------------------------------------------------------
+     SYNTAX: S$ = LTRIM$( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The string of characters resulting from the
+             value associated with A$ by deleting all
+             leading space characters.
+------------------------------------------------------------
+     SYNTAX: N  = MAX( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number
+DESCRIPTION: The larger of the parameters.
+------------------------------------------------------------
+     SYNTAX: N  = MAXLEN
+DESCRIPTION: The maximum string length.
+------------------------------------------------------------
+     SYNTAX: N  = MAXLEN( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The maximum length associated with the
+             simple-string-variable A$.
+------------------------------------------------------------
+     SYNTAX: N  = MAXNUM
+DESCRIPTION: The largest finite positive number
+             representable and manipulable by the
+             implementation; implementation-defined. 
+             MAXNUM may represent diffent number for
+             different arithmetic options (see OPTION
+             ARITHMETIC).
+------------------------------------------------------------
+     SYNTAX: S$ = MID$( A$, X )
+  PARAMETER: A$ is a string, LEN >= 0
+  PARAMETER: X  is a number, [1,MAXLEN]
+DESCRIPTION: The characters of A$, starting from postion X.
+------------------------------------------------------------
+     SYNTAX: S$ = MID$( A$, X, Y )
+  PARAMETER: A$ is a string, LEN >= 0
+  PARAMETER: X  is a number, [1,MAXLEN]
+  PARAMETER: Y  is a number, [0,MAXLEN]
+DESCRIPTION: The Y characters of A$, starting from postion
+             X.
+------------------------------------------------------------
+     SYNTAX: N  = MIN( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number
+DESCRIPTION: The smaller of the parameters.
+------------------------------------------------------------
+     SYNTAX: N  = MOD( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number, <> 0
+DESCRIPTION: X modulo Y, i.e., X-Y*INT(X/Y).  Y shall not
+             equal zero.
+------------------------------------------------------------
+     SYNTAX: S$ = NUM$( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The string generated by the print-statement as
+             the numeric-representation of the value
+             associated with X.
+------------------------------------------------------------
+     SYNTAX: N  = ORD( A$ )
+  PARAMETER: A$ is a string, LEN >= 1
+DESCRIPTION: The ordinal position of the character named by
+             the string associated with A$ in the
+             collating sequence of ASCII character set,
+             where the first member of the character set
+             is in position zero.  The acceptable values
+             for the standard character set are shown in
+             Table 1.
+------------------------------------------------------------
+     SYNTAX: N  = PI
+DESCRIPTION: The constant 3.14159 which is the ratio of the
+             circumference of a circle to its diameter.
+------------------------------------------------------------
+     SYNTAX: N  = POS( A$, B$ )
+  PARAMETER: A$ is a string, LEN >= 0
+  PARAMETER: B$ is a string, LEN >= 0
+DESCRIPTION: The character position, within the value
+             assocated with A$, of the first character of
+             the first occurence of the value associated
+             with B$, starting at the first character of
+             A$.  If there is not such occurence, then the
+             value returned is zero.
+------------------------------------------------------------
+     SYNTAX: N  = POS( A$, B$, X )
+  PARAMETER: A$ is a string, LEN >= 0
+  PARAMETER: B$ is a string, LEN >= 0
+  PARAMETER: X  is a number, [1,MAXLEN]
+DESCRIPTION: The character position, within the value
+             assocated with A$, of the first character of
+             the first occurence of the value associated
+             with B$, starting at the Xth character of A$.
+             If there is not such occurence, then the
+             value returned is zero.
+------------------------------------------------------------
+     SYNTAX: N  = RAD( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The number of radians in X degrees.
+------------------------------------------------------------
+     SYNTAX: N  = RANDOMIZE
+DESCRIPTION: Seeds the pseudo-random number generator with
+             TIME.
+------------------------------------------------------------
+     SYNTAX: N  = RANDOMIZE( X )
+  PARAMETER: X  is a number
+DESCRIPTION: Seeds the pseudo-random number generator with
+             X.
+------------------------------------------------------------
+     SYNTAX: N  = REMAINDER( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number, <> 0
+DESCRIPTION: The remainder function, i.e., X-Y*IP(X/Y).  Y
+             shall not equal zero.
+------------------------------------------------------------
+     SYNTAX: S$ = RIGHT$( A$, X )
+  PARAMETER: A$ is a string, LEN >= 0
+  PARAMETER: X  is a number, [0,MAXLEN]
+DESCRIPTION: The right-most X characters of A$.
+------------------------------------------------------------
+     SYNTAX: N  = RND
+DESCRIPTION: The next pseudo-random number in an
+             implementation-defined sequence of
+             pseudo-random numbers uniformly distributed
+             in the range 0 <= RND < 1.
+------------------------------------------------------------
+     SYNTAX: N  = RND( X )
+  PARAMETER: X  is a number
+DESCRIPTION: Returns a pseudorandom number in the range
+             [0,1].  The value of X is ignored.
+------------------------------------------------------------
+     SYNTAX: N  = ROUND( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number, [MININT,MAXINT]
+DESCRIPTION: The value of X rounded to Y decimal digits to
+             the right of the decimal point (or -Y digits
+             to the left if Y < 0); i.e.,
+             INT(X*10^Y+.5)/10^Y.  Y must be in [-32,32].
+------------------------------------------------------------
+     SYNTAX: S$ = RTRIM$( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The string of characters resulting from the
+             value associated with A$ by deleting all
+             trailing space characters.
+------------------------------------------------------------
+     SYNTAX: N  = SEC( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The secant of X, where X is in radians.
+------------------------------------------------------------
+     SYNTAX: N  = SEEK( X )
+  PARAMETER: X  is a number, [MININT,MAXINT]
+DESCRIPTION: The location of file X; the next record that
+             GET or PUT statements will use.
+------------------------------------------------------------
+     SYNTAX: N  = SGN( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The sign of X: -1 if X < 0, 0 if X = 0, and +1
+             if X > 0.
+------------------------------------------------------------
+     SYNTAX: N  = SIN( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The sine of X, where X is in radians.
+------------------------------------------------------------
+     SYNTAX: N  = SINH( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The hyperbolic sine of X.
+------------------------------------------------------------
+     SYNTAX: N  = SIZE( ... )
+DESCRIPTION: SIZE( arrayname ).  The total number of items
+             in the array.
+------------------------------------------------------------
+     SYNTAX: S$ = SPC( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The string of X spaces.  Only for use within
+             the PRINT command.
+------------------------------------------------------------
+     SYNTAX: N  = SQR( X )
+  PARAMETER: X  is a number, >= 0
+DESCRIPTION: The non-negative square root of X;  X shall be
+             non-negative.
+------------------------------------------------------------
+     SYNTAX: S$ = STR$( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The string generated by the print-statement as
+             the numeric-representation of the value
+             associated with X.
+------------------------------------------------------------
+     SYNTAX: S$ = STRING$( X, A$ )
+  PARAMETER: X  is a number, [0,MAXLEN]
+  PARAMETER: A$ is a string, LEN >= 1
+DESCRIPTION: The string X bytes long consisting of the
+             first character of A$.
+------------------------------------------------------------
+     SYNTAX: S$ = STRING$( X, Y )
+  PARAMETER: X  is a number, [0,MAXLEN]
+  PARAMETER: Y  is a number, [0,255]
+DESCRIPTION: The string X bytes long consisting of CHR$(Y).
+------------------------------------------------------------
+     SYNTAX: S$ = TAB( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The string required to advance to column X. 
+             Only for use within the PRINT command.
+------------------------------------------------------------
+     SYNTAX: N  = TAN( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The tangent of X, where X is in radians.
+------------------------------------------------------------
+     SYNTAX: N  = TANH( X )
+  PARAMETER: X  is a number
+DESCRIPTION: The hyperbolic tangent of X.
+------------------------------------------------------------
+     SYNTAX: N  = TIME
+DESCRIPTION: The time elapsed since the previous midnight,
+             expressed in seconds; e.g., the value of TIME
+             at 11:15 AM is 40500.  If there is no clock
+             available, then the value of TIME shall be
+             -1.  The value of TIME at midnight shall be
+             zero (not 86400).
+------------------------------------------------------------
+     SYNTAX: S$ = TIME$
+DESCRIPTION: The time of day in 24-hour notation according
+             to ISO 3307.  For example, the value of TIME$
+             at 11:15 AM is "11:15:00".  If there is no
+             clock available, then the value of TIME$
+             shall be "99:99:99".  The value of TIME$ at
+             midnight is "00:00:00".
+------------------------------------------------------------
+     SYNTAX: S$ = TRIM$( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The string resulting from removing both
+             leading and trailing spaces from A$.
+------------------------------------------------------------
+     SYNTAX: N  = TROFF
+DESCRIPTION: Turn tracing OFF
+------------------------------------------------------------
+     SYNTAX: N  = TRON
+DESCRIPTION: Turn tracing ON
+------------------------------------------------------------
+     SYNTAX: N  = TRUNCATE( X, Y )
+  PARAMETER: X  is a number
+  PARAMETER: Y  is a number, [MININT,MAXINT]
+DESCRIPTION: The value of X truncated to Y decimal digits
+             to the right of the decimal point (or -Y
+             digits to the left if Y < 0); i.e.,
+             IP(X*10^Y)/10^Y.  Y in [-32,32].
+------------------------------------------------------------
+     SYNTAX: N  = UBOUND( ... )
+DESCRIPTION: UBOUND( arrayname [, dimension] ).  The upper
+             bound of the array.  The dimension defaults
+             to 1.  dimension in [1,DIM(arrayname)]
+------------------------------------------------------------
+     SYNTAX: S$ = UCASE$( A$ )
+  PARAMETER: A$ is a string, LEN >= 0
+DESCRIPTION: The string of characters resulting from the
+             value associated with A$ by replacing each
+             lower-case-letter in the string by its
+             upper-case version.
+------------------------------------------------------------
+     SYNTAX: N  = VAL( A$ )
+  PARAMETER: A$ is a string, LEN >= 1
+DESCRIPTION: The value of the numeric-constant associated
+             with A$, if the string associated with A$ is
+             a numeric-constant.  Leading and trailing
+             spaces in the string are ignored.  If the
+             evaluation of the numeric-constant would
+             result in a value which causes an underflow,
+             then the value returned shall be zero.  For
+             example, VAL( " 123.5 " ) = 123.5, VAL(
+             "2.E-99" ) could be zero, and VAL( "MCMXVII"
+             ) causes an exception.
+------------------------------------------------------------
+
+
+============================================================
+                    OPERATORS                               
+============================================================
+
+
+------------------------------------------------------------
+     SYNTAX: X ^ Y
+DESCRIPTION: Exponential
+ PRECEDENCE: 14
+------------------------------------------------------------
+     SYNTAX: # X
+DESCRIPTION: Posation
+ PRECEDENCE: 13
+------------------------------------------------------------
+     SYNTAX: + X
+DESCRIPTION: Posation
+ PRECEDENCE: 13
+------------------------------------------------------------
+     SYNTAX: - X
+DESCRIPTION: Negation
+ PRECEDENCE: 13
+------------------------------------------------------------
+     SYNTAX: X * Y
+DESCRIPTION: Multiplication
+ PRECEDENCE: 12
+------------------------------------------------------------
+     SYNTAX: X / Y
+DESCRIPTION: Division
+ PRECEDENCE: 12
+------------------------------------------------------------
+     SYNTAX: X \ Y
+DESCRIPTION: Integer Division
+ PRECEDENCE: 11
+------------------------------------------------------------
+     SYNTAX: X + Y
+DESCRIPTION: Addition
+ PRECEDENCE: 9
+------------------------------------------------------------
+     SYNTAX: X - Y
+DESCRIPTION: Subtraction
+ PRECEDENCE: 9
+------------------------------------------------------------
+     SYNTAX: X < Y
+DESCRIPTION: Less than
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X <= Y
+DESCRIPTION: Less than or Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X <> Y
+DESCRIPTION: Not Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X = Y
+DESCRIPTION: Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X =< Y
+DESCRIPTION: Less than or Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X => Y
+DESCRIPTION: Greater than or Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X > Y
+DESCRIPTION: Greater than
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X >< Y
+DESCRIPTION: Not Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: X >= Y
+DESCRIPTION: Greater than or Equal
+ PRECEDENCE: 7
+------------------------------------------------------------
+     SYNTAX: NOT X
+DESCRIPTION: Bitwise NOT
+ PRECEDENCE: 6
+------------------------------------------------------------
+     SYNTAX: X AND Y
+DESCRIPTION: Bitwise AND
+ PRECEDENCE: 5
+------------------------------------------------------------
+     SYNTAX: X OR Y
+DESCRIPTION: Bitwise OR
+ PRECEDENCE: 4
+------------------------------------------------------------
+
+

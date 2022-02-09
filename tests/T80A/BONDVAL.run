@@ -1,0 +1,48 @@
+                  BONDS                                                         
+                                                                                
+WHEN CONSIDERING THE VALUE OF BONDS ITEMS WHICH SHOULD                          
+BE CONSIDERED INCLUDE YIELD TO MATURITY,TIME TO MATURITY                        
+MATURITY VALUE, CURRENT VALUE, AND COUPON INTEREST RATE.                        
+GIVEN ANY FOUR OF THE ABOVE THIS PROGRAM WILL COMPUTE THE                       
+FIFTH. IN ADDITION,IF DESIRED INCOME TAXES,CAPITAL GAINS                        
+TAXES AND COMMISSIONS MAY BE CONSIDERED.                                        
+                                                                                
+PRESS ENTER TO BEGIN?                                                           
+INPUT THE FOLLOWING AMOUNTS.PRESS ENTER WHEN AN                                 
+ITEM WILL BE COMPUTED. INPUT 0 IF AN ITEM IS                                    
+NOT TO BE CONSIDERED.POSSIBLE FIELDS FOR                                        
+NONCONSIDERATION ARE COMMISSION, CAPITAL GAINS                                  
+AND INCOME TAX RATES.                                                           
+                                                                                
+PURCHASE PRICE PER BOND               ? 975                                     
+COMMISSION PER BOND                   ? 5.25                                    
+MATURITY VALUE                        ? 1000                                    
+NUMBER OF INTEREST PAYMENTS PER YEAR  ? 4                                       
+NUMBER OF PAYMENT PERIODS TO MATURITY ?                                         
+ANNUAL COUPON INTEREST RATE(%)        ? 7.75                                    
+ANNUAL YIELD TO MATURITY              ?                                         
+CAPITAL GAINS TAX RATE                ? 28                                      
+INCOME TAX RATE                       ? 35                                      
+ENTER THE NUMBER OF THE VARIABLE TO BE COMPUTED                                 
+                                                                                
+1.CURRENT PRICE PLUS COMMISSION                                                 
+2.MATURITY VALUE OF THE BOND                                                    
+3.COUPON INTEREST RATE                                                          
+4.YIELD TO MATURITY OF THE BOND                                                 
+5.LENGTH OF TIME TO MATURITY                                                    
+                                                                                
+MAKE CHOICE? 2                                                                  
+Division by zero                                                                
+                                                                                
+                                                                                
+                                                                                
+1.CURRENT PRICE PLUS COMMISSION        : 980.25                                 
+2.MATURITY VALUE OF THE BOND           : 3.92603E-306                           
+3.ANNUAL COUPON INTEREST RATE          : 7.75                                   
+4.ANNUAL YIELD TO MATURITY OF BOND     : 0                                      
+5.LENGTH OF TIME TO MATURITY(PERIODS)  : 0                                      
+6.INCOME TAX RATE                      : 35                                     
+7.CAPITAL GAINS TAX RATE               : 28.                                    
+8.NUMBER OF INTEREST PAYMENTS PER YEAR : 4                                      
+                                                                                
+PRESS ENTER FOR MORE COMPUTATION ? -1                                           

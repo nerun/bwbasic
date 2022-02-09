@@ -1,8 +1,0 @@
-INTEGRATION: TRAPEZOIDAL RULE                                                   
-                                                                                
-(ENTER 0,0 TO END PROGRAM)                                                      
-INTEGRATION LIMITS (Lower, UPPER)? 1,10                                         
-number OF INTERVALS? 25                                                         
-integral = 2502.96                                                              
-                                                                                
-INTEGRATION LIMITS (Lower, UPPER)? 0,0                                          

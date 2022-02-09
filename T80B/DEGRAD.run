@@ -1,7 +1,0 @@
-ANGLE CONVERSION: DEGREES TO RADIANS                                            
-                                                                                
-(TO END PROGRAM ENTER 0,0,0)                                                    
-ANGLE IN DEGREES,MINUTES,SECONDS? 23,45,56                                      
-RADIANS = .414787                                                               
-                                                                                
-ANGLE IN DEGREES,MINUTES,SECONDS? 0,0,0                                         

@@ -1,9 +1,0 @@
-TESTCASE # 1   E= 0           R$=[]          X= 0           Y= 0                
-               F= 0           S$=[]                                             
-*** TEST PASSED ***                                                             
-TESTCASE # 2   E= 0           R$=[ ]         X= 1           Y= 1                
-               F= 0           S$=[                                              
-                                                                                
-*** TEST FAILED, RESULT MISMATCH ***                                            
-                                                                                
-Program interrupted at line 1011                                                
