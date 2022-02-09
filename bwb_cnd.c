@@ -1451,13 +1451,6 @@ bwb_while( l )
    struct exp_ese *e;
    struct bwb_line *r;
 
-   /* call bwb_exp() to interpret the expression */
-
-   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
-
-   if ( (int) exp_getnval( e ) == TRUE )
-      {
-
       /* if this is the first time at this WHILE statement, note it */
 
       if ( CURTASK excs[ CURTASK exsc ].while_line != l )
@@ -1502,6 +1495,20 @@ bwb_while( l )
          }
 #endif
 
+   /*----------------------------------------------------*/
+   /* Expression evaluation was at the top of bwb_while, */
+   /* and the init portion was performed only if TRUE.   */
+   /* The init routine should be performed regardless of */
+   /* expression value, else a segmentation fault can    */
+   /* occur! (JBV)                                       */
+   /*----------------------------------------------------*/
+
+   /* call bwb_exp() to interpret the expression */
+
+   e = bwb_exp( l->buffer, FALSE, &( l->position ) );
+
+   if ( (int) exp_getnval( e ) == TRUE )
+      {
       bwb_setexec( l, l->position, EXEC_WHILE );
       return bwb_zline( l );
       }

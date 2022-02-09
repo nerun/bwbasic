@@ -736,6 +736,7 @@ exp_function( expression )
    /* struct bwb_variable argv[ MAX_FARGS ]; */ /* Removed by JBV */
    struct bwb_variable *argv; /* Added by JBV */
    bstring *b;
+   register int i, j; /* JBV */
 #if INTENSIVE_DEBUG
    char tbuf[ MAXSTRINGSIZE + 1 ];
 
@@ -1047,6 +1048,47 @@ exp_function( expression )
    /* (some other less fortunate routine may need it) */
    /* JBV, 10/95                                      */
    /*-------------------------------------------------*/
+
+   /* First kleanup the joint (JBV) */
+   for ( i = 0; i < n_args; ++i )
+   {
+       if ( argv[ i ].memnum != NULL )
+       {
+           /* Revised to FREE pass-thru call by JBV */
+           FREE(argv[ i ].memnum, "exp_function");
+           argv[ i ].memnum = NULL;
+       }
+       if ( argv[ i ].memstr != NULL )
+       {
+           /* Remember to deallocate those far-flung branches! (JBV) */
+           for ( j = 0; j < (int) argv[ i ].array_units; ++j )
+           {
+               if ( argv[ i ].memstr[ j ].sbuffer != NULL )
+               {
+                   /* Revised to FREE pass-thru call by JBV */
+                   FREE( argv[ i ].memstr[ j ].sbuffer, "exp_function" );
+                   argv[ i ].memstr[ j ].sbuffer = NULL;
+               }
+               argv[ i ].memstr[ j ].rab = FALSE;
+               argv[ i ].memstr[ j ].length = 0;
+           }
+           /* Revised to FREE pass-thru call by JBV */
+           FREE( argv[ i ].memstr, "exp_function" );
+           argv[ i ].memstr = NULL;
+       }
+       /* Revised to FREE pass-thru calls by JBV */
+       if (argv[ i ].array_sizes != NULL)
+       {
+           FREE( argv[ i ].array_sizes, "exp_function" );
+           argv[ i ].array_sizes = NULL; /* JBV */
+       }
+       if (argv[ i ].array_pos != NULL)
+       {
+           FREE( argv[ i ].array_pos, "exp_function" );
+           argv[ i ].array_pos = NULL; /* JBV */
+       }
+   }
+
    FREE( argv, "exp_function" );
 
 #if INTENSIVE_DEBUG
@@ -1220,6 +1262,3 @@ exp_variable( expression )
    return TRUE;
 
    }
-
-
-

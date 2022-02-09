@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.20"          /* Current version number */
+#define VERSION         "2.20 patch level 1"          /* Current version number */
 
 /***************************************************************
 

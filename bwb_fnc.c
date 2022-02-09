@@ -1433,7 +1433,13 @@ fnc_environ( argc, argv, unique_id )
 
    /* call getenv() then write value to string */
 
-   strcpy( tmp, getenv( tbuf ));
+   /*--------------------------------------------------------------------*/
+   /* Added check for getenv return value to prevent segmentation faults */
+   /* JBV 3/15/96                                                        */
+   /*--------------------------------------------------------------------*/
+   if (getenv( tbuf ) != NULL) strcpy( tmp, getenv( tbuf ));
+   else strcpy( tmp, "" );
+
    str_ctob( var_findsval( &nvar, nvar.array_pos ), tmp );
 
    /* return address of nvar */
