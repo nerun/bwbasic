@@ -1093,9 +1093,8 @@ fnc_val( argc, argv, unique_id )
    /* read the value */
 
    str_btoc( tbuf, var_getsval( &( argv[ 0 ] ) ));
-   if ( strlen( tbuf ) == 0 ) /* JBV */
-      *var_findnval( &nvar, nvar.array_pos ) = (bnumber) 0;
-   else
+   *var_findnval( &nvar, nvar.array_pos ) = (bnumber) 0; /* JBV 1/97 */
+   if ( strlen( tbuf ) != 0 ) /* JBV 1/97 (was == 0 with else) */
 #if NUMBER_DOUBLE
    sscanf( tbuf, "%lf",
        var_findnval( &nvar, nvar.array_pos ) );

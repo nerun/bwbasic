@@ -256,7 +256,8 @@ str_ctob( s, buffer )
 
    /* reassign length */
 
-   s->length = (unsigned char) strlen( buffer );
+   /* Was unsigned char (JBV 9/4/97) */
+   s->length = (unsigned int) strlen( buffer );
 
 #if INTENSIVE_DEBUG
    sprintf( bwb_ebuf, "in str_ctob(): exit length <%d> string <%s>",

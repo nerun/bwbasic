@@ -1607,7 +1607,7 @@ bwb_loopuntil( l )
 
    e = bwb_exp( l->buffer, FALSE, &( l->position ) );
 
-   if ( (int) exp_getnval( e ) == TRUE )
+   if ( (int) exp_getnval( e ) != FALSE ) /* Was == TRUE (JBV 10/1996) */
       {
       CURTASK excs[ CURTASK exsc ].while_line = NULL;
       r = CURTASK excs[ CURTASK exsc ].wend_line;
@@ -1746,7 +1746,8 @@ bwb_exitdo( l )
       {
 
 #if PROG_ERRORS
-      sprintf( bwb_ebuf, "in bwb_exitfor(): EXIT DO without DO" );
+      /* JBV 1/97 (was "bwb_exitfor") */
+      sprintf( bwb_ebuf, "in bwb_exitdo(): EXIT DO without DO" );
       bwb_error( bwb_ebuf );
 #else
       bwb_error( err_syntax );

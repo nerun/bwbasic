@@ -117,6 +117,8 @@ bwx_signon()
    prn_xprintf( stdout, bwb_ebuf );
    sprintf( bwb_ebuf, "\r%s\n", MES_COPYRIGHT );
    prn_xprintf( stdout, bwb_ebuf );
+   sprintf( bwb_ebuf, "\r%s\n", MES_COPYRIGHT_2 ); /* JBV 1/97 */
+   prn_xprintf( stdout, bwb_ebuf );
 #if PERMANENT_DEBUG
    sprintf( bwb_ebuf, "\r%s\n", "Debugging Mode" );
    prn_xprintf( stdout, bwb_ebuf );

@@ -56,6 +56,7 @@
 #if LATIN
 #define MES_SIGNON      "Interpres <Super Flumina> ad linguam BASIC, versionis"
 #define MES_COPYRIGHT   "Iure proprio scriptoris (c) 1993, Eduardi de Campobello"
+#define MES_COPYRIGHT_2 "Iure proprio scriptoris (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE	"Cum nuntiis latinis ab ipso E. de C."
 #define PROMPT          "bwBASIC: "
 #define ERROR_HEADER    "ERRANT praecepta in ordine"
@@ -95,6 +96,7 @@
 #if POL_ENGLISH
 #define MES_SIGNON      "Bywater BASIC Interpreter/Shell, version"
 #define MES_COPYRIGHT   "Copyright (c) 1993, Ted A. Campbell"
+#define MES_COPYRIGHT_2 "Copyright (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE	"Polite English messages courtesy of t.a.c."
 #define PROMPT          "How may we help you? "
 #define ERROR_HEADER    "Very sorry. There is a problem in line"
@@ -134,6 +136,7 @@
 #if IMP_ENGLISH
 #define MES_SIGNON      "Bywater BASIC Interpreter/Shell, version"
 #define MES_COPYRIGHT   "Watch it: Copyright (c) 1993, Ted A. Campbell"
+#define MES_COPYRIGHT_2 "This means you: Copyright (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE	"Impolite English messages courtesy of Oscar the Grouch"
 #define PROMPT          "(*sigh) What now? "
 #define ERROR_HEADER    "YOU SCREWED UP at line"
@@ -173,6 +176,7 @@
 #if STD_RUSSIAN
 #define MES_SIGNON      "iNTERPRETATOR Bywater BASIC, WERSIQ"
 #define MES_COPYRIGHT   "Copyright (c) 1993, Ted A. Campbell"
+#define MES_COPYRIGHT_2 "Copyright (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE    ""
 #define PROMPT          "gOTOWO"
 #define ERROR_HEADER    "o{ibka W STROKE"
@@ -213,6 +217,7 @@
 #if STD_GERMAN
 #define MES_SIGNON      "Bywater BASIC Interpreter/Shell, version"
 #define MES_COPYRIGHT   "Copyright (c) 1993, Ted A. Campbell"
+#define MES_COPYRIGHT_2 "Copyright (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE    "Ausgegeben auf Deutsch von Joerg Rieger"
 #define PROMPT          "bwBASIC: "
 #define ERROR_HEADER    "Irrtum in Zeile"
@@ -254,6 +259,7 @@
 #if ESPERANTO
 #define MES_SIGNON      "Bywater BASIC Tradukilo/SXelo, vario"
 #define MES_COPYRIGHT   "Kopirajtita (c) 1993, Ted A. Campbell"
+#define MES_COPYRIGHT_2 "Kopirajtita (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE    "Esperanta traduko farigxi per Ricxjo Muelisto."
 #define PROMPT          "bwBASIC: "
 #define ERROR_HEADER    "ERARO en vico"
@@ -297,6 +303,7 @@
 #ifndef MES_SIGNON
 #define MES_SIGNON      "Bywater BASIC Interpreter/Shell, version"
 #define MES_COPYRIGHT   "Copyright (c) 1993, Ted A. Campbell"
+#define MES_COPYRIGHT_2 "Copyright (c) 1995-1997, Jon B. Volkoff"
 #define MES_LANGUAGE    " "
 #define PROMPT          "bwBASIC: "
 #define ERROR_HEADER    "ERROR in line"

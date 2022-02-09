@@ -1030,6 +1030,15 @@ xputc( f, c )
    {
    static int tab_pending = FALSE;
 
+   /*--------------------------------------------------------------------*/
+   /* Don't expand tabs if not printing to stdout or stderr (JBV 9/4/97) */
+   /*--------------------------------------------------------------------*/
+   if (( f != stdout ) && ( f != stderr ))
+      {
+      xxputc( f, c );
+      return TRUE;
+      }
+
    /* check for pending TAB */
 
    if ( tab_pending == TRUE )
@@ -1091,6 +1100,14 @@ xxputc( f, c )
    char c;
 #endif
    {
+
+   /*--------------------------------------------------------------------*/
+   /* Don't check width if not printing to stdout or stderr (JBV 9/4/97) */
+   /*--------------------------------------------------------------------*/
+   if (( f != stdout ) && ( f != stderr ))
+      {
+      return xxxputc( f, c );
+      }
 
    /* check to see if width has been exceeded */
 

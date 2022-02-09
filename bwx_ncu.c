@@ -1,10 +1,18 @@
 /***************************************************************
 
-        bwx_iqc.c       Environment-dependent implementation
+        bwx_ncu.c       Environment-dependent implementation
                         of Bywater BASIC Interpreter
-			for IBM PC and Compatibles
-			using the Microsoft QuickC (tm) Compiler
+                        for Linux (and others?) using Ncurses
+                        library, 
+                        
+                        This BWBASIC file hacked together by L.C. Benschop,
+                        Eindhoven, The Netherlands. 1997/01/14 and
+                        1997/01/15  derived from the iqc version.
+                        (benschop@eb.ele.tue.nl)
 
+			All the shell commands (like FILES) interact badly 
+			with curses. I should replace them with popen/addch
+                        
                         Copyright (c) 1993, Ted A. Campbell
 			Bywater Software
 
@@ -35,10 +43,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <curses.h> /* Should be the ncurses version */
 #include <setjmp.h>
-#include <bios.h>
-#include <graph.h>
 #include <signal.h>
+#undef TRUE
+#undef FALSE
+
+/* So curses TRUE and FALSE conflict with the ones defined by bwbasic.
+   Doesn't this suck big time?
+   */
 
 #include "bwbasic.h"
 #include "bwb_mes.h"
@@ -49,7 +62,7 @@ short oldfgd;
 long oldbgd;
 int reset_mode = FALSE;
 
-static int iqc_setpos( void );
+static int ncu_setpos( void );
 
 /***************************************************************
 
@@ -66,55 +79,38 @@ static int iqc_setpos( void );
 
 ***************************************************************/
 
-void
+
+static int col_arr[]={COLOR_BLACK,COLOR_RED,COLOR_GREEN,COLOR_YELLOW,
+               COLOR_BLUE,COLOR_MAGENTA,COLOR_CYAN,COLOR_WHITE};
+	       
+
+int /* Nobody shall declare main() as void!!!!! (L.C. Benschop)*/
 main( int argc, char **argv )
    {
-#if MS_CMDS
-   struct videoconfig vc;
-   short videomode;
-
-   /* Save original foreground, background, and text position. */
-
-   _getvideoconfig( &vc );
-   oldfgd = _gettextcolor();
-   oldbgd = _getbkcolor();
-
-   if ( vc.mode != _TEXTC80 )
-      {
-      if ( _setvideomode( _TEXTC80 ) == 0 )
-         {
-	 _getvideoconfig( &vc );
-	 prn_xprintf( stderr, "Failed to set color video mode\n" );
-         }
-      else
-	 {
-	 reset_mode = FALSE;
-	 }
-      }
-   else
-      {
-      reset_mode = FALSE;
-      }
-
-#endif       /* MS_CMDS */
-
+   int i,j;
+   initscr();
+   start_color();
+   if(has_colors()) {
+     /* so there are 63 color pairs, from 1 to 63. Just 1 too few for
+        all the foreground/background combinations. */
+    for(i=0;i<8;i++)
+      for(j=0;j<8;j++)
+       if(i||j) init_pair(i*8+j,col_arr[i],col_arr[j]);
+   }
+   cbreak();
+   nonl();
+   noecho();
+   scrollok(stdscr,1);
    bwb_init( argc, argv );
 
 #if INTERACTIVE
    setjmp( mark );
 #endif
 
-   /* now set the number of colors available */
-
-   * var_findnval( co, co->array_pos ) = (bnumber) vc.numcolors;
-
-   /* main program loop */
-
    while( !feof( stdin ) )		/* condition !feof( stdin ) added in v1.11 */
       {
       bwb_mainloop();
       }
-
    }
 
 /***************************************************************
@@ -160,11 +156,11 @@ bwx_message( char *m )
    {
 
 #if DEBUG
-   _outtext( "<MES>" );
+   addstr( "<MES>" );
 #endif
 
-   _outtext( m );
-
+   addstr( m );
+   refresh();
    return TRUE;
 
    }
@@ -180,14 +176,8 @@ bwx_message( char *m )
 extern int
 bwx_putc( char c )
    {
-   static char tbuf[ 2 ];
-
-   tbuf[ 0 ] = c;
-   tbuf[ 1 ] = '\0';
-   _outtext( tbuf );
-
-   return TRUE;
-
+   addch(c);
+   refresh();
    }
 
 /***************************************************************
@@ -232,32 +222,35 @@ bwx_errmes( char *m )
 
         FUNCTION:       bwx_input()
 
-	DESCRIPTION:    As implemented here, the input facility
-			is a hybrid of _outtext output (which allows
-			the color to be set) and standard output
-			(which does not).  The reason is that I've
-			found it helpful to use the DOS facility
-			for text entry, with its backspace-delete
-			and recognition of the SIGINT, depite the
-			fact that its output goes to stdout.
+	DESCRIPTION:    (w)get(n)str seems to interact badly with last line
+                        on screen condition and scrolling.
+
 
 ***************************************************************/
 
 int
 bwx_input( char *prompt, char *buffer )
    {
-
+    int y,x,my,mx; 
 #if INTENSIVE_DEBUG
    prn_xprintf( stdout, "<INP>" );
 #endif
-
    prn_xprintf( stdout, prompt );
+   getyx(stdscr,y,x);
+   echo();
+   wgetnstr(stdscr, buffer, MAXREADLINESIZE);
+   noecho();
+   getmaxyx(stdscr,my,mx);
+   /*  printf("%d %d",my,mx);*/
+   if(y+1==my)scroll(stdscr);
+   /* So this is an extreeeeemely ugly kludge to work around some
+      bug/feature/wart in ncurses FIXME
+      I should replace it with getch/addch in a loop  */   
 
-   fgets( buffer, MAXREADLINESIZE, stdin );
-   prn_xprintf( stdout, "\n" );               /* let _outtext catch up */
+   /* prn_xprintf( stdout, "\n" );*/        /* let _outtext catch up */
 
    * prn_getcol( stdout ) = 1;			/* reset column */
-
+   
    return TRUE;
 
    }
@@ -273,23 +266,12 @@ bwx_input( char *prompt, char *buffer )
 void
 bwx_terminate( void )
    {
-#if MS_CMDS
-
-   if ( reset_mode == TRUE )
-      {
-
-      _setvideomode( _DEFAULTMODE );
-
-      /* Restore original foreground and background. */
-
-      _settextcolor( oldfgd );
-      _setbkcolor( oldbgd );
-
-      }
-
-#endif
-
-   exit( 0 );
+    nodelay(stdscr,FALSE);
+    echo();
+    nl();
+    nocbreak();
+    endwin();
+    exit( 0 );
    }
 
 /***************************************************************
@@ -315,7 +297,7 @@ bwx_shell( struct bwb_line *l )
       init = TRUE;
 
       /* Revised to CALLOC pass-thru call by JBV */
-      if ( ( s_buffer = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ) )) == NULL )
+      if ( ( s_buffer = CALLOC( MAXSTRINGSIZE + 1, sizeof( char ),"bwx_shell" )) == NULL )
 	 {
 	 bwb_error( err_getmem );
 	 return FALSE;
@@ -339,15 +321,20 @@ bwx_shell( struct bwb_line *l )
 	 l->buffer );
       bwb_debug( bwb_ebuf );
 #endif
-
+      nl();
+      endwin(); /* Added by JBV 10/11/97 */
       if ( system( l->buffer ) == 0 )
 	 {
-	 iqc_setpos();
+         refresh(); /* Added by JBV 10/11/97 */
+         nonl();
+	 ncu_setpos();
 	 return TRUE;
 	 }
       else
 	 {
-	 iqc_setpos();
+         refresh(); /* Added by JBV 10/11/97 */
+         nonl();
+	 ncu_setpos();
 	 return FALSE;
 	 }
       }
@@ -361,15 +348,20 @@ bwx_shell( struct bwb_line *l )
 	 l->buffer );
       bwb_debug( bwb_ebuf );
 #endif
-
+      nl();
+      endwin(); /* Added by JBV 10/11/97 */
       if ( system( &( l->buffer[ position ] ) ) == 0 )
 	 {
-	 iqc_setpos();
+         refresh(); /* Added by JBV 10/11/97 */
+         nonl();
+	 ncu_setpos();
 	 return TRUE;
 	 }
       else
 	 {
-	 iqc_setpos();
+         refresh(); /* Added by JBV 10/11/97 */
+         nonl();
+	 ncu_setpos();
 	 return FALSE;
 	 }
       }
@@ -378,27 +370,18 @@ bwx_shell( struct bwb_line *l )
 
 /***************************************************************
 
-	FUNCTION:      iqc_setpos()
+	FUNCTION:      ncu_setpos()
 
 	DESCRIPTION:
 
 ***************************************************************/
 
 static int
-iqc_setpos( void )
+ncu_setpos( void )
    {
-   union REGS ibm_registers;
-
-   /* call the BDOS function 0x10 to read the current cursor position */
-
-   ibm_registers.h.ah = 3;
-   ibm_registers.h.bh = (unsigned char) _getvisualpage();
-   int86( 0x10, &ibm_registers, &ibm_registers );
-
-   /* set text to this position */
-
-   _settextposition( ibm_registers.h.dh, ibm_registers.h.dl );
-
+    int x,y;
+    getyx(stdscr,y,x);
+    move(y,x);
    /* and move down one position */
 
    prn_xprintf( stdout, "\n" );
@@ -434,7 +417,18 @@ bwb_edit( struct bwb_line *l )
    sprintf( bwb_ebuf, "in bwb_edit(): command line <%s>", tbuf );
    bwb_debug( bwb_ebuf );
 #else
+   nl();
+   endwin(); /* Added by JBV 10/11/97 */
    system( tbuf );
+
+   /*-----------------------*/
+   /* Added by JBV 10/11/97 */
+   /*-----------------------*/
+   fprintf( stderr, "Press RETURN when ready..." );
+   fgets( tbuf, MAXREADLINESIZE, stdin );
+   refresh();
+
+   nonl();
 #endif
 
    /* open edited file for read */
@@ -444,7 +438,7 @@ bwb_edit( struct bwb_line *l )
       sprintf( bwb_ebuf, err_openfile, CURTASK progfile );
       bwb_error( bwb_ebuf );
 
-      iqc_setpos();
+      ncu_setpos();
       return bwb_zline( l );
       }
 
@@ -457,7 +451,7 @@ bwb_edit( struct bwb_line *l )
    bwb_fload( loadfile );
 
 
-   iqc_setpos();
+   ncu_setpos();
    return bwb_zline( l );
    }
 
@@ -492,7 +486,18 @@ bwb_renum( l )
    sprintf( bwb_ebuf, "in bwb_renum(): command line <%s>", tbuf );
    bwb_debug( bwb_ebuf );
 #else
+   nl();
+   endwin(); /* Added by JBV 10/11/97 */
    system( tbuf );
+
+   /*-----------------------*/
+   /* Added by JBV 10/11/97 */
+   /*-----------------------*/
+   fprintf( stderr, "Press RETURN when ready..." );
+   fgets( tbuf, MAXREADLINESIZE, stdin );
+   refresh();
+
+   nonl();
 #endif
 
    /* open edited file for read */
@@ -502,7 +507,7 @@ bwb_renum( l )
       sprintf( bwb_ebuf, err_openfile, CURTASK progfile );
       bwb_error( bwb_ebuf );
 
-      iqc_setpos();
+      ncu_setpos();
       return bwb_zline( l );
       }
 
@@ -515,7 +520,7 @@ bwb_renum( l )
    bwb_fload( loadfile );
 
 
-   iqc_setpos();
+   ncu_setpos();
    return bwb_zline( l );
    }
 
@@ -567,10 +572,21 @@ bwb_files( struct bwb_line *l )
    sprintf( bwb_ebuf, "in bwb_files(): command line <%s>", tbuf );
    bwb_debug( bwb_ebuf );
 #else
+   nl();
+   endwin(); /* Added by JBV 10/11/97 */
    system( tbuf );
+
+   /*-----------------------*/
+   /* Added by JBV 10/11/97 */
+   /*-----------------------*/
+   fprintf( stderr, "Press RETURN when ready..." );
+   fgets( tbuf, MAXREADLINESIZE, stdin );
+   refresh();
+
+   nonl();
 #endif
 
-   iqc_setpos();
+   ncu_setpos();
    return bwb_zline( l );
 
    }
@@ -589,18 +605,19 @@ bwb_files( struct bwb_line *l )
 ***************************************************************/
 
 extern struct bwb_variable *
-fnc_inkey( int argc, struct bwb_variable *argv )
+fnc_inkey( int argc, struct bwb_variable *argv,int unique)
    {
    static struct bwb_variable nvar;
    char tbuf[ MAXSTRINGSIZE + 1 ];
    static int init = FALSE;
+   int c;
 
    /* initialize the variable if necessary */
 
    if ( init == FALSE )
       {
       init = TRUE;
-      var_make( &nvar, STRING, "fnc_inkey" );
+      var_make( &nvar, STRING);
       }
 
    /* check arguments */
@@ -621,17 +638,18 @@ fnc_inkey( int argc, struct bwb_variable *argv )
 #endif
 
    /* body of the INKEY$ function */
-
-   if ( _bios_keybrd( _KEYBRD_READY ) == 0 )
+   
+   nodelay(stdscr,1);
+   if ( (c=getch())==EOF )
       {
       tbuf[ 0 ] = '\0';
       }
    else
       {
-      tbuf[ 0 ] = (char) _bios_keybrd( _KEYBRD_READ );
+      tbuf[ 0 ] = (char) c;
       tbuf[ 1 ] = '\0';
       }
-
+   nodelay(stdscr,0);
    /* assign value to nvar variable */
 
    str_ctob( var_findsval( &nvar, nvar.array_pos ), tbuf );
@@ -659,7 +677,8 @@ extern struct bwb_line *
 bwb_cls( struct bwb_line *l )
    {
 
-   _clearscreen( _GCLEARSCREEN );
+   clear();
+   refresh();
 
    return bwb_zline( l );
    }
@@ -701,7 +720,7 @@ bwb_locate( struct bwb_line *l )
 
    /* position the cursor */
 
-   _settextposition( row, column );
+   move( row-1, column-1 );
 
    return bwb_zline( l );
    }
@@ -715,26 +734,26 @@ bwb_locate( struct bwb_line *l )
 
 ***************************************************************/
 
+
 extern struct bwb_line *
 bwb_color( struct bwb_line *l )
    {
    struct exp_ese *e;
-   int color;
+   int fgcolor,bgcolor;
 
    /* get first argument */
 
    e = bwb_exp( l->buffer, FALSE, &( l->position ));
-   color = (int) exp_getnval( e );
+   fgcolor = (int) exp_getnval( e );
 
 #if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "Setting text color to %d", color );
+   sprintf( bwb_ebuf, "Setting text color to %d", fgcolor );
    bwb_debug( bwb_ebuf );
 #endif
 
-   _settextcolor( (short) color );
 
 #if INTENSIVE_DEBUG
-   sprintf( bwb_ebuf, "Set text color to %d", color );
+   sprintf( bwb_ebuf, "Set text color to %d", fgcolor );
    bwb_debug( bwb_ebuf );
 #endif
 
@@ -749,19 +768,37 @@ bwb_color( struct bwb_line *l )
       /* get second argument */
 
       e = bwb_exp( l->buffer, FALSE, &( l->position ));
-      color = (int) exp_getnval( e );
+      bgcolor = (int) exp_getnval( e );
 
 #if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "Setting background color to %d", color );
+      sprintf( bwb_ebuf, "Setting background color to %d", bgcolor );
       bwb_debug( bwb_ebuf );
 #endif
 
-      /* set the background color */
-
-      _setbkcolor( (long) color );
+      /* set the foreground and background color */
+      if (has_colors()) {
+	attrset(A_NORMAL);
+        bkgdset(COLOR_PAIR((bgcolor&7))|' ');
+        if((fgcolor&7)==0 && (bgcolor&7)==0){
+	 /* we didn't reserve a color pair for fg and bg both black. 
+            Bright black(color 8)==dark gray as foreground color A_DIM
+            A_INVIS doesn't seem to work. wait for next version of
+            ncurses, don't bother for now.*/
+         if(fgcolor<8) attrset(A_INVIS); else attrset(A_DIM);
+        } else
+        attrset(COLOR_PAIR((8*(fgcolor&7)+(bgcolor&7))) | 
+                      ((fgcolor>7)*A_BOLD));
+        /* fg colors 8--15 == extra brightness */
+      } else { /* no colors, have a go at it with reverse/bold/dim */
+        attrset(A_NORMAL);
+        bkgdset(A_REVERSE*((fgcolor&7)<(bgcolor&7))|' ');
+        attrset(A_BOLD*(fgcolor>8)|
+          A_REVERSE*((fgcolor&7)<(bgcolor&7))|A_INVIS*(fgcolor==bgcolor));
+      }
+      
 
 #if INTENSIVE_DEBUG
-      sprintf( bwb_ebuf, "Setting background color to %d\n", color );
+      sprintf( bwb_ebuf, "Setting background color to %d\n", bgcolor );
       bwb_debug( bwb_ebuf );
 #endif
 
@@ -769,6 +806,10 @@ bwb_color( struct bwb_line *l )
 
    return bwb_zline( l );
    }
+#endif /* MS_CMDS */
 
-#endif				/* MS_CMDS */
+
+
+
+
 

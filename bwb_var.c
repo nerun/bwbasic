@@ -1849,6 +1849,7 @@ dim_getparams( buffer, pos, n_params, pp )
    int x_pos, s_pos;
    struct exp_ese *e;
    char tbuf[ MAXSTRINGSIZE + 1 ];
+   int paren_level, quote_level; /* JBV 1/97 */
 #if INTENSIVE_DEBUG
    register int n;
 #endif
@@ -1880,11 +1881,26 @@ dim_getparams( buffer, pos, n_params, pp )
    s_pos = 0;
    tbuf[ 0 ] = '\0';
    loop = TRUE;
+   paren_level = 1; /* JBV 1/97 */
+   quote_level = 0; /* JBV 1/97 */
    while( loop == TRUE )
       {
       switch( buffer[ *pos ] )
          {
          case ')':                      /* end of parameter list */
+            /*-----------------------------------------------------*/
+            /* paren_level and quote_level check added by JBV 1/97 */
+            /*-----------------------------------------------------*/
+            if ( quote_level == 0 ) --paren_level;
+            if ( paren_level != 0 || quote_level != 0 ) /* Still not done? */
+            {
+            tbuf[ s_pos ] = buffer[ *pos ];
+            ++(*pos);
+            ++s_pos;
+            tbuf[ s_pos ] = '\0';
+            break;
+            }
+
             x_pos = 0;
             if ( tbuf[ 0 ] == '\0' )
                {
@@ -1909,6 +1925,18 @@ dim_getparams( buffer, pos, n_params, pp )
             break;
 
          case ',':                      /* end of a parameter */
+            /*-----------------------------------------------------*/
+            /* paren_level and quote_level check added by JBV 1/97 */
+            /*-----------------------------------------------------*/
+            if ( paren_level != 1 || quote_level != 0 ) /* Still not done? */
+            {
+            tbuf[ s_pos ] = buffer[ *pos ];
+            ++(*pos);
+            ++s_pos;
+            tbuf[ s_pos ] = '\0';
+            break;
+            }
+
             x_pos = 0;
             if ( tbuf[ 0 ] == '\0' )
                {
@@ -1935,6 +1963,13 @@ dim_getparams( buffer, pos, n_params, pp )
             break;
 
          default:
+            if( buffer[ *pos ] == '(' && quote_level == 0 )
+               ++paren_level; /* JBV 1/97 */
+            if( buffer[ *pos ] == (char) 34 )
+            {
+               if (quote_level == 0) quote_level = 1;
+               else quote_level = 0;
+            }
             tbuf[ s_pos ] = buffer[ *pos ];
             ++(*pos);
             ++s_pos;

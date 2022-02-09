@@ -1339,7 +1339,7 @@ bwb_field( l )
 #endif
 
       b->sbuffer = dev_table[ dev_number ].buffer + current_pos;
-      b->length = (unsigned char) length;
+      b->length = (unsigned int) length; /* Was unsigned char (JBV 9/4/97) */
       b->rab = TRUE;
 
       current_pos += length;

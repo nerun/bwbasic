@@ -551,7 +551,7 @@ bwb_elseif( l )
 
       e = bwb_exp( l->buffer, FALSE, &( l->position ) );
 
-      if ( (int) exp_getnval( e ) == TRUE )
+      if ( (int) exp_getnval( e ) != FALSE ) /* Was == TRUE (JBV 10/1996) */
          {
 
          /* ELSEIF condition is TRUE: proceed to the next line */
@@ -1507,7 +1507,7 @@ bwb_while( l )
 
    e = bwb_exp( l->buffer, FALSE, &( l->position ) );
 
-   if ( (int) exp_getnval( e ) == TRUE )
+   if ( (int) exp_getnval( e ) != FALSE ) /* Was == TRUE (JBV 10/1996) */
       {
       bwb_setexec( l, l->position, EXEC_WHILE );
       return bwb_zline( l );

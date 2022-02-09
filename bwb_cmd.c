@@ -482,10 +482,28 @@ bwb_return( l )
 
    /* see if old position was "GOSUB" */
 
+/* JBV 1/20/97 */
+/*
    if ( CURTASK excs[ CURTASK exsc ].code != EXEC_GOSUB )
       {
       bwb_error( err_retnogosub );
       }
+*/
+
+   /*--------------------------------------------------------------*/
+   /* Make sure we are at the right stack level!                   */
+   /* If we aren't (which could happen for legit reasons), fix the */
+   /* exec stack.                                                  */
+   /* JBV, 1/20/97                                                 */
+   /*--------------------------------------------------------------*/
+   while ( CURTASK excs[ CURTASK exsc ].code != EXEC_GOSUB )
+   {
+   bwb_decexec();
+   if ( CURTASK excs[ CURTASK exsc ].code == EXEC_NORM ) /* End of the line? */
+      {
+      bwb_error( err_retnogosub );
+      }
+   }
 
    /* decrement the EXEC stack counter */
 

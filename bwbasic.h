@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.20 patch level 1"          /* Current version number */
+#define VERSION         "2.20 patch level 2"          /* Current version number */
 
 /***************************************************************
 
@@ -61,6 +61,7 @@
 
 #define IMP_TTY         TRUE     /* simple TTY-style interface using stdio */
 #define IMP_IQC         FALSE    /* IBM PC, Microsoft QuickC Compiler */
+#define IMP_NCU         FALSE    /* Linux, ncurses */
 #define ALLOW_RENUM     TRUE     /* Added by JBV */
 
 #if IMP_TTY
@@ -69,6 +70,10 @@
 
 #if IMP_IQC
 #include "bwx_iqc.h"
+#endif
+
+#if IMP_NCU
+#include "bwx_ncu.h"
 #endif
 
 /***************************************************************
@@ -210,7 +215,7 @@
 ***************************************************************/
 
 #define DEBUG           FALSE  	/* current debugging */
-#define PROG_ERRORS     FALSE  	/* identify serious programming errors */
+#define PROG_ERRORS     TRUE  	/* identify serious programming errors */
 					/* and print extensive error messages */
 					/* This will override messages defined in */
 					/* bwb_mes.h, and almost all messages will be in English */
@@ -431,7 +436,10 @@
 #define MAXLINENO       32766           /* maximum line number */
 #define MAXVARNAMESIZE  40              /* maximum size for variable name */
 #define MAXFILENAMESIZE 40              /* maximum size for file name */
+#if 0 /* JBV 9/4/97 */
 #define MAXSTRINGSIZE   255             /* maximum string length */
+#endif
+#define MAXSTRINGSIZE   5000            /* maximum string length */
 #define EXECLEVELS      64              /* EXEC stack levels */
 #define MAX_GOLINES     12              /* Maximum # of lines for ON...GOTO statements */
 #define MAX_FARGS       6               /* maximum # arguments to function */
@@ -441,8 +449,12 @@
 #define N_OPERATORS     25              /* number of operators defined */
 #define N_ERRORS	25		/* number of errors defined */
 #define MAX_PRECEDENCE  20              /* highest (last) level of precedence */
+#if 0 /* JBV 9/96 */
 #define MININTSIZE      -32767          /* minimum integer size */
 #define MAXINTSIZE       32767          /* maximum integer size */
+#endif
+#define MININTSIZE      -2147483647     /* minimum integer size */
+#define MAXINTSIZE       2147483647     /* maximum integer size */
 #define DEF_SUBSCRIPT   11              /* default subscript */
 #define DEF_DEVICES     16              /* default number of devices available */
 #define DEF_WIDTH	128		/* default width for devices */
@@ -573,7 +585,8 @@ typedef float bnumber;
 
 typedef struct bstr
    {
-   unsigned char length;		/* length of string */
+   /* unsigned int was unsigned char (JBV 9/4/97) */
+   unsigned int length;			/* length of string */
    char *sbuffer;			/* pointer to string buffer */
    int rab;				/* is it a random-access buffer? */
 #if TEST_BSTRING

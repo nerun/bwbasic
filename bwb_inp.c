@@ -1458,7 +1458,8 @@ bwb_line( l )
       }
    else
       {
-      fgets( tbuf, MAXSTRINGSIZE, inp_device );
+      /* Was MAXSTRINGSIZE (JBV 9/8/97) */
+      fgets( tbuf, MAXSTRINGSIZE + 2, inp_device );
       }
    bwb_stripcr( tbuf );
    str_ctob( var_findsval( v, v->array_pos ), tbuf );
