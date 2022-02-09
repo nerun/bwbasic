@@ -102,7 +102,7 @@ realclean: distclean
 	rm -f TAGS
 
 dist: $(DISTFILES)
-	echo bwbasic-2.50 > .fname
+	echo bwbasic-2.61 > .fname
 	rm -rf `cat .fname`
 	mkdir `cat .fname`
 	ln $(DISTFILES) `cat .fname`

@@ -113,9 +113,9 @@ distclean: clean
 realclean: distclean
 	rm -f TAGS
 
-# Version number changed from 2.20 to 2.40 by PE
+# Version number changed to 2.61 by PE
 dist: $(DISTFILES)
-	echo bwbasic-2.40 > .fname
+	echo bwbasic-2.61 > .fname
 	rm -rf `cat .fname`
 	mkdir `cat .fname`
 	ln $(DISTFILES) `cat .fname`

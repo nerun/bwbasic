@@ -3,7 +3,7 @@
                               README file for
 
 
-               Bywater BASIC Interpreter/Shell, version 2.60
+               Bywater BASIC Interpreter/Shell, version 2.61
                ---------------------------------------------
 
                     Copyright (c) 1993, Ted A. Campbell
@@ -29,6 +29,9 @@
 
                Version 2.60 modifications by Paul Edwards,
                               6 November 2012
+
+               Version 2.61 modifications by Paul Edwards,
+                              4 August 2014
 
 
 
@@ -201,6 +204,11 @@ A LIST OF BASIC COMMANDS AND FUNCTIONS IMPLEMENTED in bwBASIC:
 CHANGE HISTORY
 
 
+
+
+CHANGES FROM 2.60 to 2.61
+
+   * Bug fix from Matthias Rustler
 
 
 CHANGES FROM 2.50 to 2.60

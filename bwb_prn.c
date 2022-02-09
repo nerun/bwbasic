@@ -1328,7 +1328,7 @@ prn_precision( v )
 
 ***************************************************************/
 
-#if PERMANENT_DEBUG
+#if PERMANENT_DEBUG || INTENSIVE_DEBUG
 
 #if ANSI_C
 int

@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.60"          /* Current version number */
+#define VERSION         "2.61"          /* Current version number */
 
 /***************************************************************
 
@@ -1176,7 +1176,7 @@ extern int fnc_checkargs( int argc, struct bwb_variable *argv,
    int min, int max );
 extern int ufsc;			/* user function stack counter */
 
-#if DEBUG
+#if DEBUG || INTENSIVE_DEBUG
 extern struct bwb_variable *fnc_test( int argc, struct bwb_variable *argv, int unique_id );
 #endif
 

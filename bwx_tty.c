@@ -256,6 +256,8 @@ bwx_input( prompt, buffer )
 
    prn_xprintf( stdout, prompt );
 
+   fflush( stdout );
+
    fgets( buffer, MAXREADLINESIZE, stdin );
    * prn_getcol( stdout ) = 1;			/* reset column */
 
