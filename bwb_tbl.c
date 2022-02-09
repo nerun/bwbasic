@@ -210,6 +210,16 @@ struct bwb_function bwb_prefuncs[ FUNCTIONS ] =
 #endif
 
 #if ANSI_FUNCS			/* Functions required for ANSI Full BASIC */
+   { "COSH",     NUMBER,         1,   fnc_cosh,        (struct bwb_function *) NULL, 0}, 
+   { "SINH",     NUMBER,         1,   fnc_sinh,        (struct bwb_function *) NULL, 0}, 
+   { "TANH",     NUMBER,         1,   fnc_tanh,        (struct bwb_function *) NULL, 0},
+   { "LOG10",     NUMBER,         1,   fnc_log10,        (struct bwb_function *) NULL, 0},
+   { "LOG2",     NUMBER,         1,   fnc_log2,        (struct bwb_function *) NULL, 0},
+{ "ACOS",     NUMBER,         1,   fnc_acos,        (struct bwb_function *) NULL, 0},
+{ "ASIN",     NUMBER,         1,   fnc_asin,        (struct bwb_function *) NULL, 0},
+{ "COT",     NUMBER,         1,   fnc_cotan,        (struct bwb_function *) NULL, 0},
+{ "CSC",     NUMBER,         1,   fnc_cosecant,        (struct bwb_function *) NULL, 0},
+{ "SEC",     NUMBER,         1,   fnc_secant,        (struct bwb_function *) NULL, 0},
 #endif
 
    /* The remainder are core functions defined for ANSI Minimal BASIC */

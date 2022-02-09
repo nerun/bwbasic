@@ -41,7 +41,7 @@
 
 /* Version number */
 
-#define VERSION         "2.50"          /* Current version number */
+#define VERSION         "2.60"          /* Current version number */
 
 /***************************************************************
 
@@ -419,7 +419,7 @@
 #define FUNCS_COMMON	0
 #endif
 #if ANSI_FUNCS
-#define FUNCS_ANSI	0
+#define FUNCS_ANSI	10
 #else
 #define FUNCS_ANSI	0
 #endif
@@ -1160,6 +1160,16 @@ extern struct bwb_variable * fnc_csng( int argc, struct bwb_variable *argv, int 
 extern struct bwb_variable * fnc_instr( int argc, struct bwb_variable *argv, int unique_id );
 extern struct bwb_variable * fnc_str( int argc, struct bwb_variable *argv, int unique_id );
 extern struct bwb_variable * fnc_inkey( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_cosh( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_sinh( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_tanh( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_log10( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_log2( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_acos( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_asin( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_cotan( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_secant( int argc, struct bwb_variable *argv, int unique_id );
+extern struct bwb_variable *fnc_cosecant( int argc, struct bwb_variable *argv, int unique_id );
 
 extern bnumber trnc_int( bnumber x );
 extern int fnc_checkargs( int argc, struct bwb_variable *argv,

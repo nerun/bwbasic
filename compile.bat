@@ -21,5 +21,5 @@ call stdcomp bwb_stc.c
 call stdcomp bwx_tty.c
 call stdcomp unixio.c
 
-rem gcc -o bwbasic.exe *.o
+gcc -mno-cygwin -s -o bwbasic.exe *.o
 rem bcc32 -ebwbasic.exe *.obj

@@ -171,8 +171,8 @@ bwb_print( l )
 
          return bwb_zline( l );
          }
-
-      if ( dev_table[ req_devnumber ].mode != DEVMODE_OUTPUT )
+/* Append Mode must also be taken into account (EO) */ 
+      if ( dev_table[ req_devnumber ].mode != DEVMODE_OUTPUT && dev_table[ req_devnumber ].mode != DEVMODE_APPEND )
          {
 #if PROG_ERRORS
          bwb_error( "in bwb_print(): Requested device is not open for OUTPUT." );

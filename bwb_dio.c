@@ -74,7 +74,7 @@ static int dio_flush();
 	DESCRIPTION:    This function implements the BASIC OPEN
 			command to open a stream for device input/output.
 
-        SYNTAX: 1. OPEN "I"|"O"|"R", [#]n, filename [,rlen]
+        SYNTAX: 1. OPEN "I"|"O"|"R"|"A", [#]n, filename [,rlen]
                 2. OPEN filename [FOR INPUT|OUTPUT|APPEND|] AS [#]n [LEN=n]
 
 ***************************************************************/
@@ -239,8 +239,14 @@ bwb_open( l )
          mode = DEVMODE_RANDOM;
          }
 
-      /* error: none of the appropriate modes found */
+      /* Added by EO: open file for sequential APPEND (GW-Basic, Burroughs B20)*/ 
 
+
+      else if ( ( first[ 0 ] == 'a' ) || ( first[ 0 ] == 'A' ))
+         {
+         mode = DEVMODE_APPEND;
+         }
+      /* error: none of the appropriate modes found */
       else
          {
 #if PROG_ERRORS
@@ -294,7 +300,7 @@ bwb_open( l )
             }
          else if ( strcmp( atbuf, "APPEND" ) == 0 )
             {
-            mode = DEVMODE_RANDOM;
+            mode = DEVMODE_APPEND;
             }
          else
             {
@@ -429,7 +435,9 @@ bwb_open( l )
       return bwb_zline( l );
       }
 
-   if ( dev_table[ req_devnumber ].mode == DEVMODE_CLOSED )
+   if ( ( dev_table[ req_devnumber ].mode == DEVMODE_CLOSED ) &&
+        /* PE: JBV mod to close requires this open check */
+      ( dev_table[ req_devnumber ].buffer != NULL ) )
       {
 #if INTENSIVE_DEBUG
       sprintf( bwb_ebuf, "in bwb_open(): using previously closed file (and buffer)" );

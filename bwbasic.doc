@@ -1786,19 +1786,19 @@ CONTENTS:
    remain unimplemented are:
 
    ACCESS
-   ANGLE
+   ANGLE (angle of the vector (X,Y) with the X axis in anticlockwise sense in ECMA-116)
    AREA
    ARITHMETIC
    ARRAY
    ASK
    BSTR
    BVAL
-   CEIL
+   CEIL smallest integer >=X
    CELLS
    CLIP
    COLLATE
    CONNECT
-   COSH
+ !  COSH
    DATUM
    DEBUG
    DECIMAL
@@ -1818,8 +1818,8 @@ CONTENTS:
    KEY
    LCASE
    LINES
-   LOG10
-   LOG2
+ !  LOG10 
+ !  LOG2
    MAT
    MIX
    MULTIPOINT
@@ -1839,8 +1839,8 @@ CONTENTS:
    SEIZE
    SEND
    SHIFT
-   SINH
-   TANH
+ !  SINH
+ !  TANH
    TIMEOUT
    TRACE
    TRANSFORM

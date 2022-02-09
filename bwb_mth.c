@@ -2042,4 +2042,720 @@ round_int( x )
       }
    }
 
+/***************************************************************
 
+        FUNCTION:       fnc_cosh()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined COSH function, returning the
+                        hyperbolic cosine of the argument.
+
+	SYNTAX:		COSH( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_cosh( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_cosh( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_cosh(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function COSH().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function COSH().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) cosh( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+
+/***************************************************************
+
+        FUNCTION:       fnc_sinh()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined SINH function, returning the
+                        hyperbolic sine of the argument.
+
+	SYNTAX:		SINH( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_sinh( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_sinh( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_sinh(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function SINH().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function SINH().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) sinh( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+/***************************************************************
+
+        FUNCTION:       fnc_tanh()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined TANH function, returning the
+                        hyperbolic tangent of the argument.
+
+	SYNTAX:		TANH( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_tanh( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_tanh( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_tanh(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function TANH().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function TANH().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) tanh( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+
+
+
+/***************************************************************
+
+        FUNCTION:       fnc_log10()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined LOG10 function, returning the
+                        decimal logarithm of the argument.
+
+	SYNTAX:		LOG10( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_log10( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_log10( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_log10(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function LOG10().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function LOG10().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) log10( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+
+
+
+/***************************************************************
+
+        FUNCTION:       fnc_log2()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined LOG2 function, returning the
+                        base 2 logarithm of the argument.
+
+	SYNTAX:		LOG2( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_log2( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_log2( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_log2(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function LOG2().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function LOG2().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) log( (double) var_getnval( &( argv[ 0 ] ) ) )/log(2.0);
+
+   return &nvar;
+
+   }
+
+
+/***************************************************************
+
+        FUNCTION:       fnc_acos()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined ACOS function, returning the
+                        arccosine of the argument.
+
+	SYNTAX:		ACOS( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_acos( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_acos( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_acos(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function ACOS().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function ACOS().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) acos( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+/***************************************************************
+
+        FUNCTION:       fnc_asin()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined ASIN function, returning the
+                        arc sine of the argument.
+
+	SYNTAX:		ASIN( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_asin( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_asin( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_asin(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function ASIN().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function ASIN().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) asin( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+/***************************************************************
+
+        FUNCTION:       fnc_cotan()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined COT function, returning the
+                        cotangent of the argument.
+
+	SYNTAX:		COT( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_cotan( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_cotan( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_cotan(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function COT().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function COT().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) 1.0/tan( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+/***************************************************************
+
+        FUNCTION:       fnc_cosecant()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined CSC function, returning the
+                        cosecant(=1/sin) of the argument.
+
+	SYNTAX:		CSC( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_cosecant( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_cosecant( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_cosecant(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function CSC().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function CSC().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) 1.0/sin( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
+
+
+/***************************************************************
+
+        FUNCTION:       fnc_secant()
+
+        DESCRIPTION:    This C function implements the BASIC
+                        predefined LOG2 function, returning the
+                        secant(=1/cos) of the argument.
+
+	SYNTAX:		SEC( number )
+
+***************************************************************/
+
+#if ANSI_C
+struct bwb_variable *
+fnc_secant( int argc, struct bwb_variable *argv, int unique_id  )
+#else
+struct bwb_variable *
+fnc_secant( argc, argv, unique_id  )
+   int argc;
+   struct bwb_variable *argv;
+   int unique_id;
+#endif
+   {
+   static struct bwb_variable nvar;
+   static int init = FALSE;
+
+   /* initialize the variable if necessary */
+
+   if ( init == FALSE )
+      {
+      init = TRUE;
+      var_make( &nvar, NUMBER );
+      }
+
+#if INTENSIVE_DEBUG
+   sprintf( bwb_ebuf, "in fnc_secant(): received f_arg <%f> ",
+      var_getnval( &( argv[ 0 ] ) ) );
+   bwb_debug( bwb_ebuf );
+#endif
+
+#if PROG_ERRORS
+   if ( argc < 1 )
+      {
+      sprintf( bwb_ebuf, "Not enough parameters (%d) to function SEC().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+   else if ( argc > 1 )
+      {
+      sprintf( bwb_ebuf, "Too many parameters (%d) to function SEC().",
+         argc );
+      bwb_error( bwb_ebuf );
+      return NULL;
+      }
+#else
+   if ( fnc_checkargs( argc, argv, 1, 1 ) == FALSE )
+      {
+      return NULL;
+      }
+#endif
+
+   /* assign values */
+
+   * var_findnval( &nvar, nvar.array_pos ) 
+      = (bnumber) 1.0/cos( (double) var_getnval( &( argv[ 0 ] ) ) );
+
+   return &nvar;
+
+   }
