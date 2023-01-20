@@ -110,7 +110,7 @@ bwb_COMMON (LineType * l)
       {
         /* COMMON A(,,) : DIM A( 5, 10, 20 ) */
         dimensions++;
-        while (line_skip_seperator (l));
+        while (line_skip_seperator (l))
         {
           dimensions++;
         }
