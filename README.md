@@ -24,6 +24,6 @@ The official repository is located at [SourceForge](https://sourceforge.net/proj
 
 ## Other Repositories
 
-Ken Martin (a.k.a. KenUnix) created versions 3.20a, 3.20b, 3.20c and 3.20d. Ken Martin's repositories for these verions are available in GitHub: [3.20a](https://github.com/kenmartin-unix/Bwbasic-3.2a-for-BeagleBone), [3.20b](https://github.com/kenmartin-unix/Bwbasic-3.20b), [3.20c and 3.20d](https://github.com/kenmartin-unix/BwBasic).
+Ken Martin (a.k.a. KenUnix) created versions 3.20a, 3.20b, 3.20c and 3.20d. Ken Martin's repositories for these versions are available in GitHub: [3.20a](https://github.com/kenmartin-unix/Bwbasic-3.2a-for-BeagleBone), [3.20b](https://github.com/kenmartin-unix/Bwbasic-3.20b), [3.20c and 3.20d](https://github.com/kenmartin-unix/BwBasic).
 
 There is another repository, mantained by Ken Martin in partnership with Jon Foster (a.k.a. ChipMaster). It is stored in [Ye Ol' π Shack](https://yeolpishack.net/repos/ChipMaster/bwBASIC). The duo of programmers created the versions 3.20f and 3.20g (apparently there was no version "3.20e").
